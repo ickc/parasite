@@ -73,7 +73,7 @@ def post_to_html(
     if search_form:
         ast.metadata['search-form'] = panflute.RawBlock(search_form)
     if blog_title:
-        ast.metadata['blog-title'] = panflute.RawBlock(blog_title)
+        ast.metadata['title-prefix'] = panflute.RawBlock(blog_title)
     if prev_url is not None:
         ast.metadata['prev-url'] = os.path.relpath(prev_url, url)
     if next_url is not None:
