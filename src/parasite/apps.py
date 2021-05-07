@@ -17,7 +17,26 @@ if TYPE_CHECKING:
     from typing import Optional, List
 
 
-def read_md_to_ast(path: Path, mtime: Optional[datetime] = None) -> panflute.elements.Doc:
+# doesn't work: https://bugs.python.org/issue24132
+# class InputPath(Path):
+#     pass
+
+class InputPath:
+
+    def __init__(self, path: str):
+        self.path = Path(path)
+
+    def __str__(self):
+        return str(self.path)
+
+    def __repr__(self):
+        return repr(self.path)
+
+    def __truediv__(self, other):
+        return self.path / other
+
+
+def read_md_to_ast(path: InputPath) -> panflute.elements.Doc:
     """Read from markdown to panflute AST
 
     :param datetime mtime: modification time of the file at path.
@@ -33,7 +52,7 @@ def post_to_html(
     ast: panflute.elements.Doc,
     out_path: Path,
     url: Path,
-    template: Path,
+    template: InputPath,
     tags: List[str],
     tags_counts: List[int],
     prev_url: Optional[Path],
@@ -92,9 +111,9 @@ def id_for_memo_path(path: Path, output_ref: bool = False) -> bytes:
     return id_for_memo(str(path))
 
 
-@id_for_memo.register(datetime)
-def id_for_memo_datetime(time: datetime, output_ref: bool = False) -> bytes:
-    return id_for_memo(str(time))
+@id_for_memo.register(InputPath)
+def id_for_memo_inputpath(path: Path, output_ref: bool = False) -> bytes:
+    return id_for_memo((str(path), os.path.getmtime(str(path))))
 
 
 @id_for_memo.register(panflute.elements.Doc)

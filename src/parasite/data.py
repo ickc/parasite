@@ -6,13 +6,11 @@ from pathlib import Path
 from dataclasses import dataclass
 from functools import cached_property
 from typing import TYPE_CHECKING
-from datetime import datetime
-import os
 from typing import Final
 
 import panflute
 
-from .apps import read_md_to_ast, app_read_md_to_ast, app_post_to_html
+from .apps import read_md_to_ast, app_read_md_to_ast, app_post_to_html, InputPath
 
 if TYPE_CHECKING:
     from typing import List, Optional, Tuple, Dict
@@ -22,10 +20,10 @@ if TYPE_CHECKING:
 
 @dataclass
 class Page:
-    path: Path
+    path: InputPath
     base_path: Path
     out_base_path: Path
-    template: Path
+    template: InputPath
     pretty_urls: bool = True
 
     @property
@@ -35,14 +33,9 @@ class Page:
         Primarily for dataframe
         '''
         res = vars(self).copy()
-        res['mtime'] = self.mtime
         res['out_path'] = self.out_path
         res['url'] = self.url
         return res
-
-    @property
-    def mtime(self) -> datetime:
-        return datetime.fromtimestamp(os.path.getmtime(self.path))
 
     @cached_property
     def out_path(self) -> Path:
@@ -152,14 +145,14 @@ class Pages:
     path: Path
     out_path: Path
     ext: str
-    template: Path
+    template: InputPath
     pretty_urls: bool = True
     page_class: Final = Page
 
     def __post_init__(self):
         self.path = Path(self.path)
         self.out_path = Path(self.out_path)
-        self.template = Path(self.template)
+        self.template = InputPath(self.template)
 
     @property
     def dict(self) -> List[dict]:
@@ -182,10 +175,7 @@ class Pages:
 
         # str is to make them hashable
         futures = [
-            app_read_md_to_ast(
-                page.path,
-                page.mtime,
-            )
+            app_read_md_to_ast(page.path)
             for page in pages
         ]
         for page, future in zip(pages, futures):
