@@ -37,7 +37,7 @@ class Page:
         res = vars(self).copy()
         res['mtime'] = self.mtime
         res['out_path'] = self.out_path
-        res['out_url'] = self.out_url
+        res['url'] = self.url
         return res
 
     @property
@@ -54,7 +54,7 @@ class Page:
         return out_path
 
     @cached_property
-    def out_url(self) -> Path:
+    def url(self) -> Path:
         out_path = self.out_path
         if self.pretty_urls:
             return out_path.parent
@@ -123,7 +123,7 @@ class Post(Page):
         del self._tags_counts
 
     @property
-    def prev_url(self) -> Path:
+    def prev_url(self) -> Optional[Path]:
         return getattr(self, '_prev_url', None)
 
     @prev_url.setter
@@ -135,7 +135,7 @@ class Post(Page):
         del self._prev_url
 
     @property
-    def next_url(self) -> Path:
+    def next_url(self) -> Optional[Path]:
         return getattr(self, '_next_url', None)
 
     @next_url.setter
@@ -210,26 +210,28 @@ class Posts(Pages):
 
     def get_neighbor_urls(self):
         pages = self.pages
-        n = len(pages)
 
-        if n > 1:
-            i = 0
+        prev_page = pages[0]
+        prev_url = prev_page.url
+        for i in range(1, len(pages)):
             page = pages[i]
-            page.next_url = pages[i + 1].out_url
+            url = page.url
 
-            for i, page in enumerate(pages[1:-1]):
-                page.prev_url = pages[i - 1].out_url
-                page.next_url = pages[i + 1].out_url
+            prev_page.next_url = url
+            page.prev_url = prev_url
 
-            i = n - 1
-            page = pages[i]
-            page.prev_url = pages[i - 1].out_url
+            prev_page = page
+            prev_url = url
 
     def exec(
         self,
         header_includes: str = '',
         include_before: str = '',
         include_after: str = '',
+        mathjax_config: str = '',
+        search_form: str = '',
+        content_footer: str = '',
+        blog_title: str = '',
         pandoc_options_dict: Dict[str, List[str]] = [],
         output_dir: Path = Path('output'),
     ):
@@ -243,6 +245,7 @@ class Posts(Pages):
             app_post_to_html(
                 post.ast,
                 post.out_path,
+                post.url,
                 post.template,
                 post.tags,
                 post.tags_counts,
@@ -251,6 +254,10 @@ class Posts(Pages):
                 header_includes=header_includes,
                 include_before=include_before,
                 include_after=include_after,
+                mathjax_config=mathjax_config,
+                search_form=search_form,
+                content_footer=content_footer,
+                blog_title=blog_title,
                 pandoc_options=pandoc_options,
                 output_dir=output_dir,
             )

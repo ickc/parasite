@@ -7,6 +7,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 from datetime import datetime
+import os
 
 import panflute
 from parsl import python_app
@@ -31,14 +32,19 @@ def read_md_to_ast(path: Path, mtime: Optional[datetime] = None) -> panflute.ele
 def post_to_html(
     ast: panflute.elements.Doc,
     out_path: Path,
+    url: Path,
     template: Path,
     tags: List[str],
     tags_counts: List[int],
-    prev_url: Path,
-    next_url: Path,
+    prev_url: Optional[Path],
+    next_url: Optional[Path],
     header_includes: str = '',
     include_before: str = '',
     include_after: str = '',
+    mathjax_config: str = '',
+    search_form: str = '',
+    content_footer: str = '',
+    blog_title: str = '',
     pandoc_options: List[str] = [],
     output_dir: Path = Path('output'),
 ):
@@ -48,9 +54,30 @@ def post_to_html(
     # TODO: inject tags+counts, prev/next_url
     # either by manipulating the string here
     # or set metadata variable and let pandoc template handles it
+    # neighbor_links = []
+    # if prev_url is not None:
+    #     prev_url_rel = os.path.relpath(prev_url, url)
+    #     neighbor_links.append(f'<link rel="prev" href="{prev_url_rel}" type="text/html">')
+    # if next_url is not None:
+    #     next_url_rel = os.path.relpath(next_url, url)
+    #     neighbor_links.append(f'<link rel="next" href="{next_url_rel}" type="text/html">')
+
+
     ast.metadata['header-includes'] = panflute.RawBlock(header_includes)
     ast.metadata['include-before'] = panflute.RawBlock(include_before)
     ast.metadata['include-after'] = panflute.RawBlock(include_after)
+    if content_footer:
+        ast.metadata['content-footer'] = panflute.RawBlock(content_footer)
+    if mathjax_config:
+        ast.metadata['mathjax-config'] = panflute.RawBlock(mathjax_config)
+    if search_form:
+        ast.metadata['search-form'] = panflute.RawBlock(search_form)
+    if blog_title:
+        ast.metadata['blog-title'] = panflute.RawBlock(blog_title)
+    if prev_url is not None:
+        ast.metadata['prev-url'] = os.path.relpath(prev_url, url)
+    if next_url is not None:
+        ast.metadata['next-url'] = os.path.relpath(next_url, url)
 
     other_options = [
         f'--output={Path(output_dir) / out_path}',
