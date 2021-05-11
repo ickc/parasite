@@ -90,7 +90,7 @@ def post_to_html(
         ast.metadata['next-url'] = str(root / next[0])
         title = next[1]
         if title is not None:
-            ast.metadata['next-url'] = title
+            ast.metadata['next-title'] = title
 
     css_options = []
     for c in css:
