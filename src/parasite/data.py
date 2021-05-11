@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections import Counter
+from collections import Counter, defaultdict
 from itertools import chain
 from pathlib import Path
 from dataclasses import dataclass
@@ -241,7 +241,8 @@ class Posts(Pages):
         content_footer: str = '',
         blog_title: str = '',
         nav: str = '',
-        pandoc_options_dict: Dict[str, List[str]] = [],
+        pandoc_options_dict: Dict[str, List[str]] = defaultdict(list),
+        css_dict: Dict[str, List[str]] = defaultdict(list),
         output_dir: Path = Path('output'),
     ):
         """Run the site generator pipeline.
@@ -249,6 +250,7 @@ class Posts(Pages):
         # posts
         posts = self.pages
         pandoc_options = pandoc_options_dict[self.ext]
+        css = css_dict[self.ext]
 
         futures = [
             app_post_to_html(
@@ -267,6 +269,7 @@ class Posts(Pages):
                 blog_title=blog_title,
                 nav=nav,
                 pandoc_options=pandoc_options,
+                css=css,
                 output_dir=output_dir,
             )
             for post in posts

@@ -60,6 +60,7 @@ def post_to_html(
     blog_title: str = '',
     nav: str = '',
     pandoc_options: List[str] = [],
+    css: List[str] = [],
     output_dir: Path = Path('output'),
 ):
     """
@@ -73,7 +74,7 @@ def post_to_html(
     if mathjax_config:
         ast.metadata['mathjax-config'] = panflute.RawBlock(mathjax_config)
     if search_form:
-        ast.metadata['search-form'] = panflute.RawBlock(search_form)
+        ast.metadata['search-form'] = panflute.RawBlock(search_form.format(root=root))
     if blog_title:
         ast.metadata['title-prefix'] = panflute.RawBlock(blog_title)
     if nav:
@@ -91,12 +92,20 @@ def post_to_html(
         if title is not None:
             ast.metadata['next-url'] = title
 
+    css_options = []
+    for c in css:
+        css_options.append('--css')
+        if c.startswith('/'):
+            css_options.append(root + c)
+        else:
+            css_options.append(c)
+
     other_options = [
         f'--output={Path(output_dir) / out_path}',
         f'--template={template}',
     ]
 
-    panflute.tools.convert_text(ast, input_format='panflute', output_format='html', standalone=True, extra_args=pandoc_options + other_options)
+    panflute.tools.convert_text(ast, input_format='panflute', output_format='html', standalone=True, extra_args=pandoc_options + css_options + other_options)
 
 
 @id_for_memo.register(Path)
@@ -135,7 +144,7 @@ def _nav(
         type_ = type(datum[0])
         if type_ == str:
             url, title = datum
-            res.append(f'<li class="{li_class}"><a href="{{root}}/{url}" class="{a_class}">{title}</a></li>')
+            res.append(f'<li class="{li_class}"><a href="{{root}}{url}" class="{a_class}">{title}</a></li>')
         elif type_ == tuple:
             inner_data, title = datum
             res.append(f'<li class="{dropdown_li_class}"><a href="#" class="{dropdown_a_class}" {dropdown_a_attrs}>{title}</a>')
