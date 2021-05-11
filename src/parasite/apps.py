@@ -66,7 +66,7 @@ def post_to_html(
     """
     warning: AST is currently mutated
     """
-    ast.metadata['header-includes'] = panflute.RawBlock(header_includes)
+    ast.metadata['header-includes'] = panflute.RawBlock(header_includes.format(root=root))
     ast.metadata['include-before'] = panflute.RawBlock(include_before)
     ast.metadata['include-after'] = panflute.RawBlock(include_after)
     if content_footer:
