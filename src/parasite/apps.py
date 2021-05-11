@@ -58,6 +58,7 @@ def post_to_html(
     search_form: str = '',
     content_footer: str = '',
     blog_title: str = '',
+    nav: str = '',
     pandoc_options: List[str] = [],
     output_dir: Path = Path('output'),
 ):
@@ -75,6 +76,8 @@ def post_to_html(
         ast.metadata['search-form'] = panflute.RawBlock(search_form)
     if blog_title:
         ast.metadata['title-prefix'] = panflute.RawBlock(blog_title)
+    if nav:
+        ast.metadata['nav'] = panflute.RawBlock(nav.format(root=root))
     if root:
         ast.metadata['root'] = root
     if prev is not None:
@@ -113,3 +116,36 @@ def id_for_memo_doc(doc: panflute.elements.Doc, output_ref: bool = False) -> byt
 
 app_read_md_to_ast = python_app(read_md_to_ast, cache=True)
 app_post_to_html = python_app(post_to_html, cache=True)
+
+
+def _nav(
+    data: Tuple[Tuple[str, str], Tuple[Tuple[str, str], str]],
+    ul_class: str = "navbar-nav nav-fill d-flex w-100",
+    li_class: str = "nav-item",
+    a_class: str = "nav-link",
+    dropdown_li_class: str = "nav-item dropdown",
+    dropdown_a_class: str = "nav-link dropdown-toggle",
+    dropdown_a_attrs: str = 'data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"',
+    inner_ul_class: str = "dropdown-menu",
+    inner_li_class: str = "dropdown-item",
+    inner_a_class: str = "dropdown-item",
+) -> List[str]:
+    res = [f'<ul class="{ul_class}">']
+    for datum in data:
+        type_ = type(datum[0])
+        if type_ == str:
+            url, title = datum
+            res.append(f'<li class="{li_class}"><a href="{{root}}/{url}" class="{a_class}">{title}</a></li>')
+        elif type_ == tuple:
+            inner_data, title = datum
+            res.append(f'<li class="{dropdown_li_class}"><a href="#" class="{dropdown_a_class}" {dropdown_a_attrs}>{title}</a>')
+            res += _nav(inner_data, ul_class=inner_ul_class, li_class=inner_li_class, a_class=inner_a_class)
+            res.append('</li>')
+        else:
+            raise TypeError('Unknown type inside nav data: {type_}.')
+    res.append('</ul>')
+    return res
+
+
+def nav(data: Tuple[Tuple[str, str], Tuple[Tuple[str, str]]]) -> str:
+    return ''.join(_nav(data))

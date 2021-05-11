@@ -240,6 +240,7 @@ class Posts(Pages):
         search_form: str = '',
         content_footer: str = '',
         blog_title: str = '',
+        nav: str = '',
         pandoc_options_dict: Dict[str, List[str]] = [],
         output_dir: Path = Path('output'),
     ):
@@ -264,6 +265,7 @@ class Posts(Pages):
                 search_form=search_form,
                 content_footer=content_footer,
                 blog_title=blog_title,
+                nav=nav,
                 pandoc_options=pandoc_options,
                 output_dir=output_dir,
             )
