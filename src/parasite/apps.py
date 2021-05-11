@@ -92,13 +92,7 @@ def post_to_html(
         if title is not None:
             ast.metadata['next-title'] = title
 
-    css_options = []
-    for c in css:
-        css_options.append('--css')
-        if c.startswith('/'):
-            css_options.append(root + c)
-        else:
-            css_options.append(c)
+    css_options = [f"--css={root + c if c.startswith('/') else c}" for c in css]
 
     other_options = [
         f'--output={Path(output_dir) / out_path}',
