@@ -54,6 +54,24 @@ class Page:
         else:
             return out_path
 
+    @cached_property
+    def categories(self) -> Tuple[str, ...]:
+        return self.path.relative_to(self.base_path).parent.parts
+
+    @cached_property
+    def level(self) -> int:
+        categories = self.categories
+        n = len(categories)
+        return n + 1 if self.pretty_urls else n
+
+    @cached_property
+    def root(self) -> str:
+        level = self.level
+        if level == 0:
+            return '.'
+        else:
+            return '/'.join(['..'] * level)
+
     # AST & its derivatives
 
     def get_ast(self):
@@ -86,10 +104,6 @@ class Post(Page):
         res = super().dict
         res['categories'] = self.categories
         return res
-
-    @cached_property
-    def categories(self) -> Tuple[str, ...]:
-        return self.path.relative_to(self.base_path).parent.parts
 
     # AST's derivatives
 
@@ -240,6 +254,7 @@ class Posts(Pages):
                 post.ast,
                 post.out_path,
                 post.url,
+                post.root,
                 post.template,
                 post.tags,
                 post.tags_counts,

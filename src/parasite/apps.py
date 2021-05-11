@@ -52,6 +52,7 @@ def post_to_html(
     ast: panflute.elements.Doc,
     out_path: Path,
     url: Path,
+    root: str,
     template: InputPath,
     tags: List[str],
     tags_counts: List[int],
@@ -93,13 +94,15 @@ def post_to_html(
         ast.metadata['search-form'] = panflute.RawBlock(search_form)
     if blog_title:
         ast.metadata['title-prefix'] = panflute.RawBlock(blog_title)
+    if root:
+        ast.metadata['root'] = root
     if prev is not None:
-        ast.metadata['prev-url'] = os.path.relpath(prev[0], url)
+        ast.metadata['prev-url'] = str(root / prev[0])
         title = prev[1]
         if title is not None:
             ast.metadata['prev-title'] = title
     if next is not None:
-        ast.metadata['next-url'] = os.path.relpath(next[0], url)
+        ast.metadata['next-url'] = str(root / next[0])
         title = next[1]
         if title is not None:
             ast.metadata['next-url'] = title
