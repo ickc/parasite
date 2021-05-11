@@ -14,7 +14,7 @@ from parsl import python_app
 from parsl.dataflow.memoization import id_for_memo
 
 if TYPE_CHECKING:
-    from typing import Optional, List
+    from typing import Optional, List, Tuple
 
 
 # doesn't work: https://bugs.python.org/issue24132
@@ -55,8 +55,8 @@ def post_to_html(
     template: InputPath,
     tags: List[str],
     tags_counts: List[int],
-    prev_url: Optional[Path],
-    next_url: Optional[Path],
+    prev: Optional[Tuple[Path, Optional[str]]],
+    next: Optional[Tuple[Path, Optional[str]]],
     header_includes: str = '',
     include_before: str = '',
     include_after: str = '',
@@ -93,10 +93,16 @@ def post_to_html(
         ast.metadata['search-form'] = panflute.RawBlock(search_form)
     if blog_title:
         ast.metadata['title-prefix'] = panflute.RawBlock(blog_title)
-    if prev_url is not None:
-        ast.metadata['prev-url'] = os.path.relpath(prev_url, url)
-    if next_url is not None:
-        ast.metadata['next-url'] = os.path.relpath(next_url, url)
+    if prev is not None:
+        ast.metadata['prev-url'] = os.path.relpath(prev[0], url)
+        title = prev[1]
+        if title is not None:
+            ast.metadata['prev-title'] = title
+    if next is not None:
+        ast.metadata['next-url'] = os.path.relpath(next[0], url)
+        title = next[1]
+        if title is not None:
+            ast.metadata['next-url'] = title
 
     other_options = [
         f'--output={Path(output_dir) / out_path}',

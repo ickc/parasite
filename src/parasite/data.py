@@ -73,6 +73,10 @@ class Page:
     def ast(self):
         del self._ast
 
+    @property
+    def title(self) -> Optional[str]:
+        return self.ast.get_metadata('title')
+
 
 @dataclass
 class Post(Page):
@@ -116,28 +120,28 @@ class Post(Page):
         del self._tags_counts
 
     @property
-    def prev_url(self) -> Optional[Path]:
-        return getattr(self, '_prev_url', None)
+    def prev(self) -> Optional[Tuple[Path, Optional[str]]]:
+        return getattr(self, '_prev', None)
 
-    @prev_url.setter
-    def prev_url(self, url: Path):
-        self._prev_url = url
+    @prev.setter
+    def prev(self, data: Tuple[Path, Optional[str]]):
+        self._prev = data
 
-    @prev_url.deleter
-    def prev_url(self):
-        del self._prev_url
+    @prev.deleter
+    def prev(self):
+        del self._prev
 
     @property
-    def next_url(self) -> Optional[Path]:
-        return getattr(self, '_next_url', None)
+    def next(self) -> Optional[Tuple[Path, Optional[str]]]:
+        return getattr(self, '_next', None)
 
-    @next_url.setter
-    def next_url(self, url: Path):
-        self._next_url = url
+    @next.setter
+    def next(self, data: Tuple[Path, Optional[str]]):
+        self._next = data
 
-    @next_url.deleter
-    def next_url(self):
-        del self._next_url
+    @next.deleter
+    def next(self):
+        del self._next
 
 
 @dataclass
@@ -202,16 +206,16 @@ class Posts(Pages):
         pages = self.pages
 
         prev_page = pages[0]
-        prev_url = prev_page.url
+        prev = (prev_page.url, prev_page.title)
         for i in range(1, len(pages)):
             page = pages[i]
-            url = page.url
+            curr = (page.url, page.title)
 
-            prev_page.next_url = url
-            page.prev_url = prev_url
+            prev_page.next = curr
+            page.prev = prev
 
             prev_page = page
-            prev_url = url
+            prev = curr
 
     def exec(
         self,
@@ -239,8 +243,8 @@ class Posts(Pages):
                 post.template,
                 post.tags,
                 post.tags_counts,
-                post.prev_url,
-                post.next_url,
+                post.prev,
+                post.next,
                 header_includes=header_includes,
                 include_before=include_before,
                 include_after=include_after,
