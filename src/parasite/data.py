@@ -253,11 +253,8 @@ class Posts(Pages):
             app_post_to_html(
                 post.ast,
                 post.out_path,
-                post.url,
                 post.root,
                 post.template,
-                post.tags,
-                post.tags_counts,
                 post.prev,
                 post.next,
                 header_includes=header_includes,

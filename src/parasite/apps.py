@@ -47,11 +47,8 @@ def read_md_to_ast(path: InputPath) -> panflute.elements.Doc:
 def post_to_html(
     ast: panflute.elements.Doc,
     out_path: Path,
-    url: Path,
     root: str,
     template: InputPath,
-    tags: List[str],
-    tags_counts: List[int],
     prev: Optional[Tuple[Path, Optional[str]]],
     next: Optional[Tuple[Path, Optional[str]]],
     header_includes: str = '',
@@ -67,8 +64,6 @@ def post_to_html(
     """
     warning: AST is currently mutated
     """
-    # TODO: inject tags+counts
-
     ast.metadata['header-includes'] = panflute.RawBlock(header_includes)
     ast.metadata['include-before'] = panflute.RawBlock(include_before)
     ast.metadata['include-after'] = panflute.RawBlock(include_after)
