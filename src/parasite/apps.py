@@ -6,7 +6,6 @@ all functions should be imported inside functions for parsl
 from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
-from datetime import datetime
 import os
 
 import panflute
@@ -38,9 +37,6 @@ class InputPath:
 
 def read_md_to_ast(path: InputPath) -> panflute.elements.Doc:
     """Read from markdown to panflute AST
-
-    :param datetime mtime: modification time of the file at path.
-    Specified such that update cache only if this is changed.
     """
     from panflute.tools import convert_text
 
@@ -71,17 +67,7 @@ def post_to_html(
     """
     warning: AST is currently mutated
     """
-    # TODO: inject tags+counts, prev/next_url
-    # either by manipulating the string here
-    # or set metadata variable and let pandoc template handles it
-    # neighbor_links = []
-    # if prev_url is not None:
-    #     prev_url_rel = os.path.relpath(prev_url, url)
-    #     neighbor_links.append(f'<link rel="prev" href="{prev_url_rel}" type="text/html">')
-    # if next_url is not None:
-    #     next_url_rel = os.path.relpath(next_url, url)
-    #     neighbor_links.append(f'<link rel="next" href="{next_url_rel}" type="text/html">')
-
+    # TODO: inject tags+counts
 
     ast.metadata['header-includes'] = panflute.RawBlock(header_includes)
     ast.metadata['include-before'] = panflute.RawBlock(include_before)
