@@ -374,18 +374,21 @@ class Posts(Pages):
         font_size_max = 280
         # cat
         categories_counts = self.categories_counts
+
         counts = categories_counts.values()
         min_ = min(counts)
         max_ = max(counts)
         m = (font_size_max - font_size_min) / (max_ - min_)
         c = font_size_min - m * min_
-        res = ['<ul class="list-inline">']
+        temp = []
+        meta['archive-categories'] = temp
         for cat, count in categories_counts.items():
             font_size = m * count + c
             cat_name = '/'.join(cat)
-            res.append(f'<li class="list-inline-item"><a class="reference badge badge-secondary" href="cat_{cat_name}/" style="font-size: {font_size}% !important;">{cat_name}</a></li>')
-        res.append('</ul>')
-        cat_html = ''.join(res)
+            temp.append({
+                'name': cat_name,
+                'font_size': font_size,
+            })
 
         # tag
         counts = tags_counts.values()
@@ -393,22 +396,15 @@ class Posts(Pages):
         max_ = max(counts)
         m = (font_size_max - font_size_min) / (max_ - min_)
         c = font_size_min - m * min_
-
-        res = ['<ul class="list-inline">']
+        temp = []
+        meta['archive-tags'] = temp
         for tag, count in tags_counts.items():
             font_size = m * count + c
-            res.append(f'<li class="list-inline-item"><a class="reference badge badge-secondary" href="{tag}/" style="font-size: {font_size}% !important;">{tag}</a></li>')
-        res.append('</ul>')
-        tag_html = ''.join(res)
-
-        tag_ast = pf.Doc(
-            pf.Header(pf.Str('Categories')),
-            pf.RawBlock(cat_html, format='html'),
-            pf.Header(pf.Str('Tags')),
-            pf.RawBlock(tag_html, format='html'),
-            metadata=meta,
-        )
-        return tag_ast
+            temp.append({
+                'name': tag,
+                'font_size': font_size,
+            })
+        return pf.Doc(metadata=meta)
 
     @cached_property
     def archive_ast(self) -> pf.elements.Doc:
