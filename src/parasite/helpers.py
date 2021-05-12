@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from pathlib import Path
     from typing import List, Tuple
 
 
@@ -36,3 +37,9 @@ def _nav(
 
 def nav(data: Tuple[Tuple[str, str], Tuple[Tuple[str, str], str]]) -> str:
     return ''.join(_nav(data))
+
+
+def pretty_urls_present(parent: Path, stem: str) -> Path:
+    """An example "pretty_urls" callable for present.html
+    """
+    return parent / stem / 'present.html'

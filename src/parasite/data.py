@@ -15,7 +15,7 @@ import panflute as pf
 from .apps import read_md_to_ast, get_teaser, app_read_md_to_ast, app_read_md_to_ast_with_teaser, app_post_to_html, InputPath
 
 if TYPE_CHECKING:
-    from typing import List, Optional, Tuple, Dict
+    from typing import List, Optional, Tuple, Dict, Callable, Union
 
     import pandas as pd
 
@@ -28,11 +28,11 @@ class Page:
     base_path: Path
     out_base_path: Path
     template: Optional[InputPath]
-    pretty_urls: bool = True
+    pretty_urls: Union[bool, Callable[[Path, str], Path]] = True
 
     def __post_init__(self):
         # special casing 404
-        if self.pretty_urls and str(self.out_path) == '404/index.html':
+        if self.pretty_urls is True and str(self.out_path) == '404/index.html':
             logger.info(f'Forcing non-pretty URL for {self.path}.')
             self.pretty_urls = False
             del self.out_path
@@ -78,8 +78,11 @@ class Page:
     @cached_property
     def out_path(self) -> Path:
         out_path = self.out_base_path / self.path.relative_to(self.base_path)
-        if self.pretty_urls:
+        pretty_urls = self.pretty_urls
+        if pretty_urls is True:
             out_path = out_path.parent / out_path.stem / 'index.html'
+        elif callable(pretty_urls):
+            out_path = pretty_urls(out_path.parent, out_path.stem)
         else:
             out_path = out_path.parent / (out_path.stem + '.html')
         return out_path
@@ -87,7 +90,7 @@ class Page:
     @cached_property
     def url(self) -> Path:
         out_path = self.out_path
-        if self.pretty_urls:
+        if self.pretty_urls is True:
             return out_path.parent
         else:
             return out_path
@@ -98,9 +101,7 @@ class Page:
 
     @cached_property
     def level(self) -> int:
-        categories = self.categories
-        n = len(categories)
-        return n + 1 if self.pretty_urls else n
+        return len(self.out_path.parent.parts)
 
     @cached_property
     def root(self) -> str:
@@ -227,7 +228,7 @@ class Pages:
     out_path: Path
     ext: str
     template: Optional[InputPath]
-    pretty_urls: bool = True
+    pretty_urls: Union[bool, Callable[[Path, str], Path]] = True
     page_class: Final = Page
 
     def __post_init__(self):
