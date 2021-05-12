@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from functools import cached_property
 from typing import TYPE_CHECKING
 from typing import Final
+from logging import getLogger
 
 import panflute
 
@@ -17,6 +18,8 @@ if TYPE_CHECKING:
 
     import pandas as pd
 
+logger = getLogger('parasite')
+
 
 @dataclass
 class Page:
@@ -25,6 +28,13 @@ class Page:
     out_base_path: Path
     template: InputPath
     pretty_urls: bool = True
+
+    def __post_init__(self):
+        # special casing 404
+        if self.pretty_urls and str(self.out_path) == '404/index.html':
+            logger.info(f'Forcing non-pretty URL for {self.path}.')
+            self.pretty_urls = False
+            del self.out_path
 
     @property
     def dict(self) -> dict:
@@ -94,6 +104,14 @@ class Page:
     @property
     def title(self) -> Optional[str]:
         return self.ast.get_metadata('title')
+
+    @property
+    def prev(self):
+        return None
+
+    @property
+    def next(self):
+        return None
 
 
 @dataclass
@@ -199,6 +217,51 @@ class Pages:
         for page, future in zip(pages, futures):
             page.ast = future.result()
 
+    def exec(
+        self,
+        header_includes: str = '',
+        include_before: str = '',
+        include_after: str = '',
+        mathjax_config: str = '',
+        search_form: str = '',
+        content_footer: str = '',
+        blog_title: str = '',
+        nav: str = '',
+        pandoc_options_dict: Dict[str, List[str]] = defaultdict(list),
+        css_dict: Dict[str, List[str]] = defaultdict(list),
+        output_dir: Path = Path('output'),
+    ):
+        """Run the site generator pipeline.
+        """
+        pages = self.pages
+        pandoc_options = pandoc_options_dict[self.ext]
+        css = css_dict[self.ext]
+
+        futures = [
+            app_post_to_html(
+                page.ast,
+                page.out_path,
+                page.root,
+                page.template,
+                page.prev,
+                page.next,
+                header_includes=header_includes,
+                include_before=include_before,
+                include_after=include_after,
+                mathjax_config=mathjax_config,
+                search_form=search_form,
+                content_footer=content_footer,
+                blog_title=blog_title,
+                nav=nav,
+                pandoc_options=pandoc_options,
+                css=css,
+                output_dir=output_dir,
+            )
+            for page in pages
+        ]
+        for future in futures:
+            future.result()
+
 
 @dataclass
 class Posts(Pages):
@@ -230,49 +293,3 @@ class Posts(Pages):
 
             prev_page = page
             prev = curr
-
-    def exec(
-        self,
-        header_includes: str = '',
-        include_before: str = '',
-        include_after: str = '',
-        mathjax_config: str = '',
-        search_form: str = '',
-        content_footer: str = '',
-        blog_title: str = '',
-        nav: str = '',
-        pandoc_options_dict: Dict[str, List[str]] = defaultdict(list),
-        css_dict: Dict[str, List[str]] = defaultdict(list),
-        output_dir: Path = Path('output'),
-    ):
-        """Run the site generator pipeline.
-        """
-        # posts
-        posts = self.pages
-        pandoc_options = pandoc_options_dict[self.ext]
-        css = css_dict[self.ext]
-
-        futures = [
-            app_post_to_html(
-                post.ast,
-                post.out_path,
-                post.root,
-                post.template,
-                post.prev,
-                post.next,
-                header_includes=header_includes,
-                include_before=include_before,
-                include_after=include_after,
-                mathjax_config=mathjax_config,
-                search_form=search_form,
-                content_footer=content_footer,
-                blog_title=blog_title,
-                nav=nav,
-                pandoc_options=pandoc_options,
-                css=css,
-                output_dir=output_dir,
-            )
-            for post in posts
-        ]
-        for future in futures:
-            future.result()
