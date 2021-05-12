@@ -8,7 +8,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 import os
 
-import panflute
+import panflute as pf
+from panflute.tools import convert_text
 from parsl import python_app
 from parsl.dataflow.memoization import id_for_memo
 
@@ -35,17 +36,29 @@ class InputPath:
         return self.path / other
 
 
-def read_md_to_ast(path: InputPath) -> panflute.elements.Doc:
+def read_md_to_ast(path: InputPath) -> pf.elements.Doc:
     """Read from markdown to panflute AST
     """
-    from panflute.tools import convert_text
-
     with open(path, 'r') as f:
         return convert_text(f.read(), standalone=True)
 
 
+def get_teaser(doc: pf.elements.Doc) -> pf.containers.ListContainer:
+    content = doc.content
+    for i, item in enumerate(content):
+        if (type(item) == pf.RawBlock) and (item.text == '<!-- more -->'):
+            break
+    return content[:i]
+
+
+def read_md_to_ast_with_teaser(path: InputPath) -> Tuple[pf.elements.Doc, pf.containers.ListContainer]:
+    ast = read_md_to_ast(path)
+    teaser = get_teaser(ast)
+    return ast, teaser
+
+
 def post_to_html(
-    ast: panflute.elements.Doc,
+    ast: pf.elements.Doc,
     out_path: Path,
     root: str,
     template: InputPath,
@@ -66,19 +79,19 @@ def post_to_html(
     """
     warning: AST is currently mutated
     """
-    ast.metadata['header-includes'] = panflute.RawBlock(header_includes.format(root=root))
-    ast.metadata['include-before'] = panflute.RawBlock(include_before)
-    ast.metadata['include-after'] = panflute.RawBlock(include_after)
+    ast.metadata['header-includes'] = pf.RawBlock(header_includes.format(root=root))
+    ast.metadata['include-before'] = pf.RawBlock(include_before)
+    ast.metadata['include-after'] = pf.RawBlock(include_after)
     if content_footer:
-        ast.metadata['content-footer'] = panflute.RawBlock(content_footer)
+        ast.metadata['content-footer'] = pf.RawBlock(content_footer)
     if mathjax_config:
-        ast.metadata['mathjax-config'] = panflute.RawBlock(mathjax_config)
+        ast.metadata['mathjax-config'] = pf.RawBlock(mathjax_config)
     if search_form:
-        ast.metadata['search-form'] = panflute.RawBlock(search_form.format(root=root))
+        ast.metadata['search-form'] = pf.RawBlock(search_form.format(root=root))
     if blog_title:
-        ast.metadata['title-prefix'] = panflute.RawBlock(blog_title)
+        ast.metadata['title-prefix'] = pf.RawBlock(blog_title)
     if nav:
-        ast.metadata['nav'] = panflute.RawBlock(nav.format(root=root))
+        ast.metadata['nav'] = pf.RawBlock(nav.format(root=root))
     if root:
         ast.metadata['root'] = root
     if prev is not None:
@@ -101,7 +114,7 @@ def post_to_html(
     ]
     out_file.parent.mkdir(parents=True, exist_ok=True)
 
-    panflute.tools.convert_text(ast, input_format='panflute', output_format='html', standalone=True, extra_args=pandoc_options + css_options + other_options)
+    convert_text(ast, input_format='panflute', output_format='html', standalone=True, extra_args=pandoc_options + css_options + other_options)
 
 
 @id_for_memo.register(Path)
@@ -114,10 +127,11 @@ def id_for_memo_inputpath(path: Path, output_ref: bool = False) -> bytes:
     return id_for_memo((str(path), os.path.getmtime(str(path))))
 
 
-@id_for_memo.register(panflute.elements.Doc)
-def id_for_memo_doc(doc: panflute.elements.Doc, output_ref: bool = False) -> bytes:
+@id_for_memo.register(pf.elements.Doc)
+def id_for_memo_doc(doc: pf.elements.Doc, output_ref: bool = False) -> bytes:
     return id_for_memo(doc.to_json())
 
 
 app_read_md_to_ast = python_app(read_md_to_ast, cache=True)
+app_read_md_to_ast_with_teaser = python_app(read_md_to_ast_with_teaser, cache=True)
 app_post_to_html = python_app(post_to_html, cache=True)

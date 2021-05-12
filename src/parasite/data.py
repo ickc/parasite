@@ -12,7 +12,7 @@ from datetime import datetime
 
 import panflute as pf
 
-from .apps import read_md_to_ast, app_read_md_to_ast, app_post_to_html, InputPath
+from .apps import read_md_to_ast, get_teaser, app_read_md_to_ast, app_read_md_to_ast_with_teaser, app_post_to_html, InputPath
 
 if TYPE_CHECKING:
     from typing import List, Optional, Tuple, Dict
@@ -145,7 +145,30 @@ class Page:
 @dataclass
 class Post(Page):
 
+    @property
+    def dict_ast(self) -> dict:
+        dict_ast = super().dict_ast
+        dict_ast['teaser'] = self.teaser
+        return dict_ast
+
     # AST's derivatives
+
+    def get_teaser(self):
+        self._ast = get_teaser(self.ast)
+
+    @property
+    def teaser(self) -> pf.elements.Doc:
+        if not hasattr(self, '_teaser'):
+            self.get_teaser()
+        return self._teaser
+
+    @teaser.setter
+    def teaser(self, doc: pf.elements.Doc):
+        self._teaser = doc
+
+    @teaser.deleter
+    def teaser(self):
+        del self._teaser
 
     @property
     def tags(self) -> List[str]:
@@ -330,6 +353,17 @@ class Posts(Pages):
     tag_cloud_font_size_precent_max: int = 280
 
     # AST's derivatives
+
+    def get_asts(self):
+        pages = self.pages
+
+        # str is to make them hashable
+        futures = [
+            app_read_md_to_ast_with_teaser(page.path)
+            for page in pages
+        ]
+        for page, future in zip(pages, futures):
+            page.ast, page.teaser = future.result()
 
     def sort(self):
         self.pages.sort(key=lambda page: page.date)
