@@ -29,6 +29,7 @@ class Page:
     out_base_path: Path
     template: Optional[InputPath]
     pretty_urls: Union[bool, Callable[[Path, str], Path]] = True
+    date_format: str = r'%Y-%m-%d'
 
     def __post_init__(self):
         # special casing 404
@@ -65,6 +66,7 @@ class Page:
         Primarily for dataframe
         '''
         res = self.dict
+        res['time'] = self.time
         for key in self.ast.metadata.content:
             res['ast.' + key] = self.ast.get_metadata(key)
         prev = self.prev
@@ -182,6 +184,11 @@ class Post(Page):
     def date(self) -> Optional[str]:
         return self.ast.get_metadata('date')
 
+    @cached_property
+    def time(self) -> Optional[datetime]:
+        date = self.date
+        return None if date is None else datetime.strptime(date, self.date_format)
+
     # @property
     # def tags_counts(self) -> List[int]:
     #     try:
@@ -229,6 +236,7 @@ class Pages:
     ext: str
     template: Optional[InputPath]
     pretty_urls: Union[bool, Callable[[Path, str], Path]] = True
+    date_format: str = r'%Y-%m-%d'
     page_class: Final = Page
 
     def __post_init__(self):
@@ -247,7 +255,7 @@ class Pages:
 
     @cached_property
     def pages(self) -> list:
-        return [self.page_class(path, self.path, self.out_path, self.template, pretty_urls=self.pretty_urls) for path in Path(self.path).glob(f'**/*{self.ext}')]
+        return [self.page_class(path, self.path, self.out_path, self.template, pretty_urls=self.pretty_urls, date_format=self.date_format) for path in Path(self.path).glob(f'**/*{self.ext}')]
 
     @cached_property
     def dataframe(self) -> pd.DataFrame:
@@ -368,7 +376,7 @@ class Posts(Pages):
             page.ast, page.teaser = future.result()
 
     def sort(self):
-        self.pages.sort(key=lambda page: page.date, reverse=True)
+        self.pages.sort(key=lambda page: page.time, reverse=True)
 
     @cached_property
     def tags_counts(self) -> Counter:
@@ -421,7 +429,7 @@ class Posts(Pages):
             title = page.title
             url = page.url
             date = page.date
-            time = datetime.fromisoformat(date)
+            time = page.time
             res[time.year][time.strftime("%B")].append((date, title, url))
 
         contents = []
