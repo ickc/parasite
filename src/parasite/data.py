@@ -326,6 +326,8 @@ class Pages:
 @dataclass
 class Posts(Pages):
     page_class: Final = Post
+    tag_cloud_font_size_precent_min: int = 70
+    tag_cloud_font_size_precent_max: int = 280
 
     # AST's derivatives
 
@@ -345,65 +347,29 @@ class Posts(Pages):
 
     @cached_property
     def tag_ast(self) -> pf.elements.Doc:
-        tags_counts = self.tags_counts
+        font_size_min = self.tag_cloud_font_size_precent_min
+        font_size_max = self.tag_cloud_font_size_precent_max
 
         meta = {
             'title': 'Tags and Categories',
         }
-        # lis = []
-        # for tag, count in tags_counts.items():
-        #     lis.append(
-        #         pf.ListItem(
-        #             pf.Plain(
-        #                 pf.Link(
-        #                     pf.Str(tag),
-        #                     url=tag + '/',
-        #                     classes=['list-inline-item', 'reference', 'badge', 'badge-secondary']
-        #                 )
-        #             )
-        #         )
-        #     )
-        # tag_ast = pf.Doc(
-        #     pf.Header(pf.Str('Tags')),
-        #     # pf.Div(pf.BulletList(*lis), classes=['list-inline']),
-        #     pf.BulletList(*lis, classes=['list-inline']),
-        #     metadata=meta,
-        # )
 
-        font_size_min = 70
-        font_size_max = 280
-        # cat
-        categories_counts = self.categories_counts
-
-        counts = categories_counts.values()
-        min_ = min(counts)
-        max_ = max(counts)
-        m = (font_size_max - font_size_min) / (max_ - min_)
-        c = font_size_min - m * min_
-        temp = []
-        meta['archive-categories'] = temp
-        for cat, count in categories_counts.items():
-            font_size = m * count + c
-            cat_name = '/'.join(cat)
-            temp.append({
-                'name': cat_name,
-                'font_size': font_size,
-            })
-
-        # tag
-        counts = tags_counts.values()
-        min_ = min(counts)
-        max_ = max(counts)
-        m = (font_size_max - font_size_min) / (max_ - min_)
-        c = font_size_min - m * min_
-        temp = []
-        meta['archive-tags'] = temp
-        for tag, count in tags_counts.items():
-            font_size = m * count + c
-            temp.append({
-                'name': tag,
-                'font_size': font_size,
-            })
+        for case in ('categories', 'tags'):
+            counts_dict = getattr(self, f'{case}_counts')
+            counts = counts_dict.values()
+            min_ = min(counts)
+            max_ = max(counts)
+            m = (font_size_max - font_size_min) / (max_ - min_)
+            c = font_size_min - m * min_
+            temp = []
+            meta[f'archive-{case}'] = temp
+            for name, count in counts_dict.items():
+                font_size = m * count + c
+                flat_name = '/'.join(name) if type(name) == tuple else name
+                temp.append({
+                    'name': flat_name,
+                    'font_size': font_size,
+                })
         return pf.Doc(metadata=meta)
 
     @cached_property
