@@ -27,7 +27,7 @@ class Page:
     path: InputPath
     base_path: Path
     out_base_path: Path
-    template: InputPath
+    template: Optional[InputPath]
     pretty_urls: bool = True
 
     def __post_init__(self):
@@ -226,14 +226,15 @@ class Pages:
     path: Path
     out_path: Path
     ext: str
-    template: InputPath
+    template: Optional[InputPath]
     pretty_urls: bool = True
     page_class: Final = Page
 
     def __post_init__(self):
         self.path = Path(self.path)
         self.out_path = Path(self.out_path)
-        self.template = InputPath(self.template)
+        if self.template is not None:
+            self.template = InputPath(self.template)
 
     @property
     def dict(self) -> List[dict]:
