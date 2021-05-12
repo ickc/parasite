@@ -42,9 +42,36 @@ class Page:
 
         Primarily for dataframe
         '''
-        res = vars(self).copy()
-        res['out_path'] = self.out_path
-        res['url'] = self.url
+        return {
+            # init
+            'path': self.path,
+            'base_path': self.base_path,
+            'out_base_path': self.out_base_path,
+            'template': self.template,
+            'pretty_urls': self.pretty_urls,
+            # property
+            'out_path': self.out_path,
+            'url': self.url,
+            'categories': self.categories,
+            'level': self.level,
+            'root': self.root,
+        }
+
+    @property
+    def dict_ast(self) -> dict:
+        '''A dict representation of self including the AST derived attributes
+
+        Primarily for dataframe
+        '''
+        res = self.dict
+        for key in self.ast.metadata.content:
+            res['ast.' + key] = self.ast.get_metadata(key)
+        prev = self.prev
+        res['prev.url'] = None if prev is None else prev[0]
+        res['prev.title'] = None if prev is None else prev[1]
+        next = self.next
+        res['next.url'] = None if next is None else next[0]
+        res['next.title'] = None if next is None else next[1]
         return res
 
     @cached_property
@@ -117,12 +144,6 @@ class Page:
 @dataclass
 class Post(Page):
 
-    @property
-    def dict(self) -> dict:
-        res = super().dict
-        res['categories'] = self.categories
-        return res
-
     # AST's derivatives
 
     @property
@@ -136,20 +157,20 @@ class Post(Page):
     def date(self) -> Optional[str]:
         return self.ast.get_metadata('date')
 
-    @property
-    def tags_counts(self) -> List[int]:
-        try:
-            return self._tags_counts
-        except AttributeError:
-            raise RuntimeError('Tags counts not generated yet. You probably forgot to run Posts.tags_counts first.')
+    # @property
+    # def tags_counts(self) -> List[int]:
+    #     try:
+    #         return self._tags_counts
+    #     except AttributeError:
+    #         raise RuntimeError('Tags counts not generated yet. You probably forgot to run Posts.tags_counts first.')
 
-    @tags_counts.setter
-    def tags_counts(self, counts: Counter):
-        self._tags_counts = [counts[tag] for tag in self.tags]
+    # @tags_counts.setter
+    # def tags_counts(self, counts: Counter):
+    #     self._tags_counts = [counts[tag] for tag in self.tags]
 
-    @tags_counts.deleter
-    def tags_counts(self):
-        del self._tags_counts
+    # @tags_counts.deleter
+    # def tags_counts(self):
+    #     del self._tags_counts
 
     @property
     def prev(self) -> Optional[Tuple[Path, Optional[str]]]:
@@ -194,6 +215,10 @@ class Pages:
     def dict(self) -> List[dict]:
         return [page.dict for page in self.pages]
 
+    @property
+    def dict_ast(self) -> List[dict]:
+        return [page.dict_ast for page in self.pages]
+
     @cached_property
     def pages(self) -> list:
         return [self.page_class(path, self.path, self.out_path, self.template, pretty_urls=self.pretty_urls) for path in Path(self.path).glob(f'**/*{self.ext}')]
@@ -203,6 +228,12 @@ class Pages:
         import pandas as pd
 
         return pd.DataFrame(self.dict)
+
+    @cached_property
+    def dataframe_ast(self) -> pd.DataFrame:
+        import pandas as pd
+
+        return pd.DataFrame(self.dict_ast)
 
     # AST & its derivatives
 
@@ -303,9 +334,13 @@ class Posts(Pages):
     @cached_property
     def tags_counts(self) -> Counter:
         counts = Counter(chain(*(page.tags for page in self.pages)))
-        for page in self.pages:
-            page.tags_counts = counts
+        # for page in self.pages:
+        #     page.tags_counts = counts
         return counts
+
+    @cached_property
+    def categories_counts(self) -> Counter:
+        return Counter(page.categories for page in self.pages)
 
     @cached_property
     def tag_ast(self) -> pf.elements.Doc:
@@ -334,10 +369,25 @@ class Posts(Pages):
         #     metadata=meta,
         # )
 
-        # scale
-        counts = tags_counts.values()
         font_size_min = 70
         font_size_max = 280
+        # cat
+        categories_counts = self.categories_counts
+        counts = categories_counts.values()
+        min_ = min(counts)
+        max_ = max(counts)
+        m = (font_size_max - font_size_min) / (max_ - min_)
+        c = font_size_min - m * min_
+        res = ['<ul class="list-inline">']
+        for cat, count in categories_counts.items():
+            font_size = m * count + c
+            cat_name = '/'.join(cat)
+            res.append(f'<li class="list-inline-item"><a class="reference badge badge-secondary" href="cat_{cat_name}/" style="font-size: {font_size}% !important;">{cat_name}</a></li>')
+        res.append('</ul>')
+        cat_html = ''.join(res)
+
+        # tag
+        counts = tags_counts.values()
         min_ = min(counts)
         max_ = max(counts)
         m = (font_size_max - font_size_min) / (max_ - min_)
@@ -348,9 +398,13 @@ class Posts(Pages):
             font_size = m * count + c
             res.append(f'<li class="list-inline-item"><a class="reference badge badge-secondary" href="{tag}/" style="font-size: {font_size}% !important;">{tag}</a></li>')
         res.append('</ul>')
+        tag_html = ''.join(res)
+
         tag_ast = pf.Doc(
+            pf.Header(pf.Str('Categories')),
+            pf.RawBlock(cat_html, format='html'),
             pf.Header(pf.Str('Tags')),
-            pf.RawBlock(''.join(res), format='html'),
+            pf.RawBlock(tag_html, format='html'),
             metadata=meta,
         )
         return tag_ast
