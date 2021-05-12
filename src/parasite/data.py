@@ -366,7 +366,7 @@ class Posts(Pages):
             page.ast, page.teaser = future.result()
 
     def sort(self):
-        self.pages.sort(key=lambda page: page.date)
+        self.pages.sort(key=lambda page: page.date, reverse=True)
 
     @cached_property
     def tags_counts(self) -> Counter:
@@ -415,7 +415,7 @@ class Posts(Pages):
         }
 
         res = defaultdict(lambda: defaultdict(list))
-        for page in reversed(self.pages):
+        for page in self.pages:
             title = page.title
             url = page.url
             date = page.date
@@ -449,17 +449,17 @@ class Posts(Pages):
     def get_neighbor_urls(self):
         pages = self.pages
 
-        prev_page = pages[0]
-        prev = (prev_page.url, prev_page.title)
+        next_page = pages[0]
+        next = (next_page.url, next_page.title)
         for i in range(1, len(pages)):
             page = pages[i]
             curr = (page.url, page.title)
 
-            prev_page.next = curr
-            page.prev = prev
+            next_page.prev = curr
+            page.next = next
 
-            prev_page = page
-            prev = curr
+            next_page = page
+            next = curr
 
     def exec(
         self,
