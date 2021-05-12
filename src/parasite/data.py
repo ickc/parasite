@@ -8,6 +8,7 @@ from functools import cached_property
 from typing import TYPE_CHECKING
 from typing import Final
 from logging import getLogger
+from datetime import datetime
 
 import panflute as pf
 
@@ -409,6 +410,46 @@ class Posts(Pages):
         )
         return tag_ast
 
+    @cached_property
+    def archive_ast(self) -> pf.elements.Doc:
+        root = '..'
+
+        meta = {
+            'title': 'Archive',
+        }
+
+        res = defaultdict(lambda: defaultdict(list))
+        for page in reversed(self.pages):
+            title = page.title
+            url = page.url
+            date = page.date
+            time = datetime.fromisoformat(date)
+            res[time.year][time.strftime("%B")].append((date, title, url))
+
+        contents = []
+        for year, datas in res.items():
+            contents.append(pf.Header(pf.Str(str(year)), level=1))
+            for month, data in datas.items():
+                contents.append(pf.Header(pf.Str(month), level=2))
+                lis = []
+                for (date, title, url) in data:
+                    lis.append(
+                        pf.ListItem(
+                            pf.Plain(
+                                pf.Link(
+                                    pf.Str(f'{date} — {title}'),
+                                    url=f'{root}/{url}',
+                                )
+                            )
+                        )
+                    )
+                contents.append(pf.BulletList(*lis))
+
+        return pf.Doc(
+            *contents,
+            metadata=meta,
+        )
+
     def get_neighbor_urls(self):
         pages = self.pages
 
@@ -460,6 +501,26 @@ class Posts(Pages):
         futures.append(app_post_to_html(
             self.tag_ast,
             'categories/index.html',
+            '..',
+            self.template,
+            None,
+            None,
+            header_includes=header_includes,
+            include_before=include_before,
+            include_after=include_after,
+            mathjax_config=mathjax_config,
+            search_form=search_form,
+            content_footer=content_footer,
+            blog_title=blog_title,
+            nav=nav,
+            pandoc_options=pandoc_options,
+            css=css,
+            output_dir=output_dir,
+        ))
+        # archive
+        futures.append(app_post_to_html(
+            self.archive_ast,
+            'archive/index.html',
             '..',
             self.template,
             None,
