@@ -94,10 +94,12 @@ def post_to_html(
 
     css_options = [f"--css={root + c if c.startswith('/') else c}" for c in css]
 
+    out_file = Path(output_dir) / out_path
     other_options = [
-        f'--output={Path(output_dir) / out_path}',
+        f'--output={out_file}',
         f'--template={template}',
     ]
+    out_file.parent.mkdir(parents=True, exist_ok=True)
 
     panflute.tools.convert_text(ast, input_format='panflute', output_format='html', standalone=True, extra_args=pandoc_options + css_options + other_options)
 
