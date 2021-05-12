@@ -152,5 +152,5 @@ def _nav(
     return res
 
 
-def nav(data: Tuple[Tuple[str, str], Tuple[Tuple[str, str]]]) -> str:
+def nav(data: Tuple[Tuple[str, str], Tuple[Tuple[str, str], str]]) -> str:
     return ''.join(_nav(data))
