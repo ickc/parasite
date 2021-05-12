@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 from typing import Final
 from logging import getLogger
 
-import panflute
+import panflute as pf
 
 from .apps import read_md_to_ast, app_read_md_to_ast, app_post_to_html, InputPath
 
@@ -88,13 +88,13 @@ class Page:
         self._ast = read_md_to_ast(self.path)
 
     @property
-    def ast(self) -> panflute.elements.Doc:
+    def ast(self) -> pf.elements.Doc:
         if not hasattr(self, '_ast'):
             self.get_ast()
         return self._ast
 
     @ast.setter
-    def ast(self, doc: panflute.elements.Doc):
+    def ast(self, doc: pf.elements.Doc):
         self._ast = doc
 
     @ast.deleter
@@ -217,7 +217,7 @@ class Pages:
         for page, future in zip(pages, futures):
             page.ast = future.result()
 
-    def exec(
+    def future_output_pages(
         self,
         header_includes: str = '',
         include_before: str = '',
@@ -230,14 +230,12 @@ class Pages:
         pandoc_options_dict: Dict[str, List[str]] = defaultdict(list),
         css_dict: Dict[str, List[str]] = defaultdict(list),
         output_dir: Path = Path('output'),
-    ):
-        """Run the site generator pipeline.
-        """
+    ) -> list:
         pages = self.pages
         pandoc_options = pandoc_options_dict[self.ext]
         css = css_dict[self.ext]
 
-        futures = [
+        return [
             app_post_to_html(
                 page.ast,
                 page.out_path,
@@ -259,6 +257,36 @@ class Pages:
             )
             for page in pages
         ]
+
+    def exec(
+        self,
+        header_includes: str = '',
+        include_before: str = '',
+        include_after: str = '',
+        mathjax_config: str = '',
+        search_form: str = '',
+        content_footer: str = '',
+        blog_title: str = '',
+        nav: str = '',
+        pandoc_options_dict: Dict[str, List[str]] = defaultdict(list),
+        css_dict: Dict[str, List[str]] = defaultdict(list),
+        output_dir: Path = Path('output'),
+    ):
+        """Run the site generator pipeline.
+        """
+        futures = self.future_output_pages(
+            header_includes,
+            include_before,
+            include_after,
+            mathjax_config,
+            search_form,
+            content_footer,
+            blog_title,
+            nav,
+            pandoc_options_dict=pandoc_options_dict,
+            css_dict=css_dict,
+            output_dir=output_dir,
+        )
         for future in futures:
             future.result()
 
@@ -279,6 +307,54 @@ class Posts(Pages):
             page.tags_counts = counts
         return counts
 
+    @cached_property
+    def tag_ast(self) -> pf.elements.Doc:
+        tags_counts = self.tags_counts
+
+        meta = {
+            'title': 'Tags and Categories',
+        }
+        # lis = []
+        # for tag, count in tags_counts.items():
+        #     lis.append(
+        #         pf.ListItem(
+        #             pf.Plain(
+        #                 pf.Link(
+        #                     pf.Str(tag),
+        #                     url=tag + '/',
+        #                     classes=['list-inline-item', 'reference', 'badge', 'badge-secondary']
+        #                 )
+        #             )
+        #         )
+        #     )
+        # tag_ast = pf.Doc(
+        #     pf.Header(pf.Str('Tags')),
+        #     # pf.Div(pf.BulletList(*lis), classes=['list-inline']),
+        #     pf.BulletList(*lis, classes=['list-inline']),
+        #     metadata=meta,
+        # )
+
+        # scale
+        counts = tags_counts.values()
+        font_size_min = 70
+        font_size_max = 280
+        min_ = min(counts)
+        max_ = max(counts)
+        m = (font_size_max - font_size_min) / (max_ - min_)
+        c = font_size_min - m * min_
+
+        res = ['<ul class="list-inline">']
+        for tag, count in tags_counts.items():
+            font_size = m * count + c
+            res.append(f'<li class="list-inline-item"><a class="reference badge badge-secondary" href="{tag}/" style="font-size: {font_size}% !important;">{tag}</a></li>')
+        res.append('</ul>')
+        tag_ast = pf.Doc(
+            pf.Header(pf.Str('Tags')),
+            pf.RawBlock(''.join(res), format='html'),
+            metadata=meta,
+        )
+        return tag_ast
+
     def get_neighbor_urls(self):
         pages = self.pages
 
@@ -293,3 +369,59 @@ class Posts(Pages):
 
             prev_page = page
             prev = curr
+
+    def exec(
+        self,
+        header_includes: str = '',
+        include_before: str = '',
+        include_after: str = '',
+        mathjax_config: str = '',
+        search_form: str = '',
+        content_footer: str = '',
+        blog_title: str = '',
+        nav: str = '',
+        pandoc_options_dict: Dict[str, List[str]] = defaultdict(list),
+        css_dict: Dict[str, List[str]] = defaultdict(list),
+        output_dir: Path = Path('output'),
+    ):
+        """Run the site generator pipeline.
+        """
+        futures = self.future_output_pages(
+            header_includes,
+            include_before,
+            include_after,
+            mathjax_config,
+            search_form,
+            content_footer,
+            blog_title,
+            nav,
+            pandoc_options_dict=pandoc_options_dict,
+            css_dict=css_dict,
+            output_dir=output_dir,
+        )
+
+        pandoc_options = pandoc_options_dict[self.ext]
+        css = css_dict[self.ext]
+        # tags
+        futures.append(app_post_to_html(
+            self.tag_ast,
+            'categories/index.html',
+            '..',
+            self.template,
+            None,
+            None,
+            header_includes=header_includes,
+            include_before=include_before,
+            include_after=include_after,
+            mathjax_config=mathjax_config,
+            search_form=search_form,
+            content_footer=content_footer,
+            blog_title=blog_title,
+            nav=nav,
+            pandoc_options=pandoc_options,
+            css=css,
+            output_dir=output_dir,
+        ))
+
+        for future in futures:
+            future.result()
