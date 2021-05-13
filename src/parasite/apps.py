@@ -21,6 +21,7 @@ if TYPE_CHECKING:
 # class InputPath(Path):
 #     pass
 
+
 class InputPath:
 
     def __init__(self, path: str):
