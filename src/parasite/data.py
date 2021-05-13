@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import Counter, defaultdict
 from itertools import chain
 from pathlib import Path
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import cached_property
 from typing import TYPE_CHECKING
 from typing import Final
@@ -30,6 +30,8 @@ class Page:
     template: Optional[InputPath]
     pretty_urls: Union[bool, Callable[[Path, str], Path]] = True
     date_format: str = r'%Y-%m-%d'
+    default_lang: str = 'en'
+    options: dict = field(default_factory=dict)
 
     def __post_init__(self):
         # special casing 404
@@ -67,6 +69,7 @@ class Page:
         '''
         res = self.dict
         res['time'] = self.time
+        res['lang'] = self.lang
         for key in self.ast.metadata.content:
             res['ast.' + key] = self.ast.get_metadata(key)
         prev = self.prev
@@ -76,6 +79,10 @@ class Page:
         res['next.url'] = None if next is None else next[0]
         res['next.title'] = None if next is None else next[1]
         return res
+
+    @property
+    def ext(self) -> str:
+        return self.path.suffix
 
     @cached_property
     def out_path(self) -> Path:
@@ -139,6 +146,14 @@ class Page:
     @property
     def author(self) -> Optional[str]:
         return self.ast.get_metadata('author')
+
+    @property
+    def lang(self) -> str:
+        lang = self.ast.get_metadata('lang')
+        if lang is None:
+            lang = self.default_lang
+            self.ast.metadata['lang'] = lang
+        return lang
 
     @property
     def prev(self):
@@ -239,19 +254,40 @@ class Post(Page):
 
 @dataclass
 class Pages:
-    path: Path
-    out_path: Path
-    ext: str
-    template: Optional[InputPath]
-    pretty_urls: Union[bool, Callable[[Path, str], Path]] = True
-    date_format: str = r'%Y-%m-%d'
+    pages: List[Page]
     page_class: Final = Page
 
-    def __post_init__(self):
-        self.path = Path(self.path)
-        self.out_path = Path(self.out_path)
-        if self.template is not None:
-            self.template = InputPath(self.template)
+    @classmethod
+    def from_file_system(
+        cls,
+        path: Path,
+        out_path: Path,
+        ext: str,
+        template: Optional[InputPath],
+        pretty_urls: Union[bool, Callable[[Path, str], Path]] = True,
+        date_format: str = r'%Y-%m-%d',
+        default_lang: str = 'en',
+        options: dict = {},
+    ):
+        path = Path(path)
+        out_path = Path(out_path)
+        if template is not None:
+            template = InputPath(template)
+        return cls(
+            [
+                cls.page_class(
+                    path_,
+                    path,
+                    out_path,
+                    template,
+                    pretty_urls=pretty_urls,
+                    date_format=date_format,
+                    default_lang=default_lang,
+                    options=options,
+                )
+                for path_ in Path(path).glob(f'**/*{ext}')
+            ]
+        )
 
     @property
     def dict(self) -> List[dict]:
@@ -260,10 +296,6 @@ class Pages:
     @property
     def dict_ast(self) -> List[dict]:
         return [page.dict_ast for page in self.pages]
-
-    @cached_property
-    def pages(self) -> list:
-        return [self.page_class(path, self.path, self.out_path, self.template, pretty_urls=self.pretty_urls, date_format=self.date_format) for path in Path(self.path).glob(f'**/*{self.ext}')]
 
     @cached_property
     def dataframe(self) -> pd.DataFrame:
@@ -277,111 +309,13 @@ class Pages:
 
         return pd.DataFrame(self.dict_ast)
 
-    # AST & its derivatives
-
-    def get_asts(self):
-        pages = self.pages
-
-        # str is to make them hashable
-        futures = [
-            app_read_md_to_ast(page.path)
-            for page in pages
-        ]
-        for page, future in zip(pages, futures):
-            page.ast = future.result()
-
-    def future_output_pages(
-        self,
-        header_includes: str = '',
-        include_before: str = '',
-        include_after: str = '',
-        mathjax_config: str = '',
-        search_form: str = '',
-        content_footer: str = '',
-        blog_title: str = '',
-        nav: str = '',
-        pandoc_options_dict: Dict[str, List[str]] = defaultdict(list),
-        css_dict: Dict[str, List[str]] = defaultdict(list),
-        output_dir: Path = Path('output'),
-    ) -> list:
-        pages = self.pages
-        pandoc_options = pandoc_options_dict[self.ext]
-        css = css_dict[self.ext]
-
-        return [
-            app_post_to_html(
-                page.ast,
-                page.out_path,
-                page.root,
-                page.template,
-                page.prev,
-                page.next,
-                header_includes=header_includes,
-                include_before=include_before,
-                include_after=include_after,
-                mathjax_config=mathjax_config,
-                search_form=search_form,
-                content_footer=content_footer,
-                blog_title=blog_title,
-                nav=nav,
-                pandoc_options=pandoc_options,
-                css=css,
-                output_dir=output_dir,
-            )
-            for page in pages
-        ]
-
-    def exec(
-        self,
-        header_includes: str = '',
-        include_before: str = '',
-        include_after: str = '',
-        mathjax_config: str = '',
-        search_form: str = '',
-        content_footer: str = '',
-        blog_title: str = '',
-        nav: str = '',
-        pandoc_options_dict: Dict[str, List[str]] = defaultdict(list),
-        css_dict: Dict[str, List[str]] = defaultdict(list),
-        output_dir: Path = Path('output'),
-    ):
-        """Run the site generator pipeline.
-        """
-        futures = self.future_output_pages(
-            header_includes,
-            include_before,
-            include_after,
-            mathjax_config,
-            search_form,
-            content_footer,
-            blog_title,
-            nav,
-            pandoc_options_dict=pandoc_options_dict,
-            css_dict=css_dict,
-            output_dir=output_dir,
-        )
-        for future in futures:
-            future.result()
-
 
 @dataclass
 class Posts(Pages):
+    pages: List[Post]
     page_class: Final = Post
-    tag_cloud_font_size_precent_min: int = 70
-    tag_cloud_font_size_precent_max: int = 280
 
     # AST's derivatives
-
-    def get_asts(self):
-        pages = self.pages
-
-        # str is to make them hashable
-        futures = [
-            app_read_md_to_ast_with_teaser(page.path)
-            for page in pages
-        ]
-        for page, future in zip(pages, futures):
-            page.ast, page.teaser = future.result()
 
     def sort(self):
         self.pages.sort(key=lambda page: page.time, reverse=True)
@@ -397,10 +331,11 @@ class Posts(Pages):
     def categories_counts(self) -> Counter:
         return Counter(page.categories for page in self.pages)
 
-    @cached_property
-    def tag_ast(self) -> pf.elements.Doc:
-        font_size_min = self.tag_cloud_font_size_precent_min
-        font_size_max = self.tag_cloud_font_size_precent_max
+    def tag_ast(
+        self,
+        font_size_min: int = 70,
+        font_size_max: int = 280,
+    ) -> pf.elements.Doc:
 
         meta = {
             'title': 'Tags and Categories',
@@ -478,79 +413,3 @@ class Posts(Pages):
 
             next_page = page
             next = curr
-
-    def exec(
-        self,
-        header_includes: str = '',
-        include_before: str = '',
-        include_after: str = '',
-        mathjax_config: str = '',
-        search_form: str = '',
-        content_footer: str = '',
-        blog_title: str = '',
-        nav: str = '',
-        pandoc_options_dict: Dict[str, List[str]] = defaultdict(list),
-        css_dict: Dict[str, List[str]] = defaultdict(list),
-        output_dir: Path = Path('output'),
-    ):
-        """Run the site generator pipeline.
-        """
-        futures = self.future_output_pages(
-            header_includes,
-            include_before,
-            include_after,
-            mathjax_config,
-            search_form,
-            content_footer,
-            blog_title,
-            nav,
-            pandoc_options_dict=pandoc_options_dict,
-            css_dict=css_dict,
-            output_dir=output_dir,
-        )
-
-        pandoc_options = pandoc_options_dict[self.ext]
-        css = css_dict[self.ext]
-        # tags
-        futures.append(app_post_to_html(
-            self.tag_ast,
-            'categories/index.html',
-            '..',
-            self.template,
-            None,
-            None,
-            header_includes=header_includes,
-            include_before=include_before,
-            include_after=include_after,
-            mathjax_config=mathjax_config,
-            search_form=search_form,
-            content_footer=content_footer,
-            blog_title=blog_title,
-            nav=nav,
-            pandoc_options=pandoc_options,
-            css=css,
-            output_dir=output_dir,
-        ))
-        # archive
-        futures.append(app_post_to_html(
-            self.archive_ast,
-            'archive/index.html',
-            '..',
-            self.template,
-            None,
-            None,
-            header_includes=header_includes,
-            include_before=include_before,
-            include_after=include_after,
-            mathjax_config=mathjax_config,
-            search_form=search_form,
-            content_footer=content_footer,
-            blog_title=blog_title,
-            nav=nav,
-            pandoc_options=pandoc_options,
-            css=css,
-            output_dir=output_dir,
-        ))
-
-        for future in futures:
-            future.result()

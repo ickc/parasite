@@ -99,3 +99,6 @@ editable:
 bump:
 	bump2version $(PART)
 	git push --follow-tags
+
+src/parasite/pipeline_serial.py: src/parasite/pipeline.py
+	sed -e 's/app_//g' -e 's/.result()//g' $< > $@

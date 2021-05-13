@@ -5,8 +5,9 @@ all functions should be imported inside functions for parsl
 
 from __future__ import annotations
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import Callable, TYPE_CHECKING
 import os
+from logging import getLogger
 
 import panflute as pf
 from panflute.tools import convert_text
@@ -14,8 +15,10 @@ from parsl import python_app
 from parsl.dataflow.memoization import id_for_memo
 
 if TYPE_CHECKING:
-    from typing import Optional, List, Tuple
+    from typing import Optional, List, Tuple, Dict
     from .data import Post
+
+logger = getLogger('parasite')
 
 # doesn't work: https://bugs.python.org/issue24132
 # class InputPath(Path):
@@ -35,6 +38,10 @@ class InputPath:
 
     def __truediv__(self, other):
         return self.path / other
+
+    @property
+    def suffix(self) -> str:
+        return self.path.suffix
 
 
 def read_md_to_ast(path: InputPath) -> pf.elements.Doc:
@@ -65,34 +72,36 @@ def post_to_html(
     template: Optional[InputPath],
     prev: Optional[Tuple[Path, Optional[str]]],
     next: Optional[Tuple[Path, Optional[str]]],
-    header_includes: str = '',
-    include_before: str = '',
-    include_after: str = '',
+    lang: str,
+    ext: str,
+    header_includes: Optional[Callable[[str, str, str], str]] = None,
+    include_before: Optional[Callable[[str, str, str], str]] = None,
+    include_after: Optional[Callable[[str, str, str], str]] = None,
     mathjax_config: str = '',
-    search_form: str = '',
-    content_footer: str = '',
-    blog_title: str = '',
-    nav: str = '',
-    pandoc_options: List[str] = [],
-    css: List[str] = [],
+    search_form: Optional[Callable[[str, str, str], str]] = None,
+    content_footer: Optional[Callable[[str, str, str], str]] = None,
+    blog_title: Dict[str, str] = {},
+    nav: Optional[Callable[[str, str, str], str]] = None,
+    pandoc_options: Optional[Callable[[str, str], List[str]]] = None,
+    css: Optional[Callable[[str, str], List[str]]] = None,
     output_dir: Path = Path('output'),
 ):
     """
     warning: AST is currently mutated
     """
-    ast.metadata['header-includes'] = pf.RawBlock(header_includes.format(root=root))
-    ast.metadata['include-before'] = pf.RawBlock(include_before)
-    ast.metadata['include-after'] = pf.RawBlock(include_after)
+    ast.metadata['header-includes'] = pf.RawBlock(header_includes(lang, ext, '.html').format(root=root))
+    ast.metadata['include-before'] = pf.RawBlock(include_before(lang, ext, '.html').format(root=root))
+    ast.metadata['include-after'] = pf.RawBlock(include_after(lang, ext, '.html').format(root=root))
     if content_footer:
-        ast.metadata['content-footer'] = pf.RawBlock(content_footer)
+        ast.metadata['content-footer'] = pf.RawBlock(content_footer(lang, ext, '.html').format(root=root))
     if mathjax_config:
         ast.metadata['mathjax-config'] = pf.RawBlock(mathjax_config)
     if search_form:
-        ast.metadata['search-form'] = pf.RawBlock(search_form.format(root=root))
+        ast.metadata['search-form'] = pf.RawBlock(search_form(lang, ext, '.html').format(root=root))
     if blog_title:
-        ast.metadata['title-prefix'] = pf.RawBlock(blog_title)
+        ast.metadata['title-prefix'] = pf.RawBlock(blog_title[lang])
     if nav:
-        ast.metadata['nav'] = pf.RawBlock(nav.format(root=root))
+        ast.metadata['nav'] = pf.RawBlock(nav(lang, ext, '.html').format(root=root))
     if root:
         ast.metadata['root'] = root
     if prev is not None:
@@ -106,7 +115,7 @@ def post_to_html(
         if title is not None:
             ast.metadata['next-title'] = title
 
-    css_options = [f"--css={root + c if c.startswith('/') else c}" for c in css]
+    css_options = [f"--css={c.format(root=root)}" for c in css(ext, '.html')]
 
     out_file = Path(output_dir) / out_path
     out_file.parent.mkdir(parents=True, exist_ok=True)
@@ -114,7 +123,7 @@ def post_to_html(
     if template is not None:
         other_options.append(f'--template={template}')
 
-    convert_text(ast, input_format='panflute', output_format='html', standalone=True, extra_args=pandoc_options + css_options + other_options)
+    convert_text(ast, input_format='panflute', output_format='html', standalone=True, extra_args=pandoc_options(ext, '.html') + css_options + other_options)
 
 
 def posts_to_index_ast(
