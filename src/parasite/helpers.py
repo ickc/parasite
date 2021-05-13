@@ -3,11 +3,17 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from pathlib import Path
-    from typing import List, Tuple
+    from typing import List, Tuple, Union
 
 
 def _nav(
-    data: Tuple[Tuple[str, str], Tuple[Tuple[str, str], str]],
+    data: Tuple[
+        Union[
+            Tuple[str, str],
+            Tuple[Tuple[Tuple[str, str], ...], str]
+        ],
+        ...
+    ],
     ul_class: str = "navbar-nav nav-fill d-flex w-100",
     li_class: str = "nav-item",
     a_class: str = "nav-link",
@@ -35,7 +41,15 @@ def _nav(
     return res
 
 
-def nav(data: Tuple[Tuple[str, str], Tuple[Tuple[str, str], str]]) -> str:
+def nav(
+    data: Tuple[
+        Union[
+            Tuple[str, str],
+            Tuple[Tuple[Tuple[str, str], ...], str]
+        ],
+        ...
+    ]
+) -> str:
     return ''.join(_nav(data))
 
 
