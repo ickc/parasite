@@ -37,7 +37,7 @@ TRANSLATIONS_PATTERN: str = '{path}.{lang}.{ext}'  # TODO
 # keys are lang
 BLOG_AUTHOR: Dict[str, str]
 BLOG_TITLE: Dict[str, str]
-BLOG_DESCRIPTION: Dict[str, str]
+BLOG_DESCRIPTION: Dict[str, str]  # TODO
 NAVIGATION_LINKS: Dict[
     str,
     Tuple[
