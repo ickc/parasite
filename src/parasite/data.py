@@ -137,6 +137,10 @@ class Page:
         return self.ast.get_metadata('title')
 
     @property
+    def author(self) -> Optional[str]:
+        return self.ast.get_metadata('author')
+
+    @property
     def prev(self):
         return None
 
@@ -183,6 +187,10 @@ class Post(Page):
     @property
     def date(self) -> Optional[str]:
         return self.ast.get_metadata('date')
+
+    @property
+    def previewimage(self) -> Optional[str]:
+        return self.ast.get_metadata('previewimage')
 
     @cached_property
     def time(self) -> Optional[datetime]:
@@ -414,7 +422,7 @@ class Posts(Pages):
                     'name': flat_name,
                     'font_size': font_size,
                 })
-        return pf.Doc(metadata=meta)
+        return pf.elements.Doc(metadata=meta)
 
     @cached_property
     def archive_ast(self) -> pf.elements.Doc:
@@ -451,7 +459,7 @@ class Posts(Pages):
                     )
                 contents.append(pf.BulletList(*lis))
 
-        return pf.Doc(
+        return pf.elements.Doc(
             *contents,
             metadata=meta,
         )
