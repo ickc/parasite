@@ -4,7 +4,6 @@ import os
 from typing import TYPE_CHECKING
 from logging import getLogger
 import psutil
-from pathlib import Path
 
 import parsl
 from parsl.config import Config
