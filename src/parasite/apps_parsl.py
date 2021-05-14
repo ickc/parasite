@@ -100,6 +100,16 @@ def app_minify(inputs=[], outputs=[], format: str = 'css'):
 
 
 @bash_app
+def app_closure_compiler(inputs=[], outputs=[]):
+    from pathlib import Path
+
+    input_paths = [file.filepath for file in inputs]
+    output_path = Path(outputs[0].filepath)
+    output_path.parent.mkdir(exist_ok=True, parents=True)
+    return f'closure-compiler -O SIMPLE --js {" ".join(input_paths)} --js_output_file {output_path} -W QUIET --jscomp_off=checkVars'
+
+
+@bash_app
 def app_cat(inputs=[], outputs=[]):
     from pathlib import Path
 

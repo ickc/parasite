@@ -9,15 +9,15 @@ from pathlib import Path
 import parsl
 from parsl.config import Config
 from parsl.executors import ThreadPoolExecutor
-from parsl.executors import HighThroughputExecutor
-from parsl.providers import LocalProvider
+# from parsl.executors import HighThroughputExecutor
+# from parsl.providers import LocalProvider
 from parsl.utils import get_all_checkpoints
 from parsl.data_provider.files import File
 
 
 from .data import Posts, Pages
 from .to_ast import posts_to_index_ast, posts_to_tag_ast, posts_to_archive_ast
-from .apps_parsl import app_read_md_to_ast, app_read_md_to_ast_with_teaser, app_post_to_html, app_rsync, app_minify, app_cat
+from .apps_parsl import app_read_md_to_ast, app_read_md_to_ast_with_teaser, app_post_to_html, app_rsync, app_minify, app_closure_compiler
 # require user to put conf.py in cwd
 import sys
 sys.path.append(os.getcwd())
@@ -88,6 +88,14 @@ def get_pages(
 
 
 def main():
+    if JS:
+        minifies_js = [
+            app_closure_compiler(
+                inputs=[File(path) for path in paths],
+                outputs=[File(out_path)]
+            )
+            for out_path, paths in JS.items()
+        ]
     if CSS:
         minifies = [
             app_minify(
@@ -95,14 +103,6 @@ def main():
                 outputs=[File(out_path)]
             )
             for out_path, paths in CSS.items()
-        ]
-    if JS:
-        minifies_js = [
-            app_cat(
-                inputs=[File(path) for path in paths],
-                outputs=[File(out_path)]
-            )
-            for out_path, paths in JS.items()
         ]
     if FILES_FOLDERS:
         rsyncs = [
@@ -231,11 +231,11 @@ def main():
     if FILES_FOLDERS:
         for rsync in rsyncs:
             rsync.result()
-    if JS:
-        for minify in minifies_js:
-            minify.result()
     if CSS:
         for minify in minifies:
+            minify.result()
+    if JS:
+        for minify in minifies_js:
             minify.result()
 
 
