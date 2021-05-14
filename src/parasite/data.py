@@ -15,7 +15,7 @@ import panflute as pf
 from .apps import read_md_to_ast, get_teaser
 
 if TYPE_CHECKING:
-    from typing import List, Optional, Tuple, Callable, Union
+    from typing import List, Optional, Tuple, Callable, Union, Dict
 
     import pandas as pd
 
@@ -212,21 +212,6 @@ class Post(Page):
         date = self.date
         return None if date is None else datetime.strptime(date, self.date_format)
 
-    # @property
-    # def tags_counts(self) -> List[int]:
-    #     try:
-    #         return self._tags_counts
-    #     except AttributeError:
-    #         raise RuntimeError('Tags counts not generated yet. You probably forgot to run Posts.tags_counts first.')
-
-    # @tags_counts.setter
-    # def tags_counts(self, counts: Counter):
-    #     self._tags_counts = [counts[tag] for tag in self.tags]
-
-    # @tags_counts.deleter
-    # def tags_counts(self):
-    #     del self._tags_counts
-
     @property
     def prev(self) -> Optional[Tuple[Path, Optional[str]]]:
         return getattr(self, '_prev', None)
@@ -321,83 +306,19 @@ class Posts(Pages):
         self.pages.sort(key=lambda page: page.time, reverse=True)
 
     @cached_property
-    def tags_counts(self) -> Counter:
-        counts = Counter(chain(*(page.tags for page in self.pages)))
-        # for page in self.pages:
-        #     page.tags_counts = counts
-        return counts
-
-    @cached_property
-    def categories_counts(self) -> Counter:
-        return Counter(page.categories for page in self.pages)
-
-    def tag_ast(
-        self,
-        font_size_min: int = 70,
-        font_size_max: int = 280,
-    ) -> pf.elements.Doc:
-
-        meta = {
-            'title': 'Tags and Categories',
-        }
-
-        for case in ('categories', 'tags'):
-            counts_dict = getattr(self, f'{case}_counts')
-            counts = counts_dict.values()
-            min_ = min(counts)
-            max_ = max(counts)
-            m = (font_size_max - font_size_min) / (max_ - min_)
-            c = font_size_min - m * min_
-            temp = []
-            meta[f'archive-{case}'] = temp
-            for name, count in counts_dict.items():
-                font_size = m * count + c
-                flat_name = '/'.join(name) if type(name) == tuple else name
-                temp.append({
-                    'name': flat_name,
-                    'font_size': font_size,
-                })
-        return pf.elements.Doc(metadata=meta)
-
-    @cached_property
-    def archive_ast(self) -> pf.elements.Doc:
-        root = '..'
-
-        meta = {
-            'title': 'Archive',
-        }
-
-        res = defaultdict(lambda: defaultdict(list))
+    def tags(self) -> Dict[str, List[Post]]:
+        res = defaultdict(list)
         for page in self.pages:
-            title = page.title
-            url = page.url
-            date = page.date
-            time = page.time
-            res[time.year][time.strftime("%B")].append((date, title, url))
+            for tag in page.tags:
+                res[tag].append(page)
+        return res
 
-        contents = []
-        for year, datas in res.items():
-            contents.append(pf.Header(pf.Str(str(year)), level=1))
-            for month, data in datas.items():
-                contents.append(pf.Header(pf.Str(month), level=2))
-                lis = []
-                for (date, title, url) in data:
-                    lis.append(
-                        pf.ListItem(
-                            pf.Plain(
-                                pf.Link(
-                                    pf.Str(f'{date} — {title}'),
-                                    url=f'{root}/{url}',
-                                )
-                            )
-                        )
-                    )
-                contents.append(pf.BulletList(*lis))
-
-        return pf.elements.Doc(
-            *contents,
-            metadata=meta,
-        )
+    @cached_property
+    def categories(self) -> Dict[Tuple[str, ...], List[Post]]:
+        res = defaultdict(list)
+        for page in self.pages:
+            res[page.categories].append(page)
+        return res
 
     def get_neighbor_urls(self):
         pages = self.pages

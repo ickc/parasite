@@ -16,7 +16,7 @@ from parsl.data_provider.files import File
 
 
 from .data import Posts, Pages
-from .to_ast import posts_to_index_ast
+from .to_ast import posts_to_index_ast, posts_to_tag_ast, posts_to_archive_ast
 from .apps_parsl import app_read_md_to_ast, app_read_md_to_ast_with_teaser, app_post_to_html, app_rsync, app_minify, app_cat
 # require user to put conf.py in cwd
 import sys
@@ -145,8 +145,9 @@ def main():
     _template = posts.pages[0].template
     inputs = [] if _template is None else [File(str((_template)))]
     options = posts.pages[0].options
+    tag_ast = posts_to_tag_ast(posts.categories, posts.tags)
     output_futures.append(app_post_to_html(
-        posts.tag_ast(),
+        tag_ast,
         '..',
         None,
         None,
@@ -157,8 +158,9 @@ def main():
         **options,
     ))
     # archive
+    archive_ast = posts_to_archive_ast(posts.pages)
     output_futures.append(app_post_to_html(
-        posts.archive_ast,
+        archive_ast,
         '..',
         None,
         None,
