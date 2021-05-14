@@ -66,16 +66,23 @@ def posts_to_tag_ast(
     tags: Dict[str, List[Post]],
     font_size_min: int = 70,
     font_size_max: int = 280,
+    root: str = '..',
 ) -> pf.elements.Doc:
     meta = {
         'title': 'Tags and Categories',
     }
-
+    contents = []
     for case, dict_ in (
         ('categories', categories),
         ('tags', tags),
     ):
-        counts_dict = {name: len(list_) for name, list_ in dict_.items()}
+        flatname_dict = {
+            '/'.join(name) if type(name) == tuple else name:
+            list_
+            for name, list_ in dict_.items()
+        }
+        # tag cloud
+        counts_dict = {name: len(list_) for name, list_ in flatname_dict.items()}
         counts = counts_dict.values()
         min_ = min(counts)
         max_ = max(counts)
@@ -85,19 +92,39 @@ def posts_to_tag_ast(
         meta[f'archive-{case}'] = temp
         for name, count in counts_dict.items():
             font_size = m * count + c
-            flat_name = '/'.join(name) if type(name) == tuple else name
             temp.append({
-                'name': flat_name,
+                'name': name,
                 'font_size': font_size,
             })
-    return pf.elements.Doc(metadata=meta)
+
+        # list of links
+        contents.append(pf.Header(pf.Str(f'{case} links'), level=1, identifier=f'{case}-links'))
+        for name, posts in flatname_dict.items():
+            contents.append(pf.Header(pf.Str(name), level=2, identifier=f'{case}-{name}'))
+            lis = []
+            for post in posts:
+                lis.append(
+                    pf.ListItem(
+                        pf.Plain(
+                            pf.Link(
+                                pf.Str(f'{post.date} — {post.title}'),
+                                url=f'{root}/{post.url}',
+                            )
+                        )
+                    )
+                )
+            contents.append(pf.BulletList(*lis))
+
+    return pf.elements.Doc(
+        *contents,
+        metadata=meta,
+    )
 
 
 def posts_to_archive_ast(
     posts: List[Post],
+    root: str = '..',
 ) -> pf.elements.Doc:
-    root = '..'
-
     meta = {
         'title': 'Archive',
     }
@@ -112,9 +139,9 @@ def posts_to_archive_ast(
 
     contents = []
     for year, datas in res.items():
-        contents.append(pf.Header(pf.Str(str(year)), level=1))
+        contents.append(pf.Header(pf.Str(str(year)), level=1, identifier=str(year)))
         for month, data in datas.items():
-            contents.append(pf.Header(pf.Str(month), level=2))
+            contents.append(pf.Header(pf.Str(month), level=2, identifier=f'{year}-{month}'))
             lis = []
             for (date, title, url) in data:
                 lis.append(
