@@ -123,7 +123,7 @@ class Page:
     # AST & its derivatives
 
     def get_ast(self):
-        self._ast = read_md_to_ast(self.path)
+        self._ast = read_md_to_ast([self.path])
 
     @property
     def ast(self) -> pf.elements.Doc:

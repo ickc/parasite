@@ -15,9 +15,12 @@ if TYPE_CHECKING:
     from .data import Post
 
 
-def read_md_to_ast(path: Path) -> pf.elements.Doc:
+def read_md_to_ast(inputs: List[Path] = []) -> pf.elements.Doc:
     """Read from markdown to panflute AST
     """
+    assert len(inputs) == 1
+    path = inputs[0]
+
     with open(path, 'r') as f:
         return convert_text(f.read(), standalone=True)
 
@@ -30,21 +33,21 @@ def get_teaser(doc: pf.elements.Doc) -> pf.containers.ListContainer:
     return content[:i]
 
 
-def read_md_to_ast_with_teaser(path: Path) -> Tuple[pf.elements.Doc, pf.containers.ListContainer]:
-    ast = read_md_to_ast(path)
+def read_md_to_ast_with_teaser(inputs: List[Path] = []) -> Tuple[pf.elements.Doc, pf.containers.ListContainer]:
+    ast = read_md_to_ast(inputs)
     teaser = get_teaser(ast)
     return ast, teaser
 
 
 def post_to_html(
     ast: pf.elements.Doc,
-    out_path: Path,
     root: str,
-    template: Optional[Path],
     prev: Optional[Tuple[Path, Optional[str]]],
     next: Optional[Tuple[Path, Optional[str]]],
     lang: str,
     ext: str,
+    inputs: List[Path] = [],   # template
+    outputs: List[Path] = [],  # out_path
     header_includes: Optional[Callable[[str, str, str], str]] = None,
     include_before: Optional[Callable[[str, str, str], str]] = None,
     include_after: Optional[Callable[[str, str, str], str]] = None,
@@ -59,6 +62,11 @@ def post_to_html(
     """
     warning: AST is currently mutated
     """
+    assert len(inputs) <= 1
+    assert len(outputs) == 1
+    template = inputs[0] if inputs else None
+    out_path = outputs[0]
+
     ast.metadata['header-includes'] = pf.RawBlock(header_includes(lang, ext, '.html').format(root=root))
     ast.metadata['include-before'] = pf.RawBlock(include_before(lang, ext, '.html').format(root=root))
     ast.metadata['include-after'] = pf.RawBlock(include_after(lang, ext, '.html').format(root=root))

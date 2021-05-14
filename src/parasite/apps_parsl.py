@@ -13,7 +13,8 @@ def app_read_md_to_ast(inputs=[]):
 
     from .apps import read_md_to_ast
 
-    return read_md_to_ast(Path(inputs[0].filepath))
+    input_paths = [Path(input_.filepath) for input_ in inputs]
+    return read_md_to_ast(input_paths)
 
 
 @python_app(cache=True)
@@ -22,7 +23,8 @@ def app_read_md_to_ast_with_teaser(inputs=[]):
 
     from .apps import read_md_to_ast_with_teaser
 
-    return read_md_to_ast_with_teaser(Path(inputs[0].filepath))
+    input_paths = [Path(input_.filepath) for input_ in inputs]
+    return read_md_to_ast_with_teaser(input_paths)
 
 
 @python_app(cache=True)
@@ -33,6 +35,8 @@ def app_post_to_html(
     next,
     lang,
     ext,
+    inputs=[],   # template
+    outputs=[],  # out_path
     header_includes=None,
     include_before=None,
     include_after=None,
@@ -43,25 +47,22 @@ def app_post_to_html(
     nav=None,
     pandoc_options=None,
     css=None,
-    inputs=[],   # template
-    outputs=[],  # out_path
 ):
     from pathlib import Path
 
     from .apps import post_to_html
 
-    # inputs
-    template = Path(inputs[0].filepath) if inputs else None
-    out_path = Path(outputs[0].filepath)
+    input_paths = [Path(input_.filepath) for input_ in inputs]
+    output_paths = [Path(input_.filepath) for input_ in outputs]
     return post_to_html(
         ast,
-        out_path,
         root,
-        template,
         prev,
         next,
         lang,
         ext,
+        inputs=input_paths,
+        outputs=output_paths,
         header_includes=header_includes,
         include_before=include_before,
         include_after=include_after,
