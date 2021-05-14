@@ -21,7 +21,7 @@ from .apps_parsl import app_read_md_to_ast, app_read_md_to_ast_with_teaser, app_
 # require user to put conf.py in cwd
 import sys
 sys.path.append(os.getcwd())
-from conf import PRETTY_URLS, DATE_FORMAT, POSTS, nav_includes, PAGES, header_includes, DEFAULT_LANG, include_after, MATHJAX_CONFIG, search_form, content_footer, pandoc_options, BLOG_TITLE, css, include_before, INDEX_TEMPLATE, OUTPUT_DIR, FILES_FOLDERS, CSS, JS
+from conf import PRETTY_URLS, DATE_FORMAT, POSTS, nav_includes, PAGES, header_includes, DEFAULT_LANG, include_after, MATHJAX_CONFIG, search_form, content_footer, pandoc_options, BLOG_TITLE, css, include_before, INDEX_TEMPLATE, OUTPUT_DIR, FILES_FOLDERS, CSS, JS, N_JUMBOTRON, N_GRID, INDEX_INCLUDE_JUMBOTRON, TAG_CLOUD_FONT_SIZE_MIN, TAG_CLOUD_FONT_SIZE_MAX
 
 if TYPE_CHECKING:
     from typing import Optional, Tuple, List
@@ -145,26 +145,37 @@ def main():
     _template = posts.pages[0].template
     inputs = [] if _template is None else [File(str((_template)))]
     options = posts.pages[0].options
-    tag_ast = posts_to_tag_ast(posts.categories, posts.tags)
+    tag_ast = posts_to_tag_ast(
+        posts.categories,
+        posts.tags,
+        font_size_min=TAG_CLOUD_FONT_SIZE_MIN,
+        font_size_max=TAG_CLOUD_FONT_SIZE_MAX,
+        root='..',
+        lang=DEFAULT_LANG,
+    )
     output_futures.append(app_post_to_html(
         tag_ast,
         '..',
         None,
         None,
-        'en',
+        DEFAULT_LANG,
         '.md',
         inputs=inputs,
         outputs=[File(str((OUTPUT_DIR / 'categories' / 'index.html')))],
         **options,
     ))
     # archive
-    archive_ast = posts_to_archive_ast(posts.pages)
+    archive_ast = posts_to_archive_ast(
+        posts.pages,
+        root='..',
+        lang=DEFAULT_LANG,
+    )
     output_futures.append(app_post_to_html(
         archive_ast,
         '..',
         None,
         None,
-        'en',
+        DEFAULT_LANG,
         '.md',
         inputs=inputs,
         outputs=[File(str((OUTPUT_DIR / 'archive' / 'index.html')))],
@@ -173,14 +184,18 @@ def main():
     # index
     index_ast = posts_to_index_ast(
         posts.pages,
-        BLOG_TITLE['en'],
+        BLOG_TITLE[DEFAULT_LANG],
+        n_jumbotron=N_JUMBOTRON,
+        n_grid=N_GRID,
+        index_include_jumbotron=INDEX_INCLUDE_JUMBOTRON,
+        lang=DEFAULT_LANG,
     )
     output_futures.append(app_post_to_html(
         index_ast,
         '.',
         None,
         None,
-        'en',
+        DEFAULT_LANG,
         '.md',
         inputs=[] if INDEX_TEMPLATE is None else [File(str((INDEX_TEMPLATE)))],
         outputs=[File(str((OUTPUT_DIR / 'index.html')))],
@@ -195,13 +210,17 @@ def main():
             index_ast = posts_to_index_ast(
                 cat_posts,
                 name,
+                n_jumbotron=N_JUMBOTRON,
+                n_grid=N_GRID,
+                index_include_jumbotron=INDEX_INCLUDE_JUMBOTRON,
+                lang=DEFAULT_LANG,
             )
             output_futures.append(app_post_to_html(
                 index_ast,
                 '../..',
                 None,
                 None,
-                'en',
+                DEFAULT_LANG,
                 '.md',
                 inputs=[] if INDEX_TEMPLATE is None else [File(str((INDEX_TEMPLATE)))],
                 outputs=[File(str((OUTPUT_DIR / 'categories' / (name if case == 'tags' else f'cat_{name}') / 'index.html')))],

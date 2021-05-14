@@ -16,6 +16,7 @@ def posts_to_index_ast(
     n_jumbotron: int = 1,
     n_grid: int = 2,
     index_include_jumbotron: bool = True,
+    lang: str = 'en',
 ) -> pf.elements.Doc:
 
     def post_to_dict(post: Post) -> dict:
@@ -35,6 +36,7 @@ def posts_to_index_ast(
 
     meta = {
         'title': title,
+        'lang': lang,
     }
 
     temp_index = []
@@ -67,9 +69,11 @@ def posts_to_tag_ast(
     font_size_min: int = 70,
     font_size_max: int = 280,
     root: str = '..',
+    lang: str = 'en',
 ) -> pf.elements.Doc:
     meta = {
         'title': 'Tags and Categories',
+        'lang': lang,
     }
     contents = []
     for case, dict_ in (
@@ -119,9 +123,11 @@ def posts_to_tag_ast(
 def posts_to_archive_ast(
     posts: List[Post],
     root: str = '..',
+    lang: str = 'en',
 ) -> pf.elements.Doc:
     meta = {
         'title': 'Archive',
+        'lang': lang,
     }
 
     res = defaultdict(lambda: defaultdict(list))
