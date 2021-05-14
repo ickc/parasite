@@ -88,7 +88,7 @@ def app_rsync(in_dir: str, out_base_dir: str, out_sub_dir: str) -> str:
 @bash_app
 def app_minify(inputs=[], outputs=[], format: str = 'css'):
     '''minify using the Go minifier
-    
+
     https://github.com/tdewolff/minify/tree/master/cmd/minify
     '''
     from pathlib import Path
@@ -135,11 +135,11 @@ def id_for_memo_path(path: Path, output_ref: bool = False) -> bytes:
 def id_for_memo_File(f: File, output_ref: bool = False) -> bytes:
     if output_ref:
         logger.debug("hashing File as output ref without content: {}".format(f))
-        return f.url
+        return id_for_memo(f.url)
     else:
         logger.debug("hashing File as input with content: {}".format(f))
         assert f.scheme == "file"
         filename = f.filepath
         stat_result = os.stat(filename)
 
-        return [f.url, stat_result.st_size, stat_result.st_mtime]
+        return id_for_memo([f.url, stat_result.st_size, stat_result.st_mtime])
