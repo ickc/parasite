@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import os
 from typing import TYPE_CHECKING
 from logging import getLogger
+import psutil
 
 import parsl
-from parsl.configs.local_threads import config
+from parsl.config import Config
+from parsl.executors import ThreadPoolExecutor
 from parsl.utils import get_all_checkpoints
 
 
@@ -17,9 +20,14 @@ from .conf import PRETTY_URLS, DATE_FORMAT, POSTS, nav_includes, PAGES, header_i
 if TYPE_CHECKING:
     from typing import Optional, Tuple, List
 
-config.checkpoint_mode = 'task_exit'
-config.checkpoint_files = get_all_checkpoints()
-parsl.load(config)
+parsl.load(Config(
+    executors=[ThreadPoolExecutor(
+        max_threads=psutil.cpu_count(logical=False),
+        working_dir=os.getcwd(),
+    )],
+    checkpoint_mode='task_exit',
+    checkpoint_files=get_all_checkpoints(),
+))
 
 logger = getLogger('parasite')
 
