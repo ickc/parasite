@@ -4,7 +4,7 @@ all functions should be imported inside functions for parsl
 """
 from __future__ import annotations
 
-from parsl import python_app
+from parsl import python_app, bash_app
 
 
 @python_app(cache=True)
@@ -74,6 +74,15 @@ def app_post_to_html(
         pandoc_options=pandoc_options,
         css=css,
     )
+
+
+@bash_app
+def app_rsync(in_dir: str, out_base_dir: str, out_sub_dir: str) -> str:
+    from pathlib import Path
+
+    out_dir = Path(out_base_dir) / out_sub_dir
+    out_dir.mkdir(exist_ok=True, parents=True)
+    return f'rsync -a {in_dir}/ {out_dir}/'
 
 
 import os

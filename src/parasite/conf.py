@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 SITE_URL: str = ""
 BLOG_EMAIL: str = ""
 
+OUTPUT_DIR: Path = Path('output')
 DATE_FORMAT: str = r'%Y-%m-%d'
 PRETTY_URLS: Dict[str, Union[bool, Callable[[Path, str], Path]]] = {
     '.md': True,
