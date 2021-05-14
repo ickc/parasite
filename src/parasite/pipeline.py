@@ -17,11 +17,11 @@ from parsl.data_provider.files import File
 
 from .data import Posts, Pages
 from .apps import posts_to_index_ast
-from .apps_parsl import app_read_md_to_ast, app_read_md_to_ast_with_teaser, app_post_to_html, app_rsync
+from .apps_parsl import app_read_md_to_ast, app_read_md_to_ast_with_teaser, app_post_to_html, app_rsync, app_minify
 # require user to put conf.py in cwd
 import sys
 sys.path.append(os.getcwd())
-from conf import PRETTY_URLS, DATE_FORMAT, POSTS, nav_includes, PAGES, header_includes, DEFAULT_LANG, include_after, MATHJAX_CONFIG, search_form, content_footer, pandoc_options, BLOG_TITLE, css, include_before, INDEX_TEMPLATE, OUTPUT_DIR, FILES_FOLDERS
+from conf import PRETTY_URLS, DATE_FORMAT, POSTS, nav_includes, PAGES, header_includes, DEFAULT_LANG, include_after, MATHJAX_CONFIG, search_form, content_footer, pandoc_options, BLOG_TITLE, css, include_before, INDEX_TEMPLATE, OUTPUT_DIR, FILES_FOLDERS, CSS
 
 if TYPE_CHECKING:
     from typing import Optional, Tuple, List
@@ -88,10 +88,19 @@ def get_pages(
 
 
 def main():
-    rsyncs = [
-        app_rsync(in_dir, OUTPUT_DIR, out_sub_dir)
-        for in_dir, out_sub_dir in FILES_FOLDERS.items()
-    ]
+    if CSS:
+        minifies = [
+            app_minify(
+                inputs=[File(path) for path in paths],
+                outputs=[File(out_path)]
+            )
+            for out_path, paths in CSS.items()
+        ]
+    if FILES_FOLDERS:
+        rsyncs = [
+            app_rsync(in_dir, OUTPUT_DIR, out_sub_dir)
+            for in_dir, out_sub_dir in FILES_FOLDERS.items()
+        ]
 
     pages = Pages(sum((pages_.pages for pages_ in get_pages(PAGES, Pages)), []))
     logger.info(f'Obtaining {pages.dataframe}')
@@ -169,8 +178,12 @@ def main():
     ))
     for future in output_futures:
         future.result()
-    for rsync in rsyncs:
-        rsync.result()
+    if FILES_FOLDERS:
+        for rsync in rsyncs:
+            rsync.result()
+    if CSS:
+        for minify in minifies:
+            minify.result()
 
 
 if __name__ == "__main__":

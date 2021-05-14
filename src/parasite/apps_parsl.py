@@ -13,7 +13,7 @@ def app_read_md_to_ast(inputs=[]):
 
     from .apps import read_md_to_ast
 
-    input_paths = [Path(input_.filepath) for input_ in inputs]
+    input_paths = [Path(file.filepath) for file in inputs]
     return read_md_to_ast(input_paths)
 
 
@@ -23,7 +23,7 @@ def app_read_md_to_ast_with_teaser(inputs=[]):
 
     from .apps import read_md_to_ast_with_teaser
 
-    input_paths = [Path(input_.filepath) for input_ in inputs]
+    input_paths = [Path(file.filepath) for file in inputs]
     return read_md_to_ast_with_teaser(input_paths)
 
 
@@ -52,8 +52,8 @@ def app_post_to_html(
 
     from .apps import post_to_html
 
-    input_paths = [Path(input_.filepath) for input_ in inputs]
-    output_paths = [Path(input_.filepath) for input_ in outputs]
+    input_paths = [Path(file.filepath) for file in inputs]
+    output_paths = [Path(file.filepath) for file in outputs]
     return post_to_html(
         ast,
         root,
@@ -83,6 +83,20 @@ def app_rsync(in_dir: str, out_base_dir: str, out_sub_dir: str) -> str:
     out_dir = Path(out_base_dir) / out_sub_dir
     out_dir.mkdir(exist_ok=True, parents=True)
     return f'rsync -a {in_dir}/ {out_dir}/'
+
+
+@bash_app
+def app_minify(inputs=[], outputs=[]):
+    '''minify using the Go minifier
+    
+    https://github.com/tdewolff/minify/tree/master/cmd/minify
+    '''
+    from pathlib import Path
+
+    input_paths = [file.filepath for file in inputs]
+    output_path = Path(outputs[0].filepath)
+    output_path.parent.mkdir(exist_ok=True, parents=True)
+    return f'cat {" ".join(input_paths)} | minify --type css -o {output_path}'
 
 
 import os
