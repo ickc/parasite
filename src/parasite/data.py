@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from collections import Counter, defaultdict
-from itertools import chain
+from collections import defaultdict
 from pathlib import Path
 from dataclasses import dataclass, field
 from functools import cached_property
@@ -11,6 +10,7 @@ from logging import getLogger
 from datetime import datetime
 
 import panflute as pf
+from urlpath import URL as Url
 
 from .apps import read_md_to_ast, get_teaser
 
@@ -97,12 +97,12 @@ class Page:
         return out_path
 
     @cached_property
-    def url(self) -> Path:
+    def url(self) -> Url:
         out_path = self.out_path
         if self.pretty_urls is True:
-            return out_path.parent
+            return Url(str(out_path.parent) + '/')
         else:
-            return out_path
+            return Url(str(out_path))
 
     @cached_property
     def categories(self) -> str:
@@ -213,11 +213,11 @@ class Post(Page):
         return None if date is None else datetime.strptime(date, self.date_format)
 
     @property
-    def prev(self) -> Optional[Tuple[Path, Optional[str]]]:
+    def prev(self) -> Optional[Tuple[Url, Optional[str]]]:
         return getattr(self, '_prev', None)
 
     @prev.setter
-    def prev(self, data: Tuple[Path, Optional[str]]):
+    def prev(self, data: Tuple[Url, Optional[str]]):
         self._prev = data
 
     @prev.deleter
@@ -225,11 +225,11 @@ class Post(Page):
         del self._prev
 
     @property
-    def next(self) -> Optional[Tuple[Path, Optional[str]]]:
+    def next(self) -> Optional[Tuple[Url, Optional[str]]]:
         return getattr(self, '_next', None)
 
     @next.setter
-    def next(self, data: Tuple[Path, Optional[str]]):
+    def next(self, data: Tuple[Url, Optional[str]]):
         self._next = data
 
     @next.deleter

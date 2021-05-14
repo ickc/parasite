@@ -13,6 +13,8 @@ from panflute.tools import convert_text
 if TYPE_CHECKING:
     from typing import Optional, List, Tuple, Dict, Callable
 
+    from urlpath import URL as Url
+
 
 def read_md_to_ast(inputs: List[Path] = []) -> pf.elements.Doc:
     """Read from markdown to panflute AST
@@ -41,8 +43,8 @@ def read_md_to_ast_with_teaser(inputs: List[Path] = []) -> Tuple[pf.elements.Doc
 def post_to_html(
     ast: pf.elements.Doc,
     root: str,
-    prev: Optional[Tuple[Path, Optional[str]]],
-    next: Optional[Tuple[Path, Optional[str]]],
+    prev: Optional[Tuple[Url, Optional[str]]],
+    next: Optional[Tuple[Url, Optional[str]]],
     lang: str,
     ext: str,
     inputs: List[Path] = [],   # template
