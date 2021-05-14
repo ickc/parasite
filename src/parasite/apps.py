@@ -5,14 +5,13 @@ all functions should be imported inside functions for parsl
 
 from __future__ import annotations
 from pathlib import Path
-from typing import Callable, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import panflute as pf
 from panflute.tools import convert_text
 
 if TYPE_CHECKING:
-    from typing import Optional, List, Tuple, Dict
-    from .data import Post
+    from typing import Optional, List, Tuple, Dict, Callable
 
 
 def read_md_to_ast(inputs: List[Path] = []) -> pf.elements.Doc:
@@ -101,54 +100,3 @@ def post_to_html(
         other_options.append(f'--template={template}')
 
     convert_text(ast, input_format='panflute', output_format='html', standalone=True, extra_args=pandoc_options(ext, '.html') + css_options + other_options)
-
-
-def posts_to_index_ast(
-    posts: List[Post],
-    title: str,
-    n_jumbotron: int = 1,
-    n_grid: int = 2,
-    index_include_jumbotron: bool = True,
-) -> pf.elements.Doc:
-
-    def post_to_dict(post: Post) -> dict:
-        res = {
-            'url': str(post.url),
-            'teaser': pf.MetaBlocks(*post.teaser),
-        }
-        if post.title is not None:
-            res['title'] = post.title
-        if post.previewimage is not None:
-            res['previewimage'] = post.previewimage
-        if post.author is not None:
-            res['author'] = post.author
-        if post.date is not None:
-            res['date'] = post.date
-        return res
-
-    meta = {
-        'title': title,
-    }
-
-    temp_index = []
-    temp = []
-    for post in posts[:n_jumbotron]:
-        data = post_to_dict(post)
-        temp.append(data)
-        if index_include_jumbotron:
-            temp_index.append(data)
-    meta['index_jumbotron'] = temp
-
-    temp = []
-    for post in posts[n_jumbotron:n_jumbotron + n_grid]:
-        data = post_to_dict(post)
-        temp.append(data)
-        if index_include_jumbotron:
-            temp_index.append(data)
-    meta['index_grid'] = temp
-
-    for post in posts[n_jumbotron + n_grid:]:
-        temp_index.append(post_to_dict(post))
-    meta['index'] = temp_index
-
-    return pf.elements.Doc(metadata=meta)
