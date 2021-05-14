@@ -12,10 +12,10 @@ from datetime import datetime
 
 import panflute as pf
 
-from .apps import read_md_to_ast, get_teaser, app_read_md_to_ast, app_read_md_to_ast_with_teaser, app_post_to_html, InputPath
+from .apps import read_md_to_ast, get_teaser
 
 if TYPE_CHECKING:
-    from typing import List, Optional, Tuple, Dict, Callable, Union
+    from typing import List, Optional, Tuple, Callable, Union
 
     import pandas as pd
 
@@ -24,10 +24,10 @@ logger = getLogger('parasite')
 
 @dataclass
 class Page:
-    path: InputPath
+    path: Path
     base_path: Path
     out_base_path: Path
-    template: Optional[InputPath]
+    template: Optional[Path]
     pretty_urls: Union[bool, Callable[[Path, str], Path]] = True
     date_format: str = r'%Y-%m-%d'
     default_lang: str = 'en'
@@ -263,7 +263,7 @@ class Pages:
         path: Path,
         out_path: Path,
         ext: str,
-        template: Optional[InputPath],
+        template: Optional[Path],
         pretty_urls: Union[bool, Callable[[Path, str], Path]] = True,
         date_format: str = r'%Y-%m-%d',
         default_lang: str = 'en',
@@ -272,7 +272,7 @@ class Pages:
         path = Path(path)
         out_path = Path(out_path)
         if template is not None:
-            template = InputPath(template)
+            template = Path(template)
         return cls(
             [
                 cls.page_class(

@@ -6,45 +6,16 @@ all functions should be imported inside functions for parsl
 from __future__ import annotations
 from pathlib import Path
 from typing import Callable, TYPE_CHECKING
-import os
-from logging import getLogger
 
 import panflute as pf
 from panflute.tools import convert_text
-from parsl import python_app
-from parsl.dataflow.memoization import id_for_memo
 
 if TYPE_CHECKING:
     from typing import Optional, List, Tuple, Dict
     from .data import Post
 
-logger = getLogger('parasite')
 
-# doesn't work: https://bugs.python.org/issue24132
-# class InputPath(Path):
-#     pass
-
-
-class InputPath:
-
-    def __init__(self, path: str):
-        self.path = Path(path)
-
-    def __str__(self):
-        return str(self.path)
-
-    def __repr__(self):
-        return repr(self.path)
-
-    def __truediv__(self, other):
-        return self.path / other
-
-    @property
-    def suffix(self) -> str:
-        return self.path.suffix
-
-
-def read_md_to_ast(path: InputPath) -> pf.elements.Doc:
+def read_md_to_ast(path: Path) -> pf.elements.Doc:
     """Read from markdown to panflute AST
     """
     with open(path, 'r') as f:
@@ -59,7 +30,7 @@ def get_teaser(doc: pf.elements.Doc) -> pf.containers.ListContainer:
     return content[:i]
 
 
-def read_md_to_ast_with_teaser(path: InputPath) -> Tuple[pf.elements.Doc, pf.containers.ListContainer]:
+def read_md_to_ast_with_teaser(path: Path) -> Tuple[pf.elements.Doc, pf.containers.ListContainer]:
     ast = read_md_to_ast(path)
     teaser = get_teaser(ast)
     return ast, teaser
@@ -69,7 +40,7 @@ def post_to_html(
     ast: pf.elements.Doc,
     out_path: Path,
     root: str,
-    template: Optional[InputPath],
+    template: Optional[Path],
     prev: Optional[Tuple[Path, Optional[str]]],
     next: Optional[Tuple[Path, Optional[str]]],
     lang: str,
@@ -84,7 +55,6 @@ def post_to_html(
     nav: Optional[Callable[[str, str, str], str]] = None,
     pandoc_options: Optional[Callable[[str, str], List[str]]] = None,
     css: Optional[Callable[[str, str], List[str]]] = None,
-    output_dir: Path = Path('output'),
 ):
     """
     warning: AST is currently mutated
@@ -117,9 +87,8 @@ def post_to_html(
 
     css_options = [f"--css={c.format(root=root)}" for c in css(ext, '.html')]
 
-    out_file = Path(output_dir) / out_path
-    out_file.parent.mkdir(parents=True, exist_ok=True)
-    other_options = [f'--output={out_file}']
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    other_options = [f'--output={out_path}']
     if template is not None:
         other_options.append(f'--template={template}')
 
@@ -175,23 +144,3 @@ def posts_to_index_ast(
     meta['index'] = temp_index
 
     return pf.elements.Doc(metadata=meta)
-
-
-@id_for_memo.register(Path)
-def id_for_memo_path(path: Path, output_ref: bool = False) -> bytes:
-    return id_for_memo(str(path))
-
-
-@id_for_memo.register(InputPath)
-def id_for_memo_inputpath(path: Path, output_ref: bool = False) -> bytes:
-    return id_for_memo((str(path), os.path.getmtime(str(path))))
-
-
-@id_for_memo.register(pf.elements.Doc)
-def id_for_memo_doc(doc: pf.elements.Doc, output_ref: bool = False) -> bytes:
-    return id_for_memo(doc.to_json())
-
-
-app_read_md_to_ast = python_app(read_md_to_ast, cache=True)
-app_read_md_to_ast_with_teaser = python_app(read_md_to_ast_with_teaser, cache=True)
-app_post_to_html = python_app(post_to_html, cache=True)
