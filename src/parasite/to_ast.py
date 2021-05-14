@@ -76,13 +76,8 @@ def posts_to_tag_ast(
         ('categories', categories),
         ('tags', tags),
     ):
-        flatname_dict = {
-            '/'.join(name) if type(name) == tuple else name:
-            list_
-            for name, list_ in dict_.items()
-        }
         # tag cloud
-        counts_dict = {name: len(list_) for name, list_ in flatname_dict.items()}
+        counts_dict = {name: len(list_) for name, list_ in dict_.items()}
         counts = counts_dict.values()
         min_ = min(counts)
         max_ = max(counts)
@@ -99,7 +94,7 @@ def posts_to_tag_ast(
 
         # list of links
         contents.append(pf.Header(pf.Str(f'{case} links'), level=1, identifier=f'{case}-links'))
-        for name, posts in flatname_dict.items():
+        for name, posts in dict_.items():
             contents.append(pf.Header(pf.Str(name), level=2, identifier=f'{case}-{name}'))
             lis = []
             for post in posts:

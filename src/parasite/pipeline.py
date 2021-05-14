@@ -186,6 +186,27 @@ def main():
         outputs=[File(str((OUTPUT_DIR / 'index.html')))],
         **options,
     ))
+    # cat index
+    for case, dict_ in (
+        ('categories', posts.categories),
+        ('tags', posts.tags),
+    ):
+        for name, cat_posts in dict_.items():
+            index_ast = posts_to_index_ast(
+                cat_posts,
+                name,
+            )
+            output_futures.append(app_post_to_html(
+                index_ast,
+                '../..',
+                None,
+                None,
+                'en',
+                '.md',
+                inputs=[] if INDEX_TEMPLATE is None else [File(str((INDEX_TEMPLATE)))],
+                outputs=[File(str((OUTPUT_DIR / 'categories' / (name if case == 'tags' else f'cat_{name}') / 'index.html')))],
+                **options,
+            ))
     for future in output_futures:
         future.result()
     if FILES_FOLDERS:

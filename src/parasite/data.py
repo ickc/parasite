@@ -105,8 +105,8 @@ class Page:
             return out_path
 
     @cached_property
-    def categories(self) -> Tuple[str, ...]:
-        return self.path.relative_to(self.base_path).parent.parts
+    def categories(self) -> str:
+        return '|'.join(self.path.relative_to(self.base_path).parent.parts)
 
     @cached_property
     def level(self) -> int:
@@ -314,7 +314,7 @@ class Posts(Pages):
         return res
 
     @cached_property
-    def categories(self) -> Dict[Tuple[str, ...], List[Post]]:
+    def categories(self) -> Dict[str, List[Post]]:
         res = defaultdict(list)
         for page in self.pages:
             res[page.categories].append(page)
