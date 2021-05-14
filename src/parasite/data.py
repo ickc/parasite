@@ -185,7 +185,7 @@ class Post(Page):
         return self._teaser
 
     @teaser.setter
-    def teaser(self, doc: pf.elements.Doc):
+    def teaser(self, doc: pf.containers.ListContainer):
         self._teaser = doc
 
     @teaser.deleter
