@@ -107,7 +107,7 @@ def posts_to_tag_ast(
                         pf.Plain(
                             pf.Link(
                                 pf.Str(f'{post.date} — {post.title}'),
-                                url=f'{root}/{post.url}',
+                                url=f'{root / post.url}',
                             )
                         )
                     )
@@ -150,7 +150,7 @@ def posts_to_archive_ast(
                         pf.Plain(
                             pf.Link(
                                 pf.Str(f'{date} — {title}'),
-                                url=f'{root}/{url}',
+                                url=f'{root / url}',
                             )
                         )
                     )
