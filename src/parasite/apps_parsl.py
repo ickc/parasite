@@ -86,7 +86,7 @@ def app_rsync(in_dir: str, out_base_dir: str, out_sub_dir: str) -> str:
 
 
 @bash_app
-def app_minify(inputs=[], outputs=[]):
+def app_minify(inputs=[], outputs=[], format: str = 'css'):
     '''minify using the Go minifier
     
     https://github.com/tdewolff/minify/tree/master/cmd/minify
@@ -96,7 +96,17 @@ def app_minify(inputs=[], outputs=[]):
     input_paths = [file.filepath for file in inputs]
     output_path = Path(outputs[0].filepath)
     output_path.parent.mkdir(exist_ok=True, parents=True)
-    return f'cat {" ".join(input_paths)} | minify --type css -o {output_path}'
+    return f'cat {" ".join(input_paths)} | minify --type {format} -o {output_path}'
+
+
+@bash_app
+def app_cat(inputs=[], outputs=[]):
+    from pathlib import Path
+
+    input_paths = [file.filepath for file in inputs]
+    output_path = Path(outputs[0].filepath)
+    output_path.parent.mkdir(exist_ok=True, parents=True)
+    return f'cat {" ".join(input_paths)} > {output_path}'
 
 
 import os
