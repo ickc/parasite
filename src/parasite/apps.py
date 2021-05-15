@@ -16,6 +16,20 @@ if TYPE_CHECKING:
     from urlpath import URL as Url
 
 
+def meta_append(meta: pf.elements.MetaMap, key: str, value: str):
+    '''Append or create key in meta with value in-place.
+    '''
+    raw_block = pf.MetaBlocks(pf.RawBlock(value))
+    if key in meta:
+        temp = meta[key]
+        if type(temp) == pf.elements.MetaList:
+            temp.append(raw_block)
+        else:
+            meta[key] = pf.MetaList(temp, raw_block)
+    else:
+        meta[key] = raw_block
+
+
 def read_md_to_ast(inputs: List[Path] = []) -> pf.elements.Doc:
     """Read from markdown to panflute AST
     """
@@ -68,9 +82,10 @@ def post_to_html(
     template = inputs[0] if inputs else None
     out_path = outputs[0]
 
-    ast.metadata['header-includes'] = pf.RawBlock(header_includes(lang, ext, '.html').format(root=root))
-    ast.metadata['include-before'] = pf.RawBlock(include_before(lang, ext, '.html').format(root=root))
-    ast.metadata['include-after'] = pf.RawBlock(include_after(lang, ext, '.html').format(root=root))
+    meta_append(ast.metadata, 'header-includes', header_includes(lang, ext, '.html').format(root=root))
+    meta_append(ast.metadata, 'include-before', include_before(lang, ext, '.html').format(root=root))
+    meta_append(ast.metadata, 'include-after', include_after(lang, ext, '.html').format(root=root))
+
     if content_footer:
         ast.metadata['content-footer'] = pf.RawBlock(content_footer(lang, ext, '.html').format(root=root))
     if mathjax_config:
