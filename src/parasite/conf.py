@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from typing import Tuple, Dict, Optional, List, Union, Callable
 
 # SITE_URL: str = ""
-# BLOG_EMAIL: str = ""
+BLOG_EMAIL: str = ""
 N_JUMBOTRON: int = 1
 N_GRID: int = 2
 INDEX_INCLUDE_JUMBOTRON: bool = True
@@ -28,9 +28,9 @@ MATHJAX_CONFIG: str = """"""
 
 DEFAULT_LANG: str = "en"
 # keys are lang
-# BLOG_AUTHOR: Dict[str, str] = {
-#     'en': '',
-# }
+BLOG_AUTHOR: Dict[str, str] = {
+    'en': '',
+}
 BLOG_TITLE: Dict[str, str] = {
     'en': "",
 }
