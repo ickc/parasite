@@ -91,3 +91,26 @@ def write_tipuesearch(
     with open(path, 'w') as f:
         print('var tipuesearch=', file=f, end='')
         json.dump(data, f)
+
+
+def minify_html(html: str) -> str:
+    import subprocess
+
+    res = subprocess.run(
+        [
+            'minify',
+            '--type=html',
+            '--html-keep-conditional-comments',
+            '--html-keep-default-attrvals',
+            '--html-keep-document-tags',
+            '--html-keep-end-tags',
+            '--html-keep-quotes',
+            '--html-keep-whitespace',
+        ],
+        input=html,
+        text=True,
+        capture_output=True,
+    )
+    if res.returncode != 0:
+        raise RuntimeError(res)
+    return res.stdout

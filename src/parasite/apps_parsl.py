@@ -47,6 +47,7 @@ def app_post_to_html(
     nav=None,
     pandoc_options=None,
     css=None,
+    html_filters=[],
 ):
     from pathlib import Path
 
@@ -73,6 +74,7 @@ def app_post_to_html(
         nav=nav,
         pandoc_options=pandoc_options,
         css=css,
+        html_filters=html_filters,
     )
 
 
@@ -107,16 +109,6 @@ def app_closure_compiler(inputs=[], outputs=[]):
     output_path = Path(outputs[0].filepath)
     output_path.parent.mkdir(exist_ok=True, parents=True)
     return f'closure-compiler -O SIMPLE --js {" ".join(input_paths)} --js_output_file {output_path} -W QUIET --jscomp_off=checkVars'
-
-
-@bash_app
-def app_cat(inputs=[], outputs=[]):
-    from pathlib import Path
-
-    input_paths = [file.filepath for file in inputs]
-    output_path = Path(outputs[0].filepath)
-    output_path.parent.mkdir(exist_ok=True, parents=True)
-    return f'cat {" ".join(input_paths)} > {output_path}'
 
 
 import os

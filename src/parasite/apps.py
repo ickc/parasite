@@ -73,6 +73,7 @@ def post_to_html(
     nav: Optional[Callable[[str, str, str], str]] = None,
     pandoc_options: Optional[Callable[[str, str], List[str]]] = None,
     css: Optional[Callable[[str, str], List[str]]] = None,
+    html_filters: List[Callable[[str], str]] = [],
 ):
     """
     warning: AST is currently mutated
@@ -109,11 +110,17 @@ def post_to_html(
         if title is not None:
             ast.metadata['next-title'] = title
 
-    css_options = [f"--css={c.format(root=root)}" for c in css(ext, '.html')]
+    extra_args = pandoc_options(ext, '.html') + [f"--css={c.format(root=root)}" for c in css(ext, '.html')]
+    if template is not None:
+        extra_args.append(f'--template={template}')
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    other_options = [f'--output={out_path}']
-    if template is not None:
-        other_options.append(f'--template={template}')
 
-    convert_text(ast, input_format='panflute', output_format='html', standalone=True, extra_args=pandoc_options(ext, '.html') + css_options + other_options)
+    if not html_filters:
+        extra_args.append(f'--output={out_path}')
+    html = convert_text(ast, input_format='panflute', output_format='html', standalone=True, extra_args=extra_args)
+    if html_filters:
+        for html_filter in html_filters:
+            html = html_filter(html)
+        with open(out_path, 'w') as f:
+            f.write(html)
