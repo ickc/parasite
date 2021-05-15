@@ -27,7 +27,7 @@ def posts_to_index_ast(
         if post.title is not None:
             res['title'] = post.title
         if post.previewimage is not None:
-            res['previewimage'] = post.previewimage
+            res['previewimage'] = str(post.previewimage)
         if post.author is not None:
             res['author'] = post.author
         if post.date is not None:

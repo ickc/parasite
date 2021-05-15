@@ -167,6 +167,13 @@ class Page:
         return tags
 
     @property
+    def previewimage(self) -> Optional[Url]:
+        res = self.ast.get_metadata('previewimage')
+        if res is not None:
+            return Url(res)
+        return None
+
+    @property
     def prev(self):
         return None
 
@@ -206,10 +213,6 @@ class Post(Page):
     @property
     def date(self) -> Optional[str]:
         return self.ast.get_metadata('date')
-
-    @property
-    def previewimage(self) -> Optional[str]:
-        return self.ast.get_metadata('previewimage')
 
     @cached_property
     def time(self) -> Optional[datetime]:

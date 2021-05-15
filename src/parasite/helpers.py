@@ -72,6 +72,8 @@ def tipuesearch(
                 'text': page.text,
                 'tags': ','.join(page.tags),
                 'url': str(root / page.url),
+                # doesn't work
+                # 'image': None if page.previewimage is None else str(root / page.previewimage),
             }
             for page in pages
         ]
