@@ -92,7 +92,7 @@ def main():
     time_elapse = TimeElapse()
     if JS:
         minifies_js = [
-            app_closure_compiler(
+            app_minify(
                 inputs=[File(path) for path in paths],
                 outputs=[File(out_path)]
             )
