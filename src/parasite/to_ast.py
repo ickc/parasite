@@ -85,8 +85,12 @@ def posts_to_tag_ast(
         counts = counts_dict.values()
         min_ = min(counts)
         max_ = max(counts)
-        m = (font_size_max - font_size_min) / (max_ - min_)
-        c = font_size_min - m * min_
+        try:
+            m = (font_size_max - font_size_min) / (max_ - min_)
+            c = font_size_min - m * min_
+        except ZeroDivisionError:
+            m = 0
+            c = 100
         temp = []
         meta[f'archive-{case}'] = temp
         for name, count in counts_dict.items():
