@@ -237,7 +237,10 @@ def main():
         **options,
     ))
     time_elapse.report('staging index.')
-    # search
+    # search: we're not using parsl here, as
+    # it needs to be re-generated even if only one page is changed,
+    # and the time taken is very small for now.
+    # as site gets bigger, may need to cache the Page.text e.g. in app_read_md_to_ast*?
     write_tipuesearch(
         OUTPUT_DIR / 'assets/js/tipuesearch_content.js',
         all_pages,
