@@ -11,6 +11,11 @@ if TYPE_CHECKING:
 
 SITE_URL: str = ""
 BLOG_EMAIL: str = ""
+N_JUMBOTRON: int = 1
+N_GRID: int = 2
+INDEX_INCLUDE_JUMBOTRON: bool = True
+TAG_CLOUD_FONT_SIZE_MIN: int = 70
+TAG_CLOUD_FONT_SIZE_MAX: int = 280
 
 OUTPUT_DIR: Path = Path('output')
 DATE_FORMAT: str = r'%Y-%m-%d'
@@ -59,13 +64,13 @@ POSTS: Tuple[
     ],
     ...
 ] = (
-    ("posts", "", ".md", None),
+    ("posts", "", ".md", "templates/post.html"),
 )
 PAGES: Tuple[Tuple[str, str, str, Optional[str]], ...] = (
-    ("pages", "", ".md", None),
-    ("posts", "", ".markdown", None),
+    ("pages", "", ".md", "templates/post.html"),
+    ("posts", "", ".markdown", "templates/slidy.html"),
 )
-INDEX_TEMPLATE: Optional[str] = None
+INDEX_TEMPLATE: Optional[str] = 'templates/index.html'
 
 # TODO
 # One or more folders containing files to be copied as-is into the output.
@@ -145,7 +150,7 @@ def nav_includes(lang: str, ext: str, out_ext: str) -> str:
                 ),
                 "Archive",
             ),
-            ("{root}/rss.xml", "RSS feed"),
+            # ("{root}/rss.xml", "RSS feed"),
         ))
     else:
         return ''
@@ -180,3 +185,41 @@ def css(ext: str, out_ext: str) -> List[str]:
         ],
     }
     return CSS[ext]
+
+
+# this will be compressed
+CSS: Dict[
+    str,       # output file
+    List[str]  # input files
+] = {
+    f'{OUTPUT_DIR}/assets/css/all-nocdn.css': [
+        '_css/bootstrap.css',
+        '_css/rst_base.css',
+        '_css/nikola_rst.css',
+        '_css/code.css',
+        '_css/baguetteBox.min.css',
+        '_css/theme.css',
+        '_css/bootblog.css',
+        '_css/custom.css',
+        '_css/tipuesearch.css',
+    ]
+}
+
+JS: Dict[
+    str,       # output file
+    List[str]  # input files
+] = {
+    f'{OUTPUT_DIR}/assets/js/all-nocdn.js': [
+        '_js/jquery.min.js',
+        '_js/popper.min.js',
+        '_js/bootstrap.min.js',
+        '_js/baguetteBox.min.js',
+        '_js/fancydates.min.js',
+    ],
+    f'{OUTPUT_DIR}/assets/js/tipuesearch.js': [
+        '_js/tipuesearch_set.js',
+        '_js/tipuesearch.js',
+    ]
+}
+
+HTML_FILTERS: List[Callable[[str], str]] = []
