@@ -70,6 +70,7 @@ PAGES: Tuple[Tuple[str, str, str, Optional[str]], ...] = (
 )
 INDEX_TEMPLATE: Optional[str] = 'templates/index.html'
 
+ROOT_RELATIVE_TO_SEARCH_FORM: str = '..'
 # these will be formatted by .format(root=root)
 # so escape your {}
 
