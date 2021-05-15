@@ -141,7 +141,7 @@ class Page:
 
     @cached_property
     def text(self) -> str:
-        return pf.tools.stringify(self.ast)
+        return '\n'.join(pf.stringify(elem) for elem in self.ast.content)
 
     @property
     def title(self) -> Optional[str]:
