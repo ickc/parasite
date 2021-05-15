@@ -36,7 +36,7 @@ class Page:
     def __post_init__(self):
         # special casing 404
         if self.pretty_urls is True and str(self.out_path) == '404/index.html':
-            logger.info(f'Forcing non-pretty URL for {self.path}.')
+            logger.debug(f'Forcing non-pretty URL for {self.path}.')
             self.pretty_urls = False
             del self.out_path
 
@@ -139,6 +139,10 @@ class Page:
     def ast(self):
         del self._ast
 
+    @cached_property
+    def text(self) -> str:
+        return pf.tools.stringify(self.ast)
+
     @property
     def title(self) -> Optional[str]:
         return self.ast.get_metadata('title')
@@ -154,6 +158,13 @@ class Page:
             lang = self.default_lang
             self.ast.metadata['lang'] = lang
         return lang
+
+    @property
+    def tags(self) -> List[str]:
+        tags = self.ast.get_metadata('tags')
+        if tags is None:
+            tags = []
+        return tags
 
     @property
     def prev(self):
@@ -191,13 +202,6 @@ class Post(Page):
     @teaser.deleter
     def teaser(self):
         del self._teaser
-
-    @property
-    def tags(self) -> List[str]:
-        tags = self.ast.get_metadata('tags')
-        if tags is None:
-            tags = []
-        return tags
 
     @property
     def date(self) -> Optional[str]:
