@@ -15,6 +15,8 @@ from parsl.data_provider.files import File
 
 
 from .data import Posts, Pages
+from .util import TimeElapse
+from .helpers import write_tipuesearch
 from .to_ast import posts_to_index_ast, posts_to_tag_ast, posts_to_archive_ast
 from .apps_parsl import app_read_md_to_ast, app_read_md_to_ast_with_teaser, app_post_to_html, app_rsync, app_minify, app_closure_compiler
 # require user to put conf.py in cwd
@@ -87,6 +89,7 @@ def get_pages(
 
 
 def main():
+    time_elapse = TimeElapse()
     if JS:
         minifies_js = [
             app_closure_compiler(
@@ -108,24 +111,27 @@ def main():
             app_rsync(in_dir, OUTPUT_DIR, out_sub_dir)
             for in_dir, out_sub_dir in FILES_FOLDERS.items()
         ]
+    time_elapse.report('staging for minifies and rsync.')
 
     pages = Pages(sum((pages_.pages for pages_ in get_pages(PAGES, Pages)), []))
-    logger.info(f'Obtaining {pages.dataframe}')
     posts = Posts(sum((pages_.pages for pages_ in get_pages(POSTS, Posts)), []))
-    logger.info(f'Obtaining {posts.dataframe}')
+    time_elapse.report('glob pages/posts from file system.')
 
-    logger.info('Get all ASTs.')
     pages_ast_futures = [app_read_md_to_ast(inputs=[File(str((page.path)))]) for page in pages.pages]
     posts_ast_futures = [app_read_md_to_ast_with_teaser(inputs=[File(str((page.path)))]) for page in posts.pages]
+    time_elapse.report('staging to get all ASTs.')
     for page, future in zip(pages.pages, pages_ast_futures):
         page.ast = future.result()
     for page, future in zip(posts.pages, posts_ast_futures):
         page.ast, page.teaser = future.result()
-    logger.info('Got all ASTs.')
+    time_elapse.report('got all ASTs.')
 
     posts.sort()
+    time_elapse.report('sorting posts.')
     posts.get_neighbor_urls()
+    time_elapse.report('get neighbor urls.')
 
+    all_pages = pages.pages + posts.pages
     output_futures = [
         app_post_to_html(
             page.ast,
@@ -138,69 +144,12 @@ def main():
             outputs=[File(str((OUTPUT_DIR / page.out_path)))],
             **page.options,
         )
-        for page in pages.pages + posts.pages
+        for page in all_pages
     ]
-    # tags
-    _template = posts.pages[0].template
-    inputs = [] if _template is None else [File(str((_template)))]
-    options = posts.pages[0].options
-    tag_ast = posts_to_tag_ast(
-        posts.categories,
-        posts.tags,
-        font_size_min=TAG_CLOUD_FONT_SIZE_MIN,
-        font_size_max=TAG_CLOUD_FONT_SIZE_MAX,
-        root='..',
-        lang=DEFAULT_LANG,
-    )
-    output_futures.append(app_post_to_html(
-        tag_ast,
-        '..',
-        None,
-        None,
-        DEFAULT_LANG,
-        '.md',
-        inputs=inputs,
-        outputs=[File(str((OUTPUT_DIR / 'categories' / 'index.html')))],
-        **options,
-    ))
-    # archive
-    archive_ast = posts_to_archive_ast(
-        posts.pages,
-        root='..',
-        lang=DEFAULT_LANG,
-    )
-    output_futures.append(app_post_to_html(
-        archive_ast,
-        '..',
-        None,
-        None,
-        DEFAULT_LANG,
-        '.md',
-        inputs=inputs,
-        outputs=[File(str((OUTPUT_DIR / 'archive' / 'index.html')))],
-        **options,
-    ))
-    # index
-    index_ast = posts_to_index_ast(
-        posts.pages,
-        BLOG_TITLE[DEFAULT_LANG],
-        n_jumbotron=N_JUMBOTRON,
-        n_grid=N_GRID,
-        index_include_jumbotron=INDEX_INCLUDE_JUMBOTRON,
-        lang=DEFAULT_LANG,
-    )
-    output_futures.append(app_post_to_html(
-        index_ast,
-        '.',
-        None,
-        None,
-        DEFAULT_LANG,
-        '.md',
-        inputs=[] if INDEX_TEMPLATE is None else [File(str((INDEX_TEMPLATE)))],
-        outputs=[File(str((OUTPUT_DIR / 'index.html')))],
-        **options,
-    ))
+    time_elapse.report('staging pages/posts HTML output.')
+
     # cat index
+    options = posts.pages[0].options
     for case, dict_ in (
         ('categories', posts.categories),
         ('tags', posts.tags),
@@ -225,6 +174,77 @@ def main():
                 outputs=[File(str((OUTPUT_DIR / 'categories' / (name if case == 'tags' else f'cat_{name}') / 'index.html')))],
                 **options,
             ))
+    time_elapse.report('staging cat-index.')
+    # tags
+    _template = posts.pages[0].template
+    inputs = [] if _template is None else [File(str((_template)))]
+    tag_ast = posts_to_tag_ast(
+        posts.categories,
+        posts.tags,
+        font_size_min=TAG_CLOUD_FONT_SIZE_MIN,
+        font_size_max=TAG_CLOUD_FONT_SIZE_MAX,
+        root='..',
+        lang=DEFAULT_LANG,
+    )
+    output_futures.append(app_post_to_html(
+        tag_ast,
+        '..',
+        None,
+        None,
+        DEFAULT_LANG,
+        '.md',
+        inputs=inputs,
+        outputs=[File(str((OUTPUT_DIR / 'categories' / 'index.html')))],
+        **options,
+    ))
+    time_elapse.report('staging tag page.')
+    # archive
+    archive_ast = posts_to_archive_ast(
+        posts.pages,
+        root='..',
+        lang=DEFAULT_LANG,
+    )
+    output_futures.append(app_post_to_html(
+        archive_ast,
+        '..',
+        None,
+        None,
+        DEFAULT_LANG,
+        '.md',
+        inputs=inputs,
+        outputs=[File(str((OUTPUT_DIR / 'archive' / 'index.html')))],
+        **options,
+    ))
+    time_elapse.report('staging archive page.')
+    # index
+    index_ast = posts_to_index_ast(
+        posts.pages,
+        BLOG_TITLE[DEFAULT_LANG],
+        n_jumbotron=N_JUMBOTRON,
+        n_grid=N_GRID,
+        index_include_jumbotron=INDEX_INCLUDE_JUMBOTRON,
+        lang=DEFAULT_LANG,
+    )
+    output_futures.append(app_post_to_html(
+        index_ast,
+        '.',
+        None,
+        None,
+        DEFAULT_LANG,
+        '.md',
+        inputs=[] if INDEX_TEMPLATE is None else [File(str((INDEX_TEMPLATE)))],
+        outputs=[File(str((OUTPUT_DIR / 'index.html')))],
+        **options,
+    ))
+    time_elapse.report('staging index.')
+    # search
+    write_tipuesearch(
+        OUTPUT_DIR / 'assets/js/tipuesearch_content.js',
+        all_pages,
+        root='..',
+    )
+    time_elapse.report('wrote tipuesearch.')
+
     for future in output_futures:
         future.result()
     if FILES_FOLDERS:
@@ -236,6 +256,7 @@ def main():
     if JS:
         for minify in minifies_js:
             minify.result()
+    time_elapse.report('collecting all futures.')
 
 
 if __name__ == "__main__":

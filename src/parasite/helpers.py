@@ -3,7 +3,9 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from pathlib import Path
-    from typing import List, Tuple, Union
+    from typing import List, Tuple, Union, Dict
+
+    from .data import Page
 
 
 def _nav(
@@ -57,3 +59,33 @@ def pretty_urls_present(parent: Path, stem: str) -> Path:
     """An example "pretty_urls" callable for present.html
     """
     return parent / stem / 'present.html'
+
+
+def tipuesearch(
+    pages: List[Page],
+    root: str = '..',
+) -> Dict[str, List[Dict[str, str]]]:
+    return {
+        'pages': [
+            {
+                'title': page.title,
+                'text': page.text,
+                'tags': ','.join(page.tags),
+                'url': str(root / page.url),
+            }
+            for page in pages
+        ]
+    }
+
+
+def write_tipuesearch(
+    path: Path,
+    pages: List[Page],
+    root: str = '..',
+):
+    import ujson as json
+
+    data = tipuesearch(pages, root=root)
+    with open(path, 'w') as f:
+        print('var tipuesearch=', file=f, end='')
+        json.dump(data, f)
