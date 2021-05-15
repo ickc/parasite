@@ -9,8 +9,8 @@ from parasite.helpers import nav, pretty_urls_present
 if TYPE_CHECKING:
     from typing import Tuple, Dict, Optional, List, Union, Callable
 
-SITE_URL: str = ""
-BLOG_EMAIL: str = ""
+# SITE_URL: str = ""
+# BLOG_EMAIL: str = ""
 N_JUMBOTRON: int = 1
 N_GRID: int = 2
 INDEX_INCLUDE_JUMBOTRON: bool = True
@@ -23,28 +23,26 @@ PRETTY_URLS: Dict[str, Union[bool, Callable[[Path, str], Path]]] = {
     '.md': True,
     '.markdown': pretty_urls_present,
 }
-INDEX_DISPLAY_POST_COUNT: int = 10
 
 MATHJAX_CONFIG: str = """"""
 
 DEFAULT_LANG: str = "en"
-TRANSLATIONS_PATTERN: str = '{path}.{lang}.{ext}'  # TODO
 # keys are lang
-BLOG_AUTHOR: Dict[str, str] = {
-    'en': '',
-}
+# BLOG_AUTHOR: Dict[str, str] = {
+#     'en': '',
+# }
 BLOG_TITLE: Dict[str, str] = {
     'en': "",
 }
-BLOG_DESCRIPTION: Dict[str, str] = {
-    'en': "",
-}
+# BLOG_DESCRIPTION: Dict[str, str] = {
+#     'en': "",
+# }
 
 
 # values are output base path relative to root
-TRANSLATIONS: Dict[str, Path] = {
-    DEFAULT_LANG: Path('.'),
-}
+# TRANSLATIONS: Dict[str, Path] = {
+#     DEFAULT_LANG: Path('.'),
+# }
 
 # TODO
 # files to be copied
@@ -71,24 +69,6 @@ PAGES: Tuple[Tuple[str, str, str, Optional[str]], ...] = (
     ("posts", "", ".markdown", "templates/slidy.html"),
 )
 INDEX_TEMPLATE: Optional[str] = 'templates/index.html'
-
-# TODO
-# One or more folders containing files to be copied as-is into the output.
-# The format is a dictionary of {source: relative destination}.
-# Default is:
-
-
-# If TAG_PAGES_ARE_INDEXES is set to True, each tag's page will contain
-# the posts themselves. If set to False, it will be just a list of links.
-TAG_PAGES_ARE_INDEXES = True
-
-# If CATEGORY_PAGES_ARE_INDEXES is set to True, each category's page will contain
-# the posts themselves. If set to False, it will be just a list of links.
-CATEGORY_PAGES_ARE_INDEXES = True
-
-# If AUTHOR_PAGES_ARE_INDEXES is set to True, each author's page will contain
-# the posts themselves. If set to False, it will be just a list of links.
-AUTHOR_PAGES_ARE_INDEXES = False
 
 # these will be formatted by .format(root=root)
 # so escape your {}
