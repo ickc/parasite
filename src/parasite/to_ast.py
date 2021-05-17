@@ -30,8 +30,7 @@ def posts_to_index_ast(
             res['previewimage'] = str(post.previewimage)
         if post.author is not None:
             res['author'] = post.author
-        if post.date is not None:
-            res['date'] = post.date
+        res['date'] = post.date
         return res
 
     meta = {

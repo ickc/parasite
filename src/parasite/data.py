@@ -211,13 +211,15 @@ class Post(Page):
         del self._teaser
 
     @property
-    def date(self) -> Optional[str]:
-        return self.ast.get_metadata('date')
+    def date(self) -> str:
+        date = self.ast.get_metadata('date')
+        if date is None:
+            raise ValueError(f'The following post has no date: {self.path}')
+        return date
 
     @cached_property
-    def time(self) -> Optional[datetime]:
-        date = self.date
-        return None if date is None else datetime.strptime(date, self.date_format)
+    def time(self) -> datetime:
+        return datetime.strptime(self.date, self.date_format)
 
     @property
     def prev(self) -> Optional[Tuple[Url, Optional[str]]]:
