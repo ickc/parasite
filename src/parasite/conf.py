@@ -5,6 +5,7 @@ import time
 from typing import TYPE_CHECKING
 
 from parasite.helpers import nav, pretty_urls_present
+from parasite.panflute_filters import lightgallery, lightgallery_from_dir
 
 if TYPE_CHECKING:
     from typing import Tuple, Dict, Optional, List, Union, Callable
@@ -204,3 +205,5 @@ JS: Dict[
 }
 
 HTML_FILTERS: List[Callable[[str], str]] = []
+
+PANFLUTE_FILTERS: List[Callable] = [lightgallery, lightgallery_from_dir]

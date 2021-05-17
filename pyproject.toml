@@ -83,8 +83,8 @@ docs = [
 ]
 
 [tool.poetry.scripts]
-parasite = 'parasite.pipeline:main'
-# parasite_serial = 'parasite.pipeline_serial:main'
+parasite = 'parasite.pipeline:cli'
+# parasite_serial = 'parasite.pipeline_serial:cli'
 
 [tool.coverage.paths]
 source = [

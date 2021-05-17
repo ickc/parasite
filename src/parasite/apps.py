@@ -10,24 +10,12 @@ from typing import TYPE_CHECKING
 import panflute as pf
 from panflute.tools import convert_text
 
+from .panflute_filters import meta_append
+
 if TYPE_CHECKING:
     from typing import Optional, List, Tuple, Dict, Callable
 
     from urlpath import URL as Url
-
-
-def meta_append(meta: pf.elements.MetaMap, key: str, value: str):
-    '''Append or create key in meta with value in-place.
-    '''
-    raw_block = pf.MetaBlocks(pf.RawBlock(value))
-    if key in meta:
-        temp = meta[key]
-        if type(temp) == pf.elements.MetaList:
-            temp.append(raw_block)
-        else:
-            meta[key] = pf.MetaList(temp, raw_block)
-    else:
-        meta[key] = raw_block
 
 
 def read_md_to_ast(inputs: List[Path] = []) -> pf.elements.Doc:
@@ -73,6 +61,7 @@ def post_to_html(
     nav: Optional[Callable[[str, str, str], str]] = None,
     pandoc_options: Optional[Callable[[str, str], List[str]]] = None,
     css: Optional[Callable[[str, str], List[str]]] = None,
+    panflute_filters: List[Callable] = [],
     html_filters: List[Callable[[str], str]] = [],
 ):
     """
@@ -116,6 +105,8 @@ def post_to_html(
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
+    if panflute_filters:
+        pf.io.run_filters(panflute_filters, doc=ast)
     if not html_filters:
         extra_args.append(f'--output={out_path}')
     html = convert_text(ast, input_format='panflute', output_format='html', standalone=True, extra_args=extra_args)

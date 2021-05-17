@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from logging import getLogger
 import psutil
 
+import defopt
 import parsl
 from parsl.config import Config
 from parsl.executors import ThreadPoolExecutor
@@ -22,7 +23,7 @@ from .apps_parsl import app_read_md_to_ast, app_read_md_to_ast_with_teaser, app_
 # require user to put conf.py in cwd
 import sys
 sys.path.append(os.getcwd())
-from conf import PRETTY_URLS, DATE_FORMAT, POSTS, nav_includes, PAGES, header_includes, DEFAULT_LANG, include_after, MATHJAX_CONFIG, search_form, content_footer, pandoc_options, BLOG_TITLE, css, include_before, INDEX_TEMPLATE, OUTPUT_DIR, FILES_FOLDERS, CSS, JS, N_JUMBOTRON, N_GRID, INDEX_INCLUDE_JUMBOTRON, TAG_CLOUD_FONT_SIZE_MIN, TAG_CLOUD_FONT_SIZE_MAX, HTML_FILTERS, ROOT_RELATIVE_TO_SEARCH_FORM
+from conf import PRETTY_URLS, DATE_FORMAT, POSTS, nav_includes, PAGES, header_includes, DEFAULT_LANG, include_after, MATHJAX_CONFIG, search_form, content_footer, pandoc_options, BLOG_TITLE, css, include_before, INDEX_TEMPLATE, OUTPUT_DIR, FILES_FOLDERS, CSS, JS, N_JUMBOTRON, N_GRID, INDEX_INCLUDE_JUMBOTRON, TAG_CLOUD_FONT_SIZE_MIN, TAG_CLOUD_FONT_SIZE_MAX, HTML_FILTERS, ROOT_RELATIVE_TO_SEARCH_FORM, PANFLUTE_FILTERS
 
 if TYPE_CHECKING:
     from typing import Optional, Tuple, List
@@ -88,7 +89,14 @@ def get_pages(
     return pageses
 
 
-def main():
+def main(
+    *,
+    write_tipuesearch_json: bool = True,
+):
+    """Parasite static site generator.
+
+    :param bool write_tipuesearch_json: write tipuesearch JSON file.
+    """
     time_elapse = TimeElapse()
     if JS:
         minifies_js = [
@@ -142,6 +150,7 @@ def main():
             page.ext,
             inputs=[] if page.template is None else [File(str((page.template)))],
             outputs=[File(str((OUTPUT_DIR / page.out_path)))],
+            panflute_filters=PANFLUTE_FILTERS,
             html_filters=HTML_FILTERS,
             **page.options,
         )
@@ -173,6 +182,7 @@ def main():
                 '.md',
                 inputs=[] if INDEX_TEMPLATE is None else [File(str((INDEX_TEMPLATE)))],
                 outputs=[File(str((OUTPUT_DIR / 'categories' / (name if case == 'tags' else f'cat_{name}') / 'index.html')))],
+                panflute_filters=PANFLUTE_FILTERS,
                 html_filters=HTML_FILTERS,
                 **options,
             ))
@@ -197,6 +207,7 @@ def main():
         '.md',
         inputs=inputs,
         outputs=[File(str((OUTPUT_DIR / 'categories' / 'index.html')))],
+        panflute_filters=PANFLUTE_FILTERS,
         html_filters=HTML_FILTERS,
         **options,
     ))
@@ -216,6 +227,7 @@ def main():
         '.md',
         inputs=inputs,
         outputs=[File(str((OUTPUT_DIR / 'archive' / 'index.html')))],
+        panflute_filters=PANFLUTE_FILTERS,
         html_filters=HTML_FILTERS,
         **options,
     ))
@@ -238,20 +250,22 @@ def main():
         '.md',
         inputs=[] if INDEX_TEMPLATE is None else [File(str((INDEX_TEMPLATE)))],
         outputs=[File(str((OUTPUT_DIR / 'index.html')))],
+        panflute_filters=PANFLUTE_FILTERS,
         html_filters=HTML_FILTERS,
         **options,
     ))
     time_elapse.report('staging index.')
-    # search: we're not using parsl here, as
-    # it needs to be re-generated even if only one page is changed,
-    # and the time taken is very small for now.
-    # as site gets bigger, may need to cache the Page.text e.g. in app_read_md_to_ast*?
-    write_tipuesearch(
-        OUTPUT_DIR / 'assets/js/tipuesearch_content.js',
-        all_pages,
-        root=ROOT_RELATIVE_TO_SEARCH_FORM,
-    )
-    time_elapse.report('wrote tipuesearch.')
+    if write_tipuesearch_json:
+        # search: we're not using parsl here, as
+        # it needs to be re-generated even if only one page is changed,
+        # and the time taken is very small for now.
+        # as site gets bigger, may need to cache the Page.text e.g. in app_read_md_to_ast*?
+        write_tipuesearch(
+            OUTPUT_DIR / 'assets/js/tipuesearch_content.js',
+            all_pages,
+            root=ROOT_RELATIVE_TO_SEARCH_FORM,
+        )
+        time_elapse.report('wrote tipuesearch.')
 
     for future in output_futures:
         future.result()
@@ -267,5 +281,9 @@ def main():
     time_elapse.report('collecting all futures.')
 
 
+def cli():
+    defopt.run(main)
+
+
 if __name__ == "__main__":
-    main()
+    cli()

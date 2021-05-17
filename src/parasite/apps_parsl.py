@@ -47,6 +47,7 @@ def app_post_to_html(
     nav=None,
     pandoc_options=None,
     css=None,
+    panflute_filters=[],
     html_filters=[],
 ):
     from pathlib import Path
@@ -74,6 +75,7 @@ def app_post_to_html(
         nav=nav,
         pandoc_options=pandoc_options,
         css=css,
+        panflute_filters=panflute_filters,
         html_filters=html_filters,
     )
 
