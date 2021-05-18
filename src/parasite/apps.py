@@ -61,6 +61,7 @@ def post_to_html(
     nav: Optional[Callable[[str, str, str], str]] = None,
     pandoc_options: Optional[Callable[[str, str], List[str]]] = None,
     css: Optional[Callable[[str, str], List[str]]] = None,
+    logo_url: Optional[Url] = None,
     panflute_filters: List[Callable] = [],
     html_filters: List[Callable[[str], str]] = [],
 ):
@@ -84,6 +85,8 @@ def post_to_html(
         ast.metadata['search-form'] = pf.RawBlock(search_form(lang, ext, '.html').format(root=root))
     if blog_title:
         ast.metadata['title-prefix'] = pf.RawBlock(blog_title[lang])
+    if logo_url:
+        ast.metadata['logo-url'] = str(logo_url)
     if nav:
         ast.metadata['nav'] = pf.RawBlock(nav(lang, ext, '.html').format(root=root))
     if root:

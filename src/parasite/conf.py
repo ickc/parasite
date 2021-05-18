@@ -17,6 +17,7 @@ N_GRID: int = 2
 INDEX_INCLUDE_JUMBOTRON: bool = True
 TAG_CLOUD_FONT_SIZE_MIN: int = 70
 TAG_CLOUD_FONT_SIZE_MAX: int = 280
+LOGO_URL: str = ''
 
 OUTPUT_DIR: Path = Path('output')
 DATE_FORMAT: str = r'%Y-%m-%d'

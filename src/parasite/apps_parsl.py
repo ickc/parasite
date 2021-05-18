@@ -37,18 +37,7 @@ def app_post_to_html(
     ext,
     inputs=[],   # template
     outputs=[],  # out_path
-    header_includes=None,
-    include_before=None,
-    include_after=None,
-    mathjax_config=None,
-    search_form=None,
-    content_footer=None,
-    blog_title=None,
-    nav=None,
-    pandoc_options=None,
-    css=None,
-    panflute_filters=[],
-    html_filters=[],
+    **kwargs,
 ):
     from pathlib import Path
 
@@ -65,18 +54,7 @@ def app_post_to_html(
         ext,
         inputs=input_paths,
         outputs=output_paths,
-        header_includes=header_includes,
-        include_before=include_before,
-        include_after=include_after,
-        mathjax_config=mathjax_config,
-        search_form=search_form,
-        content_footer=content_footer,
-        blog_title=blog_title,
-        nav=nav,
-        pandoc_options=pandoc_options,
-        css=css,
-        panflute_filters=panflute_filters,
-        html_filters=html_filters,
+        **kwargs,
     )
 
 

@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from logging import getLogger
 import psutil
 
+from urlpath import URL as Url
 import defopt
 import parsl
 from parsl.config import Config
@@ -23,7 +24,7 @@ from .apps_parsl import app_read_md_to_ast, app_read_md_to_ast_with_teaser, app_
 # require user to put conf.py in cwd
 import sys
 sys.path.append(os.getcwd())
-from conf import PRETTY_URLS, DATE_FORMAT, POSTS, nav_includes, PAGES, header_includes, DEFAULT_LANG, include_after, MATHJAX_CONFIG, search_form, content_footer, pandoc_options, BLOG_TITLE, css, include_before, INDEX_TEMPLATE, OUTPUT_DIR, FILES_FOLDERS, CSS, JS, N_JUMBOTRON, N_GRID, INDEX_INCLUDE_JUMBOTRON, TAG_CLOUD_FONT_SIZE_MIN, TAG_CLOUD_FONT_SIZE_MAX, HTML_FILTERS, ROOT_RELATIVE_TO_SEARCH_FORM, PANFLUTE_FILTERS
+from conf import PRETTY_URLS, DATE_FORMAT, POSTS, nav_includes, PAGES, header_includes, DEFAULT_LANG, include_after, MATHJAX_CONFIG, search_form, content_footer, pandoc_options, BLOG_TITLE, css, include_before, INDEX_TEMPLATE, OUTPUT_DIR, FILES_FOLDERS, CSS, JS, N_JUMBOTRON, N_GRID, INDEX_INCLUDE_JUMBOTRON, TAG_CLOUD_FONT_SIZE_MIN, TAG_CLOUD_FONT_SIZE_MAX, HTML_FILTERS, ROOT_RELATIVE_TO_SEARCH_FORM, PANFLUTE_FILTERS, LOGO_URL
 
 if TYPE_CHECKING:
     from typing import Optional, Tuple, List
@@ -75,6 +76,7 @@ def get_pages(
             'nav': nav_includes,
             'pandoc_options': pandoc_options,
             'css': css,
+            'logo_url': Url(LOGO_URL) if LOGO_URL else None,
         }
         pageses.append(page_class.from_file_system(
             path,
