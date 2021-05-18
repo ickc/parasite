@@ -70,6 +70,7 @@ def post_to_html(
     ext: str,
     inputs: List[Path] = [],   # template
     outputs: List[Path] = [],  # out_path
+    show_previewimage_in_post: bool = True,
     header_includes: Optional[Callable[[str, str, str], str]] = None,
     include_before: Optional[Callable[[str, str, str], str]] = None,
     include_after: Optional[Callable[[str, str, str], str]] = None,
@@ -96,6 +97,8 @@ def post_to_html(
     meta_append(ast.metadata, 'include-before', include_before(lang, ext, '.html').format(root=root))
     meta_append(ast.metadata, 'include-after', include_after(lang, ext, '.html').format(root=root))
 
+    if show_previewimage_in_post:
+        ast.metadata['show-previewimage-in-post'] = 'true'
     if content_footer:
         ast.metadata['content-footer'] = pf.RawBlock(content_footer(lang, ext, '.html').format(root=root))
     if mathjax_config:

@@ -18,6 +18,7 @@ INDEX_INCLUDE_JUMBOTRON: bool = True
 TAG_CLOUD_FONT_SIZE_MIN: int = 70
 TAG_CLOUD_FONT_SIZE_MAX: int = 280
 LOGO_URL: str = ''
+SHOW_PREVIEWIMAGE_IN_POST: bool = True
 
 OUTPUT_DIR: Path = Path('output')
 DATE_FORMAT: str = r'%Y-%m-%d'
@@ -114,7 +115,7 @@ tocbot.init({{
         return ''
 
 
-COPYRIGHT: str = f'Contents © 2021–{time.gmtime().tm_year} {BLOG_AUTHOR[lang]}'
+COPYRIGHT: str = f'Contents © 2021–{time.gmtime().tm_year} {BLOG_AUTHOR[DEFAULT_LANG]}'
 TIMEZONE: str = r"America/Los_Angeles"
 
 
@@ -215,7 +216,7 @@ def panflute_output_filters(ext: str, out_ext: str) -> List[Callable]:
     if out_ext == '.html':
         return [
             lightgallery,
-            ]
+        ]
     else:
         return []
 

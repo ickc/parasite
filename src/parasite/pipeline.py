@@ -24,7 +24,7 @@ from .apps_parsl import app_read_md_to_ast, app_read_md_to_ast_with_teaser, app_
 # require user to put conf.py in cwd
 import sys
 sys.path.append(os.getcwd())
-from conf import PRETTY_URLS, DATE_FORMAT, POSTS, nav_includes, PAGES, header_includes, DEFAULT_LANG, include_after, MATHJAX_CONFIG, search_form, content_footer, BLOG_TITLE, css, include_before, INDEX_TEMPLATE, OUTPUT_DIR, FILES_FOLDERS, CSS, JS, N_JUMBOTRON, N_GRID, INDEX_INCLUDE_JUMBOTRON, TAG_CLOUD_FONT_SIZE_MIN, TAG_CLOUD_FONT_SIZE_MAX, HTML_FILTERS, ROOT_RELATIVE_TO_SEARCH_FORM, LOGO_URL, BLOG_DESCRIPTION, BLOG_AUTHOR, BLOG_EMAIL, SITE_URL, pandoc_input_options, pandoc_output_options, panflute_input_filters, panflute_output_filters, COPYRIGHT, TIMEZONE
+from conf import PRETTY_URLS, DATE_FORMAT, POSTS, nav_includes, PAGES, header_includes, DEFAULT_LANG, include_after, MATHJAX_CONFIG, search_form, content_footer, BLOG_TITLE, css, include_before, INDEX_TEMPLATE, OUTPUT_DIR, FILES_FOLDERS, CSS, JS, N_JUMBOTRON, N_GRID, INDEX_INCLUDE_JUMBOTRON, TAG_CLOUD_FONT_SIZE_MIN, TAG_CLOUD_FONT_SIZE_MAX, HTML_FILTERS, ROOT_RELATIVE_TO_SEARCH_FORM, LOGO_URL, BLOG_DESCRIPTION, BLOG_AUTHOR, BLOG_EMAIL, SITE_URL, pandoc_input_options, pandoc_output_options, panflute_input_filters, panflute_output_filters, COPYRIGHT, TIMEZONE, SHOW_PREVIEWIMAGE_IN_POST
 
 if TYPE_CHECKING:
     from typing import Optional, Tuple, List
@@ -67,6 +67,7 @@ def get_pages(
         pretty_urls = PRETTY_URLS[ext]
         DATE_FORMAT
         options = {
+            'show_previewimage_in_post': SHOW_PREVIEWIMAGE_IN_POST,
             'header_includes': header_includes,
             'include_before': include_before,
             'include_after': include_after,
