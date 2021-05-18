@@ -102,7 +102,7 @@ $("#{identifier}").justifiedGallery();""",
         root = doc.get_metadata('root', '/')
         res = [
             Link(Image(url=(url := str(root / Url(path)))), url=url)
-            for path in chain(*(Path(elem.attributes[attribute]).glob(f'**/*{suffix}') for suffix in suffices))
+            for path in sorted(chain(*(Path(elem.attributes[attribute]).glob(f'**/*{suffix}') for suffix in suffices)))
         ]
 
         identifier = ''.join(random.choices(string.ascii_uppercase + string.digits, k=44))
