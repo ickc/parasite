@@ -208,6 +208,14 @@ class Page:
         return None
 
     @property
+    def status(self) -> str:
+        return self.ast.get_metadata('status', '')
+
+    @property
+    def is_draft(self) -> bool:
+        return self.status == 'draft'
+
+    @property
     def prev(self):
         return None
 

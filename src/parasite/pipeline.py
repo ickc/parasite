@@ -101,6 +101,7 @@ def main(
     write_rss: bool = True,
     write_atom: bool = True,
     write_sitemap: bool = True,
+    include_draft: bool = False,
 ):
     """Parasite static site generator.
 
@@ -156,6 +157,11 @@ def main(
     for page, future in zip(posts.pages, posts_ast_futures):
         page.ast, page.teaser = future.result()
     time_elapse.report('got all ASTs.')
+
+    if not include_draft:
+        pages = Pages([page for page in pages.pages if not page.is_draft])
+        posts = Posts([page for page in posts.pages if not page.is_draft])
+        time_elapse.report('filter out drafts.')
 
     posts.sort()
     time_elapse.report('sorting posts.')
