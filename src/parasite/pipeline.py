@@ -18,7 +18,7 @@ from parsl.data_provider.files import File
 
 from .data import Posts, Pages
 from .util import TimeElapse
-from .helpers import write_tipuesearch, to_feed
+from .helpers import write_tipuesearch, to_feed, to_sitemap
 from .to_ast import posts_to_index_ast, posts_to_tag_ast, posts_to_archive_ast
 from .apps_parsl import app_read_md_to_ast, app_read_md_to_ast_with_teaser, app_post_to_html, app_rsync, app_minify, app_closure_compiler
 # require user to put conf.py in cwd
@@ -100,6 +100,7 @@ def main(
     write_tipuesearch_json: bool = True,
     write_rss: bool = True,
     write_atom: bool = True,
+    write_sitemap: bool = True,
 ):
     """Parasite static site generator.
 
@@ -296,6 +297,12 @@ def main(
             write_rss=write_rss,
         )
         time_elapse.report('wrote rss and/or atom feed.')
+    if write_sitemap:
+        to_sitemap(
+            SITE_URL,
+            all_pages,
+            output_dir=OUTPUT_DIR,
+        )
 
     for future in output_futures:
         future.result()

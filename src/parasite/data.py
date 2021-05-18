@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from collections import defaultdict
 from pathlib import Path
 from dataclasses import dataclass, field
@@ -7,7 +8,7 @@ from functools import cached_property
 from typing import TYPE_CHECKING
 from typing import Final
 from logging import getLogger
-from datetime import datetime
+from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
 import panflute as pf
@@ -122,6 +123,26 @@ class Page:
             return '.'
         else:
             return '/'.join(['..'] * level)
+
+    @cached_property
+    def mtime(self) -> datetime:
+        return datetime.fromtimestamp(os.path.getmtime(self.path), timezone.utc)
+
+    @cached_property
+    def committed_date(self) -> datetime:
+        import git
+
+        repo = git.Repo(".")
+        try:
+            commit = next(repo.iter_commits(paths=self.path, max_count=1))
+            return datetime.fromtimestamp(commit.committed_date, timezone.utc)
+        except StopIteration:
+            logger.warn(f'Cannot obtain committed date for {self.path}, returning mtime instead.')
+            return self.mtime
+
+    @cached_property
+    def committed_date_str(self) -> str:
+        return self.committed_date.strftime(r'%Y-%m-%d')
 
     # AST & its derivatives
 

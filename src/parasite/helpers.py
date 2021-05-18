@@ -165,3 +165,25 @@ def to_feed(
         fg.atom_file(str(output_dir / 'atom.xml'))
     if write_rss:
         fg.rss_file(str(output_dir / 'rss.xml'))
+
+
+def to_sitemap(
+    site_url: str,
+    pages: List[Page],
+    output_dir: Path = Path('output'),
+    filename: str = 'sitemapindex.xml',
+):
+    from xml.etree.ElementTree import Element, SubElement, ElementTree
+
+    urlset = Element('urlset', xmlns="http://www.sitemaps.org/schemas/sitemap/0.9")
+    tree = ElementTree(urlset)
+
+    for page in pages:
+        url = SubElement(urlset, 'url')
+
+        loc = SubElement(url, 'loc')
+        loc.text = str(site_url / page.url)
+
+        lastmod = SubElement(url, 'lastmod')
+        lastmod.text = page.committed_date_str
+    tree.write(output_dir / filename, encoding='utf-8', xml_declaration=True)
