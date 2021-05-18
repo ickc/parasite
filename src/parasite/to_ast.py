@@ -5,6 +5,8 @@ from collections import defaultdict
 
 import panflute as pf
 
+from .translate import translate
+
 if TYPE_CHECKING:
     from typing import List, Dict, Tuple
     from .data import Post
@@ -71,13 +73,13 @@ def posts_to_tag_ast(
     lang: str = 'en',
 ) -> pf.elements.Doc:
     meta = {
-        'title': 'Tags and Categories',
+        'title': translate('Tags and Categories', lang),
         'lang': lang,
     }
     contents = []
     for case, dict_ in (
-        ('categories', categories),
-        ('tags', tags),
+        ('Categories', categories),
+        ('Tags', tags),
     ):
         # tag cloud
         counts_dict = {name: len(list_) for name, list_ in dict_.items()}
@@ -91,7 +93,7 @@ def posts_to_tag_ast(
             m = 0
             c = 100
         temp = []
-        meta[f'archive-{case}'] = temp
+        meta[f'{case}-archive'] = temp
         for name, count in counts_dict.items():
             font_size = m * count + c
             temp.append({
@@ -100,7 +102,7 @@ def posts_to_tag_ast(
             })
 
         # list of links
-        contents.append(pf.Header(pf.Str(f'{case} links'), level=1, identifier=f'{case}-links'))
+        contents.append(pf.Header(pf.Str(translate(f'{case} links', lang)), level=1, identifier=f'{case}-links'))
         for name, posts in dict_.items():
             contents.append(pf.Header(pf.Str(name), level=2, identifier=f'{case}-{name}'))
             lis = []
@@ -129,7 +131,7 @@ def posts_to_archive_ast(
     lang: str = 'en',
 ) -> pf.elements.Doc:
     meta = {
-        'title': 'Archive',
+        'title': translate('Archive', lang),
         'lang': lang,
     }
 
