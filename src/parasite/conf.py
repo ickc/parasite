@@ -10,7 +10,7 @@ from parasite.panflute_filters import lightgallery, lightgallery_from_dir
 if TYPE_CHECKING:
     from typing import Tuple, Dict, Optional, List, Union, Callable
 
-# SITE_URL: str = ""
+SITE_URL: str = ""
 BLOG_EMAIL: str = ""
 N_JUMBOTRON: int = 1
 N_GRID: int = 2
@@ -36,9 +36,9 @@ BLOG_AUTHOR: Dict[str, str] = {
 BLOG_TITLE: Dict[str, str] = {
     'en': "",
 }
-# BLOG_DESCRIPTION: Dict[str, str] = {
-#     'en': "",
-# }
+BLOG_DESCRIPTION: Dict[str, str] = {
+    'en': "",
+}
 
 
 # values are output base path relative to root
@@ -114,6 +114,10 @@ tocbot.init({{
         return ''
 
 
+COPYRIGHT: str = f'Contents © 2021–{time.gmtime().tm_year} {BLOG_AUTHOR[lang]}'
+TIMEZONE: str = r"America/Los_Angeles"
+
+
 def content_footer(lang: str, ext: str, out_ext: str) -> str:
     if ext == '.md' and out_ext == '.html':
         return f'Contents © 2021–{time.gmtime().tm_year}         <a href="mailto:{BLOG_EMAIL}">{BLOG_AUTHOR[lang]}</a>'
@@ -137,22 +141,6 @@ def nav_includes(lang: str, ext: str, out_ext: str) -> str:
         ))
     else:
         return ''
-
-
-def pandoc_options(ext: str, out_ext: str) -> List[str]:
-    PANDOC_OPTIONS: Dict[
-        str,        # input file extension
-        List[str],  # pandoc args
-    ] = {
-        '.md': [
-            '--mathjax',
-        ],
-        '.markdown': [
-            '--mathjax',
-            '--to=slidy',
-        ],
-    }
-    return PANDOC_OPTIONS[ext]
 
 
 def css(ext: str, out_ext: str) -> List[str]:
@@ -180,7 +168,6 @@ CSS: Dict[
         '_css/rst_base.css',
         '_css/nikola_rst.css',
         '_css/code.css',
-        '_css/baguetteBox.min.css',
         '_css/theme.css',
         '_css/bootblog.css',
         '_css/custom.css',
@@ -196,7 +183,6 @@ JS: Dict[
         '_js/jquery.min.js',
         '_js/popper.min.js',
         '_js/bootstrap.min.js',
-        '_js/baguetteBox.min.js',
         '_js/fancydates.min.js',
     ],
     f'{OUTPUT_DIR}/assets/js/tipuesearch.js': [
@@ -205,6 +191,33 @@ JS: Dict[
     ]
 }
 
-HTML_FILTERS: List[Callable[[str], str]] = []
 
-PANFLUTE_FILTERS: List[Callable] = [lightgallery, lightgallery_from_dir]
+def pandoc_input_options(ext: str) -> List[str]:
+    return []
+
+
+def panflute_input_filters(ext: str) -> List[Callable]:
+    return [
+        lightgallery_from_dir,
+    ]
+
+
+def pandoc_output_options(ext: str, out_ext: str) -> List[str]:
+    res = []
+    if out_ext == '.html':
+        res.append('--mathjax')
+    if ext == '.markdown':
+        res.append('--to=slidy')
+    return res
+
+
+def panflute_output_filters(ext: str, out_ext: str) -> List[Callable]:
+    if out_ext == '.html':
+        return [
+            lightgallery,
+            ]
+    else:
+        return []
+
+
+HTML_FILTERS: List[Callable[[str], str]] = []

@@ -18,14 +18,25 @@ if TYPE_CHECKING:
     from urlpath import URL as Url
 
 
-def read_md_to_ast(inputs: List[Path] = []) -> pf.elements.Doc:
+def read_md_to_ast(
+    pandoc_options: Callable[[str], List[str]],
+    panflute_filters: Callable[[str], List[Callable]],
+    inputs: List[Path] = [],
+) -> pf.elements.Doc:
     """Read from markdown to panflute AST
     """
     assert len(inputs) == 1
     path = inputs[0]
+    ext = path.suffix
 
     with open(path, 'r') as f:
-        return convert_text(f.read(), standalone=True)
+        doc = convert_text(f.read(), standalone=True, extra_args=pandoc_options(ext))
+
+    fs = panflute_filters(ext)
+    if fs:
+        pf.io.run_filters(fs, doc=doc)
+
+    return doc
 
 
 def get_teaser(doc: pf.elements.Doc) -> pf.containers.ListContainer:
@@ -36,8 +47,16 @@ def get_teaser(doc: pf.elements.Doc) -> pf.containers.ListContainer:
     return content[:i]
 
 
-def read_md_to_ast_with_teaser(inputs: List[Path] = []) -> Tuple[pf.elements.Doc, pf.containers.ListContainer]:
-    ast = read_md_to_ast(inputs)
+def read_md_to_ast_with_teaser(
+    pandoc_options: Callable[[str], List[str]],
+    panflute_filters: Callable[[str], List[Callable]],
+    inputs: List[Path] = [],
+) -> Tuple[pf.elements.Doc, pf.containers.ListContainer]:
+    ast = read_md_to_ast(
+        pandoc_options=pandoc_options,
+        panflute_filters=panflute_filters,
+        inputs=inputs
+    )
     teaser = get_teaser(ast)
     return ast, teaser
 
@@ -62,7 +81,7 @@ def post_to_html(
     pandoc_options: Optional[Callable[[str, str], List[str]]] = None,
     css: Optional[Callable[[str, str], List[str]]] = None,
     logo_url: Optional[Url] = None,
-    panflute_filters: List[Callable] = [],
+    panflute_filters: Optional[Callable[[str, str], List[Callable]]] = None,
     html_filters: List[Callable[[str], str]] = [],
 ):
     """
@@ -108,8 +127,9 @@ def post_to_html(
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
-    if panflute_filters:
-        pf.io.run_filters(panflute_filters, doc=ast)
+    fs = panflute_filters(ext, '.html')
+    if fs:
+        pf.io.run_filters(fs, doc=ast)
     if not html_filters:
         extra_args.append(f'--output={out_path}')
     html = convert_text(ast, input_format='panflute', output_format='html', standalone=True, extra_args=extra_args)

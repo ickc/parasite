@@ -8,8 +8,10 @@ from typing import TYPE_CHECKING
 from typing import Final
 from logging import getLogger
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 import panflute as pf
+from panflute.tools import convert_text
 from urlpath import URL as Url
 
 from .apps import read_md_to_ast, get_teaser
@@ -28,6 +30,7 @@ class Page:
     base_path: Path
     out_base_path: Path
     template: Optional[Path]
+    timezone: str = r"America/Los_Angeles"
     pretty_urls: Union[bool, Callable[[Path, str], Path]] = True
     date_format: str = r'%Y-%m-%d'
     default_lang: str = 'en'
@@ -143,6 +146,16 @@ class Page:
     def text(self) -> str:
         return '\n'.join(pf.stringify(elem) for elem in self.ast.content)
 
+    @cached_property
+    def html(self) -> str:
+        """HTML frament.
+
+        Primarily for feed.
+
+        TODO: handle AST mutation
+        """
+        return convert_text(self.ast, input_format='panflute', output_format='html', standalone=False)
+
     @property
     def title(self) -> Optional[str]:
         return self.ast.get_metadata('title')
@@ -219,7 +232,9 @@ class Post(Page):
 
     @cached_property
     def time(self) -> datetime:
-        return datetime.strptime(self.date, self.date_format)
+        time = datetime.strptime(self.date, self.date_format)
+        time = time.replace(tzinfo=ZoneInfo(key=self.timezone))
+        return time
 
     @property
     def prev(self) -> Optional[Tuple[Url, Optional[str]]]:
@@ -258,6 +273,7 @@ class Pages:
         out_path: Path,
         ext: str,
         template: Optional[Path],
+        timezone: str = r"America/Los_Angeles",
         pretty_urls: Union[bool, Callable[[Path, str], Path]] = True,
         date_format: str = r'%Y-%m-%d',
         default_lang: str = 'en',
@@ -274,6 +290,7 @@ class Pages:
                     path,
                     out_path,
                     template,
+                    timezone=timezone,
                     pretty_urls=pretty_urls,
                     date_format=date_format,
                     default_lang=default_lang,

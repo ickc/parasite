@@ -90,18 +90,16 @@ def lightgallery_from_dir(
     doc: Doc,
     attribute: str = 'lightgallery',
     suffices: List[str] = ['.jpg'],
-    include_after: str = """<script>
-lightGallery(document.getElementById('{identifier}'), {{
+    script_include_after: str = """lightGallery(document.getElementById('{identifier}'), {{
 plugins: [lgThumbnail,],
 thumbnail: true,
 }});
-$("#{identifier}").justifiedGallery();
-</script>""",
+$("#{identifier}").justifiedGallery();""",
 ) -> Optional[ListContainer[Block]]:
     """Create lightgallery Div from directory.
     """
     if type(elem) == Div and attribute in elem.attributes:
-        root = doc.get_metadata('root', '.')
+        root = doc.get_metadata('root', '/')
         res = [
             Link(Image(url=(url := str(root / Url(path)))), url=url)
             for path in chain(*(Path(elem.attributes[attribute]).glob(f'**/*{suffix}') for suffix in suffices))
@@ -110,7 +108,7 @@ $("#{identifier}").justifiedGallery();
         identifier = ''.join(random.choices(string.ascii_uppercase + string.digits, k=44))
         logger.info(f'Created random identifier {identifier} for lightgallery in {doc.get_metadata("title")}.')
 
-        meta_append(doc.metadata, 'include-after', include_after.format(identifier=identifier))
+        meta_append(doc.metadata, 'script-include-after', script_include_after.format(identifier=identifier))
         div = Div(
             Plain(*res),
             identifier=identifier,

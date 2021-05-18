@@ -8,23 +8,39 @@ from parsl import python_app, bash_app
 
 
 @python_app(cache=True)
-def app_read_md_to_ast(inputs=[]):
+def app_read_md_to_ast(
+    pandoc_options,
+    panflute_filters,
+    inputs=[],
+):
     from pathlib import Path
 
     from .apps import read_md_to_ast
 
     input_paths = [Path(file.filepath) for file in inputs]
-    return read_md_to_ast(input_paths)
+    return read_md_to_ast(
+        pandoc_options,
+        panflute_filters,
+        inputs=input_paths,
+    )
 
 
 @python_app(cache=True)
-def app_read_md_to_ast_with_teaser(inputs=[]):
+def app_read_md_to_ast_with_teaser(
+    pandoc_options,
+    panflute_filters,
+    inputs=[],
+):
     from pathlib import Path
 
     from .apps import read_md_to_ast_with_teaser
 
     input_paths = [Path(file.filepath) for file in inputs]
-    return read_md_to_ast_with_teaser(input_paths)
+    return read_md_to_ast_with_teaser(
+        pandoc_options,
+        panflute_filters,
+        inputs=input_paths,
+    )
 
 
 @python_app(cache=True)

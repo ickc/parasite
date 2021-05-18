@@ -18,13 +18,13 @@ from parsl.data_provider.files import File
 
 from .data import Posts, Pages
 from .util import TimeElapse
-from .helpers import write_tipuesearch
+from .helpers import write_tipuesearch, to_feed
 from .to_ast import posts_to_index_ast, posts_to_tag_ast, posts_to_archive_ast
 from .apps_parsl import app_read_md_to_ast, app_read_md_to_ast_with_teaser, app_post_to_html, app_rsync, app_minify, app_closure_compiler
 # require user to put conf.py in cwd
 import sys
 sys.path.append(os.getcwd())
-from conf import PRETTY_URLS, DATE_FORMAT, POSTS, nav_includes, PAGES, header_includes, DEFAULT_LANG, include_after, MATHJAX_CONFIG, search_form, content_footer, pandoc_options, BLOG_TITLE, css, include_before, INDEX_TEMPLATE, OUTPUT_DIR, FILES_FOLDERS, CSS, JS, N_JUMBOTRON, N_GRID, INDEX_INCLUDE_JUMBOTRON, TAG_CLOUD_FONT_SIZE_MIN, TAG_CLOUD_FONT_SIZE_MAX, HTML_FILTERS, ROOT_RELATIVE_TO_SEARCH_FORM, PANFLUTE_FILTERS, LOGO_URL
+from conf import PRETTY_URLS, DATE_FORMAT, POSTS, nav_includes, PAGES, header_includes, DEFAULT_LANG, include_after, MATHJAX_CONFIG, search_form, content_footer, BLOG_TITLE, css, include_before, INDEX_TEMPLATE, OUTPUT_DIR, FILES_FOLDERS, CSS, JS, N_JUMBOTRON, N_GRID, INDEX_INCLUDE_JUMBOTRON, TAG_CLOUD_FONT_SIZE_MIN, TAG_CLOUD_FONT_SIZE_MAX, HTML_FILTERS, ROOT_RELATIVE_TO_SEARCH_FORM, LOGO_URL, BLOG_DESCRIPTION, BLOG_AUTHOR, BLOG_EMAIL, SITE_URL, pandoc_input_options, pandoc_output_options, panflute_input_filters, panflute_output_filters, COPYRIGHT, TIMEZONE
 
 if TYPE_CHECKING:
     from typing import Optional, Tuple, List
@@ -60,6 +60,7 @@ def get_pages(
         ...
     ],
     page_class,
+    timezone: str = r"America/Los_Angeles",
 ) -> List[Pages]:
     pageses = []
     for path, out_path, ext, template in PAGES:
@@ -74,9 +75,11 @@ def get_pages(
             'content_footer': content_footer,
             'blog_title': BLOG_TITLE,
             'nav': nav_includes,
-            'pandoc_options': pandoc_options,
+            'pandoc_options': pandoc_output_options,
             'css': css,
             'logo_url': Url(LOGO_URL) if LOGO_URL else None,
+            'panflute_filters': panflute_output_filters,
+            'html_filters': HTML_FILTERS,
         }
         pageses.append(page_class.from_file_system(
             path,
@@ -86,6 +89,7 @@ def get_pages(
             pretty_urls=pretty_urls,
             date_format=DATE_FORMAT,
             default_lang=DEFAULT_LANG,
+            timezone=timezone,
             options=options,
         ))
     return pageses
@@ -94,6 +98,8 @@ def get_pages(
 def main(
     *,
     write_tipuesearch_json: bool = True,
+    write_rss: bool = True,
+    write_atom: bool = True,
 ):
     """Parasite static site generator.
 
@@ -123,12 +129,26 @@ def main(
         ]
     time_elapse.report('staging for minifies and rsync.')
 
-    pages = Pages(sum((pages_.pages for pages_ in get_pages(PAGES, Pages)), []))
-    posts = Posts(sum((pages_.pages for pages_ in get_pages(POSTS, Posts)), []))
+    pages = Pages(sum((pages_.pages for pages_ in get_pages(PAGES, Pages, timezone=TIMEZONE)), []))
+    posts = Posts(sum((pages_.pages for pages_ in get_pages(POSTS, Posts, timezone=TIMEZONE)), []))
     time_elapse.report('glob pages/posts from file system.')
 
-    pages_ast_futures = [app_read_md_to_ast(inputs=[File(str((page.path)))]) for page in pages.pages]
-    posts_ast_futures = [app_read_md_to_ast_with_teaser(inputs=[File(str((page.path)))]) for page in posts.pages]
+    pages_ast_futures = [
+        app_read_md_to_ast(
+            pandoc_input_options,
+            panflute_input_filters,
+            inputs=[File(str((page.path)))],
+        )
+        for page in pages.pages
+    ]
+    posts_ast_futures = [
+        app_read_md_to_ast_with_teaser(
+            pandoc_input_options,
+            panflute_input_filters,
+            inputs=[File(str((page.path)))],
+        )
+        for page in posts.pages
+    ]
     time_elapse.report('staging to get all ASTs.')
     for page, future in zip(pages.pages, pages_ast_futures):
         page.ast = future.result()
@@ -152,8 +172,6 @@ def main(
             page.ext,
             inputs=[] if page.template is None else [File(str((page.template)))],
             outputs=[File(str((OUTPUT_DIR / page.out_path)))],
-            panflute_filters=PANFLUTE_FILTERS,
-            html_filters=HTML_FILTERS,
             **page.options,
         )
         for page in all_pages
@@ -184,8 +202,6 @@ def main(
                 '.md',
                 inputs=[] if INDEX_TEMPLATE is None else [File(str((INDEX_TEMPLATE)))],
                 outputs=[File(str((OUTPUT_DIR / 'categories' / (name if case == 'tags' else f'cat_{name}') / 'index.html')))],
-                panflute_filters=PANFLUTE_FILTERS,
-                html_filters=HTML_FILTERS,
                 **options,
             ))
     time_elapse.report('staging cat-index.')
@@ -209,8 +225,6 @@ def main(
         '.md',
         inputs=inputs,
         outputs=[File(str((OUTPUT_DIR / 'categories' / 'index.html')))],
-        panflute_filters=PANFLUTE_FILTERS,
-        html_filters=HTML_FILTERS,
         **options,
     ))
     time_elapse.report('staging tag page.')
@@ -229,8 +243,6 @@ def main(
         '.md',
         inputs=inputs,
         outputs=[File(str((OUTPUT_DIR / 'archive' / 'index.html')))],
-        panflute_filters=PANFLUTE_FILTERS,
-        html_filters=HTML_FILTERS,
         **options,
     ))
     time_elapse.report('staging archive page.')
@@ -252,8 +264,6 @@ def main(
         '.md',
         inputs=[] if INDEX_TEMPLATE is None else [File(str((INDEX_TEMPLATE)))],
         outputs=[File(str((OUTPUT_DIR / 'index.html')))],
-        panflute_filters=PANFLUTE_FILTERS,
-        html_filters=HTML_FILTERS,
         **options,
     ))
     time_elapse.report('staging index.')
@@ -268,6 +278,24 @@ def main(
             root=ROOT_RELATIVE_TO_SEARCH_FORM,
         )
         time_elapse.report('wrote tipuesearch.')
+
+    if write_atom or write_rss:
+        to_feed(
+            posts.pages,
+            BLOG_TITLE[DEFAULT_LANG],
+            BLOG_DESCRIPTION[DEFAULT_LANG],
+            BLOG_AUTHOR[DEFAULT_LANG],
+            BLOG_EMAIL,
+            SITE_URL,
+            LOGO_URL,
+            DEFAULT_LANG,
+            COPYRIGHT,
+            TIMEZONE,
+            output_dir=OUTPUT_DIR,
+            write_atom=write_atom,
+            write_rss=write_rss,
+        )
+        time_elapse.report('wrote rss and/or atom feed.')
 
     for future in output_futures:
         future.result()

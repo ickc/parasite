@@ -1,11 +1,12 @@
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
+from pathlib import Path
 
 if TYPE_CHECKING:
-    from pathlib import Path
     from typing import List, Tuple, Union, Dict
 
-    from .data import Page
+    from .data import Page, Post
 
 
 def _nav(
@@ -114,3 +115,53 @@ def minify_html(html: str) -> str:
     if res.returncode != 0:
         raise RuntimeError(res)
     return res.stdout
+
+
+def to_feed(
+    posts: List[Post],
+    title: str,
+    description: str,
+    author: str,
+    email: str,
+    site_url: str,
+    logo_url: str,
+    lang: str,
+    copy_right: str,
+    time_zone: str,
+    output_dir: Path = Path('output'),
+    write_atom: bool = True,
+    write_rss: bool = True,
+):
+    from feedgen.feed import FeedGenerator
+    import re
+
+    # https://stackoverflow.com/a/25920392/5769446
+    regex = re.compile('[^\u0020-\uD7FF\u0009\u000A\u000D\uE000-\uFFFD\U00010000-\U0010FFFF]+')
+
+    fg = FeedGenerator()
+    fg.id(site_url)
+    fg.link(href=site_url, rel='alternate')
+    fg.link(href=site_url + 'rss.xml', rel='self')
+    fg.title(title)
+    fg.author(name=author, email=email)
+    fg.logo(site_url + logo_url)
+    fg.description(description)
+    fg.language(lang)
+    fg.rights(copy_right)
+    for post in posts:
+        url = str(site_url / post.url)
+
+        fe = fg.add_entry()
+
+        fe.id(url)
+        fe.title(post.title)
+        fe.link(href=url)
+        fe.author(name=post.author)
+        fe.published(post.time)
+        # xml don't like invalid characters that somehow pandoc can produce
+        fe.content(regex.sub('', post.html), type='CDATA')
+
+    if write_atom:
+        fg.atom_file(str(output_dir / 'atom.xml'))
+    if write_rss:
+        fg.rss_file(str(output_dir / 'rss.xml'))
