@@ -75,6 +75,8 @@ def posts_to_tag_ast(
     meta = {
         'title': translate('Tags and Categories', lang),
         'lang': lang,
+        'Categories-archive-title': translate('Categories', lang),
+        'Tags-archive-title': translate('Tags', lang),
     }
     contents = []
     for case, dict_ in (
