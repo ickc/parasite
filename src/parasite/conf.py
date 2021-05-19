@@ -90,10 +90,7 @@ def search_form(lang: str, ext: str, out_ext: str) -> str:
 
 
 def header_includes(lang: str, ext: str, out_ext: str) -> str:
-    if ext == '.md' and out_ext == '.html':
-        return """<script src="https://cdn.jsdelivr.net/npm/tocbot@4.12.3/dist/tocbot.min.js" integrity="sha256-IwKHOct5ypi59vLt9VBR9zFe77yGT0Z2iuUPsuN0SGo=" crossorigin="anonymous"></script>"""
-    else:
-        return ''
+    return ''
 
 
 def include_before(lang: str, ext: str, out_ext: str) -> str:
@@ -101,18 +98,7 @@ def include_before(lang: str, ext: str, out_ext: str) -> str:
 
 
 def include_after(lang: str, ext: str, out_ext: str) -> str:
-    if ext == '.md' and out_ext == '.html':
-        return """<script>
-tocbot.init({{
-  tocSelector: '.js-toc',
-  contentSelector: '.entry-content',
-  headingSelector: 'h1, h2, h3, h4, h5, h6',
-  hasInnerContainers: true,
-  collapseDepth: 1,
-}});
-</script>"""
-    else:
-        return ''
+    return ''
 
 
 THIS_YEAR = time.gmtime().tm_year
@@ -160,6 +146,32 @@ def css(ext: str, out_ext: str) -> List[str]:
     return CSS[ext]
 
 
+def js(ext: str, out_ext: str) -> List[str]:
+    if ext == '.md' and out_ext == 'html':
+        return [
+            'https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js',
+            'https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.bundle.min.js',
+            'https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js',
+            'https://cdn.jsdelivr.net/npm/lightgallery@2/lightgallery.umd.js',
+            'https://cdn.jsdelivr.net/npm/lightgallery@2/plugins/thumbnail/lg-thumbnail.umd.js',
+            'https://cdn.jsdelivr.net/npm/justifiedGallery@3/dist/js/jquery.justifiedGallery.min.js',
+        ]
+    else:
+        return []
+
+
+def script_include_after(ext: str, out_ext: str) -> str:
+    if ext == '.md' and out_ext == '.html':
+        return """tocbot.init({{
+  tocSelector: '.js-toc',
+  contentSelector: '.entry-content',
+  headingSelector: 'h1, h2, h3, h4, h5, h6',
+  collapseDepth: 1,
+}});"""
+    else:
+        return ''
+
+
 # this will be compressed
 CSS: Dict[
     str,       # output file
@@ -181,12 +193,6 @@ JS: Dict[
     str,       # output file
     List[str]  # input files
 ] = {
-    f'{OUTPUT_DIR}/assets/js/all-nocdn.js': [
-        '_js/jquery.min.js',
-        '_js/popper.min.js',
-        '_js/bootstrap.min.js',
-        '_js/fancydates.min.js',
-    ],
     f'{OUTPUT_DIR}/assets/js/tipuesearch.js': [
         '_js/tipuesearch_set.js',
         '_js/tipuesearch.js',

@@ -52,13 +52,11 @@ def lightgallery(
     elem: ListContainer[Block],
     doc: Doc,
     cls: str = 'lightgallery',
-    include_after: str = """<script>
-lightGallery(document.getElementById('{identifier}'), {{
+    script_include_after: str = """lightGallery(document.getElementById('{identifier}'), {{
 plugins: [lgThumbnail,],
 thumbnail: true,
 }});
-$("#{identifier}").justifiedGallery();
-</script>""",
+$("#{identifier}").justifiedGallery();""",
 ) -> Optional[ListContainer[Block]]:
     """Transform contents of Div with class lightgallery to that lightgallery needs.
     """
@@ -72,7 +70,7 @@ $("#{identifier}").justifiedGallery();
             identifier = ''.join(random.choices(string.ascii_uppercase + string.digits, k=44))
             logger.info(f'Created random identifier {identifier} for lightgallery in {doc.get_metadata("title")}.')
 
-        meta_append(doc.metadata, 'include-after', include_after.format(identifier=identifier))
+        meta_append(doc.metadata, 'script-include-after', script_include_after.format(identifier=identifier))
         div = Div(
             Plain(*res),
             identifier=identifier,

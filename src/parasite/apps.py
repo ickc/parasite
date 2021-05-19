@@ -74,6 +74,7 @@ def post_to_html(
     header_includes: Optional[Callable[[str, str, str], str]] = None,
     include_before: Optional[Callable[[str, str, str], str]] = None,
     include_after: Optional[Callable[[str, str, str], str]] = None,
+    script_include_after: Optional[Callable[[str, str], str]] = None,
     mathjax_config: str = '',
     search_form: Optional[Callable[[str, str, str], str]] = None,
     content_footer: Optional[Callable[[str, str, str], str]] = None,
@@ -81,6 +82,7 @@ def post_to_html(
     nav: Optional[Callable[[str, str, str], str]] = None,
     pandoc_options: Optional[Callable[[str, str], List[str]]] = None,
     css: Optional[Callable[[str, str], List[str]]] = None,
+    js: Optional[Callable[[str, str], List[str]]] = None,
     logo_url: Optional[Url] = None,
     panflute_filters: Optional[Callable[[str, str], List[Callable]]] = None,
     html_filters: List[Callable[[str], str]] = [],
@@ -96,6 +98,9 @@ def post_to_html(
     meta_append(ast.metadata, 'header-includes', header_includes(lang, ext, '.html').format(root=root))
     meta_append(ast.metadata, 'include-before', include_before(lang, ext, '.html').format(root=root))
     meta_append(ast.metadata, 'include-after', include_after(lang, ext, '.html').format(root=root))
+    for url in js(ext, '.html'):
+        meta_append(ast.metadata, 'js-include-after', url.format(root=root))
+    meta_append(ast.metadata, 'script-include-after', script_include_after(ext, '.html').format(root=root))
 
     if show_previewimage_in_post:
         ast.metadata['show-previewimage-in-post'] = 'true'
