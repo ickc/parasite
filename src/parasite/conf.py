@@ -115,13 +115,14 @@ tocbot.init({{
         return ''
 
 
-COPYRIGHT: str = f'Contents © 2021–{time.gmtime().tm_year} {BLOG_AUTHOR[DEFAULT_LANG]}'
+THIS_YEAR = time.gmtime().tm_year
+COPYRIGHT: str = f'Contents © 2021–{THIS_YEAR} {BLOG_AUTHOR[DEFAULT_LANG]}'
 TIMEZONE: str = r"America/Los_Angeles"
 
 
 def content_footer(lang: str, ext: str, out_ext: str) -> str:
     if ext == '.md' and out_ext == '.html':
-        return f'Contents © 2021–{time.gmtime().tm_year}         <a href="mailto:{BLOG_EMAIL}">{BLOG_AUTHOR[lang]}</a>'
+        return f'Contents © 2021–{THIS_YEAR}         <a href="mailto:{BLOG_EMAIL}">{BLOG_AUTHOR[lang]}</a>'
     else:
         return ''
 
