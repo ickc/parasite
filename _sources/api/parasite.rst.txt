@@ -1,0 +1,24 @@
+parasite package
+================
+
+.. automodule:: parasite
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   parasite.apps
+   parasite.apps_parsl
+   parasite.conf
+   parasite.data
+   parasite.helpers
+   parasite.panflute_filters
+   parasite.pipeline
+   parasite.to_ast
+   parasite.translate
+   parasite.util

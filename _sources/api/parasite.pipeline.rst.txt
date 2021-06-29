@@ -1,0 +1,7 @@
+parasite.pipeline module
+========================
+
+.. automodule:: parasite.pipeline
+   :members:
+   :undoc-members:
+   :show-inheritance:

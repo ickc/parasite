@@ -1,0 +1,7 @@
+parasite.apps\_parsl module
+===========================
+
+.. automodule:: parasite.apps_parsl
+   :members:
+   :undoc-members:
+   :show-inheritance:

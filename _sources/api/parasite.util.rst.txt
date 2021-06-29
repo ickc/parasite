@@ -1,0 +1,7 @@
+parasite.util module
+====================
+
+.. automodule:: parasite.util
+   :members:
+   :undoc-members:
+   :show-inheritance:

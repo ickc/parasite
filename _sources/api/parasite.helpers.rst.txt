@@ -1,0 +1,7 @@
+parasite.helpers module
+=======================
+
+.. automodule:: parasite.helpers
+   :members:
+   :undoc-members:
+   :show-inheritance:
