@@ -1,0 +1,7 @@
+parasite.templates package
+==========================
+
+.. automodule:: parasite.templates
+   :members:
+   :undoc-members:
+   :show-inheritance:
