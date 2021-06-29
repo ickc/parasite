@@ -31,7 +31,8 @@ def read_md_to_ast(
     ext = path.suffix
 
     with open(path, 'r') as f:
-        doc = convert_text(f.read(), standalone=True, extra_args=pandoc_options(ext))
+        text = f.read()
+    doc = convert_text(text, standalone=True, extra_args=pandoc_options(ext))
 
     fs = panflute_filters(ext)
     if fs:
@@ -45,7 +46,7 @@ def get_teaser(doc: pf.elements.Doc) -> pf.containers.ListContainer:
     for i, item in enumerate(content):
         if (type(item) == pf.RawBlock) and (item.text == '<!-- more -->'):
             break
-    return content[:i]
+    return content[:i - 1]
 
 
 def read_md_to_ast_with_teaser(
