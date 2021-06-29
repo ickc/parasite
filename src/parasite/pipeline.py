@@ -116,7 +116,11 @@ def main(
 ):
     """Parasite static site generator.
 
-    :param bool write_tipuesearch_json: write tipuesearch JSON file.
+    :param write_tipuesearch_json: write tipuesearch JSON file.
+    :param write_rss: write RSS feed.
+    :param write_atom: write atom feed.
+    :param write_sitemap: write sitemap.
+    :param include_draft: output draft posts as well.
     """
     time_elapse = TimeElapse()
     if JS:
