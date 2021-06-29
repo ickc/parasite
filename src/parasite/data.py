@@ -309,8 +309,6 @@ class Pages:
     ):
         path = Path(path)
         out_path = Path(out_path)
-        if template is not None:
-            template = Path(template)
         return cls(
             [
                 cls.page_class(

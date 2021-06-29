@@ -1,9 +1,17 @@
+"""A sample conf.py file.
+
+Copy this to the root of site and modify from there.
+
+Or create a conf.py and `from parasite.conf import *`,
+and override from there.
+"""
 from __future__ import annotations
 
 import time
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from parasite.templates import INDEX_TEMPLATE, POST_TEMPLATE, SLIDE_TEMPLATE
 from parasite.helpers import nav, pretty_urls_present
 from parasite.panflute_filters import lightgallery, lightgallery_from_dir
 
@@ -61,17 +69,16 @@ POSTS: Tuple[
         str,           # in-dir
         str,           # out-dir
         str,           # ext
-        Optional[str]  # template
+        Optional[Path]  # template
     ],
     ...
 ] = (
-    ("posts", "", ".md", "templates/post.html"),
+    ("posts", "", ".md", POST_TEMPLATE),
 )
-PAGES: Tuple[Tuple[str, str, str, Optional[str]], ...] = (
-    ("pages", "", ".md", "templates/post.html"),
-    ("posts", "", ".markdown", "templates/slidy.html"),
+PAGES: Tuple[Tuple[str, str, str, Optional[Path]], ...] = (
+    ("pages", "", ".md", POST_TEMPLATE),
+    ("posts", "", ".markdown", SLIDE_TEMPLATE),
 )
-INDEX_TEMPLATE: Optional[str] = 'templates/index.html'
 
 ROOT_RELATIVE_TO_SEARCH_FORM: str = '..'
 # these will be formatted by .format(root=root)

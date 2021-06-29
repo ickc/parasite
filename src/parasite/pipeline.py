@@ -34,6 +34,7 @@ from conf import (BLOG_AUTHOR, BLOG_DESCRIPTION, BLOG_EMAIL, BLOG_TITLE, COPYRIG
                   script_include_after, search_form)
 
 if TYPE_CHECKING:
+    from typing import Path
     from typing import List, Optional, Tuple
 
 executor = ThreadPoolExecutor(
@@ -62,7 +63,7 @@ def get_pages(
             str,           # in-dir
             str,           # out-dir
             str,           # ext
-            Optional[str]  # template
+            Optional[Path],  # template
         ],
         ...
     ],

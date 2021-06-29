@@ -37,6 +37,7 @@ packages = [
 include = [
     'LICENSE',
     'README.rst',
+    'src/parasite/templates/*.html',
 ]
 
 [tool.poetry.dependencies]
