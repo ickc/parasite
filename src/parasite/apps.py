@@ -41,8 +41,7 @@ def read_md_to_ast(
     return doc
 
 
-def get_teaser(doc: pf.elements.Doc) -> pf.containers.ListContainer:
-    content = doc.content
+def get_teaser(content: pf.containers.ListContainer) -> pf.containers.ListContainer:
     found = False
     for i, item in enumerate(content):
         if (type(item) == pf.RawBlock) and (item.text == '<!-- more -->'):
@@ -64,7 +63,7 @@ def read_md_to_ast_with_teaser(
         panflute_filters=panflute_filters,
         inputs=inputs
     )
-    teaser = get_teaser(ast)
+    teaser = get_teaser(ast.content)
     return ast, teaser
 
 

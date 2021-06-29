@@ -75,7 +75,7 @@ no_teaser = """Some post
     ]
 )
 def test_get_teaser(input: str, output: str):
-    doc = convert_text(input, standalone=True)
+    doc = convert_text(input, standalone=False)
     content = apps.get_teaser(doc)
     converted = convert_text(content, input_format='panflute', output_format='markdown')
     assert converted == output
