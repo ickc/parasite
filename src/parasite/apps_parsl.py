@@ -1,6 +1,9 @@
-"""wrapping apps to parsl apps
+"""Wrapping apps to parsl apps.
 
-all functions should be imported inside functions for parsl
+all functions should be imported inside functions for parsl.
+
+We're not running unit tests for anything defined here,
+as they should be thin wrappers.
 """
 from __future__ import annotations
 
