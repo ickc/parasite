@@ -42,16 +42,40 @@ def test_read_md_to_ast(panflute_filters):
     )
 
 
-def test_get_teaser():
-    doc = convert_text("""Some post
+teaser = """Some post
 
 -   with some contents
 
-<!--more-->
+<!-- more -->
 
--   with more contents""", standalone=True)
-    content = apps.get_teaser(doc)
-    output = convert_text(content, input_format='panflute', output_format='markdown')
-    assert output == """Some post
+-   with more contents"""
+
+teaser_only = """Some post
 
 -   with some contents"""
+
+no_teaser = """Some post
+
+-   with some contents
+
+-   with more contents"""
+
+
+@pytest.mark.parametrize(
+    "input,output",
+    [
+        [
+            teaser,
+            teaser_only,
+        ],
+        [
+            no_teaser,
+            no_teaser,
+        ],
+    ]
+)
+def test_get_teaser(input: str, output: str):
+    doc = convert_text(input, standalone=True)
+    content = apps.get_teaser(doc)
+    converted = convert_text(content, input_format='panflute', output_format='markdown')
+    assert converted == output

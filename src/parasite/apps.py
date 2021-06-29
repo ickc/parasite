@@ -43,10 +43,15 @@ def read_md_to_ast(
 
 def get_teaser(doc: pf.elements.Doc) -> pf.containers.ListContainer:
     content = doc.content
+    found = False
     for i, item in enumerate(content):
         if (type(item) == pf.RawBlock) and (item.text == '<!-- more -->'):
+            found = True
             break
-    return content[:i - 1]
+    if found:
+        return content[:i]
+    else:
+        return content
 
 
 def read_md_to_ast_with_teaser(
