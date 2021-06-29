@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
 from collections import defaultdict
+from typing import TYPE_CHECKING
 
 import panflute as pf
 
 from .translate import translate
 
 if TYPE_CHECKING:
-    from typing import List, Dict, Tuple
+    from typing import Dict, List, Tuple
+
     from .data import Post
 
 

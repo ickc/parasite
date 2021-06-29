@@ -1,5 +1,5 @@
-from timeit import default_timer as timer
 from logging import getLogger
+from timeit import default_timer as timer
 
 logger = getLogger('parasite')
 

@@ -1,21 +1,21 @@
 from __future__ import annotations
 
-from pathlib import Path
-from functools import partial
-from logging import getLogger
-from typing import TYPE_CHECKING
-from itertools import chain
-import string
 import random
+import string
+from functools import partial
+from itertools import chain
+from logging import getLogger
+from pathlib import Path
+from typing import TYPE_CHECKING
 
+from panflute.elements import Div, Image, Link, MetaBlocks, MetaList, Plain, RawBlock
 from urlpath import URL as Url
-from panflute.elements import Image, Div, Link, Plain, MetaBlocks, RawBlock, MetaList
 
 if TYPE_CHECKING:
-    from typing import Optional, List
+    from typing import List, Optional
 
-    from panflute.containers import ListContainer
     from panflute.base import Block
+    from panflute.containers import ListContainer
     from panflute.elements import Doc, MetaMap
 
 logger = getLogger('parasite')

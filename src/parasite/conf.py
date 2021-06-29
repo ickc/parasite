@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-from pathlib import Path
 import time
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from parasite.helpers import nav, pretty_urls_present
 from parasite.panflute_filters import lightgallery, lightgallery_from_dir
 
 if TYPE_CHECKING:
-    from typing import Tuple, Dict, Optional, List, Union, Callable
+    from typing import Callable, Dict, List, Optional, Tuple, Union
 
 SITE_URL: str = ""
 BLOG_EMAIL: str = ""

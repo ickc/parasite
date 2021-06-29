@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from typing import List, Tuple, Union, Dict
+    from typing import Dict, List, Tuple, Union
 
     from .data import Page, Post
 
@@ -132,8 +132,9 @@ def to_feed(
     write_atom: bool = True,
     write_rss: bool = True,
 ):
-    from feedgen.feed import FeedGenerator
     import re
+
+    from feedgen.feed import FeedGenerator
 
     # https://stackoverflow.com/a/25920392/5769446
     regex = re.compile('[^\u0020-\uD7FF\u0009\u000A\u000D\uE000-\uFFFD\U00010000-\U0010FFFF]+')
@@ -173,7 +174,7 @@ def to_sitemap(
     output_dir: Path = Path('output'),
     filename: str = 'sitemapindex.xml',
 ):
-    from xml.etree.ElementTree import Element, SubElement, ElementTree
+    from xml.etree.ElementTree import Element, ElementTree, SubElement
 
     urlset = Element('urlset', xmlns="http://www.sitemaps.org/schemas/sitemap/0.9")
     tree = ElementTree(urlset)

@@ -1,33 +1,40 @@
 from __future__ import annotations
 
 import os
-from typing import TYPE_CHECKING
+# require user to put conf.py in cwd
+import sys
 from logging import getLogger
-import psutil
+from typing import TYPE_CHECKING
 
-from urlpath import URL as Url
 import defopt
 import parsl
+import psutil
 from parsl.config import Config
+from parsl.data_provider.files import File
 from parsl.executors import ThreadPoolExecutor
 # from parsl.executors import HighThroughputExecutor
 # from parsl.providers import LocalProvider
 from parsl.utils import get_all_checkpoints
-from parsl.data_provider.files import File
+from urlpath import URL as Url
 
-
-from .data import Posts, Pages
+from .apps_parsl import (app_closure_compiler, app_minify, app_post_to_html, app_read_md_to_ast,
+                         app_read_md_to_ast_with_teaser, app_rsync)
+from .data import Pages, Posts
+from .helpers import to_feed, to_sitemap, write_tipuesearch
+from .to_ast import posts_to_archive_ast, posts_to_index_ast, posts_to_tag_ast
 from .util import TimeElapse
-from .helpers import write_tipuesearch, to_feed, to_sitemap
-from .to_ast import posts_to_index_ast, posts_to_tag_ast, posts_to_archive_ast
-from .apps_parsl import app_read_md_to_ast, app_read_md_to_ast_with_teaser, app_post_to_html, app_rsync, app_minify, app_closure_compiler
-# require user to put conf.py in cwd
-import sys
+
 sys.path.append(os.getcwd())
-from conf import PRETTY_URLS, DATE_FORMAT, POSTS, nav_includes, PAGES, header_includes, DEFAULT_LANG, include_after, MATHJAX_CONFIG, search_form, content_footer, BLOG_TITLE, css, include_before, INDEX_TEMPLATE, OUTPUT_DIR, FILES_FOLDERS, CSS, JS, N_JUMBOTRON, N_GRID, INDEX_INCLUDE_JUMBOTRON, TAG_CLOUD_FONT_SIZE_MIN, TAG_CLOUD_FONT_SIZE_MAX, HTML_FILTERS, ROOT_RELATIVE_TO_SEARCH_FORM, LOGO_URL, BLOG_DESCRIPTION, BLOG_AUTHOR, BLOG_EMAIL, SITE_URL, pandoc_input_options, pandoc_output_options, panflute_input_filters, panflute_output_filters, COPYRIGHT, TIMEZONE, SHOW_PREVIEWIMAGE_IN_POST, js, script_include_after
+from conf import (BLOG_AUTHOR, BLOG_DESCRIPTION, BLOG_EMAIL, BLOG_TITLE, COPYRIGHT, CSS, DATE_FORMAT, DEFAULT_LANG,
+                  FILES_FOLDERS, HTML_FILTERS, INDEX_INCLUDE_JUMBOTRON, INDEX_TEMPLATE, JS, LOGO_URL, MATHJAX_CONFIG,
+                  N_GRID, N_JUMBOTRON, OUTPUT_DIR, PAGES, POSTS, PRETTY_URLS, ROOT_RELATIVE_TO_SEARCH_FORM,
+                  SHOW_PREVIEWIMAGE_IN_POST, SITE_URL, TAG_CLOUD_FONT_SIZE_MAX, TAG_CLOUD_FONT_SIZE_MIN, TIMEZONE,
+                  content_footer, css, header_includes, include_after, include_before, js, nav_includes,
+                  pandoc_input_options, pandoc_output_options, panflute_input_filters, panflute_output_filters,
+                  script_include_after, search_form)
 
 if TYPE_CHECKING:
-    from typing import Optional, Tuple, List
+    from typing import List, Optional, Tuple
 
 executor = ThreadPoolExecutor(
     max_threads=psutil.cpu_count(logical=False),

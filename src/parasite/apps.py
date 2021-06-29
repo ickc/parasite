@@ -4,6 +4,7 @@ all functions should be imported inside functions for parsl
 """
 
 from __future__ import annotations
+
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -13,7 +14,7 @@ from panflute.tools import convert_text
 from .panflute_filters import meta_append
 
 if TYPE_CHECKING:
-    from typing import Optional, List, Tuple, Dict, Callable
+    from typing import Callable, Dict, List, Optional, Tuple
 
     from urlpath import URL as Url
 

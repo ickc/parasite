@@ -4,7 +4,7 @@ all functions should be imported inside functions for parsl
 """
 from __future__ import annotations
 
-from parsl import python_app, bash_app
+from parsl import bash_app, python_app
 
 
 @python_app(cache=True)
@@ -108,15 +108,13 @@ def app_closure_compiler(inputs=[], outputs=[]):
 
 
 import os
-from pathlib import Path
 from logging import getLogger
+from pathlib import Path
 
-from urlpath import URL as Url
 import panflute as pf
-
-from parsl.dataflow.memoization import id_for_memo
 from parsl.data_provider.files import File
-
+from parsl.dataflow.memoization import id_for_memo
+from urlpath import URL as Url
 
 logger = getLogger('parasite')
 
