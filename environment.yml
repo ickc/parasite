@@ -47,3 +47,4 @@ dependencies:
   - bandit
   - bump2version
   - pandoc-crossref
+  - ghp-import >=2,<3
