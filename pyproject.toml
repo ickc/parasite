@@ -71,6 +71,7 @@ panflute = "^2.1"
 pantable = "^0.14"
 pandoc-crossref = "*"
 ghp-import = "^2"
+nbconvert = "^6"
 
 [tool.poetry.extras]
 extras = [
