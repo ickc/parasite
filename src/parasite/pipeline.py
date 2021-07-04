@@ -1,15 +1,13 @@
 from __future__ import annotations
 
 import os
-# require user to put conf.py in cwd
-import sys
 from logging import getLogger
 from typing import TYPE_CHECKING
 
 import defopt
 import parsl
 import psutil
-from parsl.config import Config
+from parsl.config import Config as ParslConfig
 from parsl.data_provider.files import File
 from parsl.executors import ThreadPoolExecutor
 # from parsl.executors import HighThroughputExecutor
@@ -17,21 +15,13 @@ from parsl.executors import ThreadPoolExecutor
 from parsl.utils import get_all_checkpoints
 from urlpath import URL as Url
 
-from .apps_parsl import (app_closure_compiler, app_minify, app_post_to_html, app_read_md_to_ast,
+from .apps_parsl import (app_minify, app_post_to_html, app_read_md_to_ast,
                          app_read_md_to_ast_with_teaser, app_rsync)
 from .data import Pages, Posts
 from .helpers import to_feed, to_sitemap, write_tipuesearch
 from .to_ast import posts_to_archive_ast, posts_to_index_ast, posts_to_tag_ast
 from .util import TimeElapse
-
-sys.path.append(os.getcwd())
-from conf import (BLOG_AUTHOR, BLOG_DESCRIPTION, BLOG_EMAIL, BLOG_TITLE, COPYRIGHT, CSS, DATE_FORMAT, DEFAULT_LANG,
-                  FILES_FOLDERS, HTML_FILTERS, INDEX_INCLUDE_JUMBOTRON, INDEX_TEMPLATE, JS, LOGO_URL, MATHJAX_CONFIG,
-                  N_GRID, N_JUMBOTRON, OUTPUT_DIR, PAGES, POSTS, PRETTY_URLS, ROOT_RELATIVE_TO_SEARCH_FORM,
-                  SHOW_PREVIEWIMAGE_IN_POST, SITE_URL, TAG_CLOUD_FONT_SIZE_MAX, TAG_CLOUD_FONT_SIZE_MIN, TIMEZONE,
-                  content_footer, css, header_includes, include_after, include_before, js, nav_includes,
-                  pandoc_input_options, pandoc_output_options, panflute_input_filters, panflute_output_filters,
-                  script_include_after, search_form)
+from .config import Config
 
 if TYPE_CHECKING:
     from typing import Path
@@ -47,7 +37,7 @@ executor = ThreadPoolExecutor(
 #     ),
 #     cores_per_worker=1,
 # )
-parsl.load(Config(
+parsl.load(ParslConfig(
     executors=[executor],
     checkpoint_mode='task_exit',
     checkpoint_files=get_all_checkpoints(),
@@ -68,29 +58,29 @@ def get_pages(
         ...
     ],
     page_class,
+    config: Config,
     timezone: str = r"America/Los_Angeles",
 ) -> List[Pages]:
     pageses = []
     for path, out_path, ext, template in PAGES:
-        pretty_urls = PRETTY_URLS[ext]
-        DATE_FORMAT
+        pretty_urls = config.pretty_urls[ext]
         options = {
-            'show_previewimage_in_post': SHOW_PREVIEWIMAGE_IN_POST,
-            'header_includes': header_includes,
-            'include_before': include_before,
-            'include_after': include_after,
-            'script_include_after': script_include_after,
-            'mathjax_config': MATHJAX_CONFIG,
-            'search_form': search_form,
-            'content_footer': content_footer,
-            'blog_title': BLOG_TITLE,
-            'nav': nav_includes,
-            'pandoc_options': pandoc_output_options,
-            'css': css,
-            'js': js,
-            'logo_url': Url(LOGO_URL) if LOGO_URL else None,
-            'panflute_filters': panflute_output_filters,
-            'html_filters': HTML_FILTERS,
+            'show_previewimage_in_post': config.show_previewimage_in_post,
+            'header_includes': config.header_includes,
+            'include_before': config.include_before,
+            'include_after': config.include_after,
+            'script_include_after': config.script_include_after,
+            'mathjax_config': config.mathjax_config,
+            'search_form': config.search_form,
+            'content_footer': config.content_footer,
+            'blog_title': config.blog_title,
+            'nav': config.nav_includes,
+            'pandoc_options': config.pandoc_output_options,
+            'css': config.css,
+            'js': config.js,
+            'logo_url': Url(config.logo_url) if config.logo_url else None,
+            'panflute_filters': config.panflute_output_filters,
+            'html_filters': config.html_filters,
         }
         pageses.append(page_class.from_file_system(
             path,
@@ -98,70 +88,57 @@ def get_pages(
             ext,
             template,
             pretty_urls=pretty_urls,
-            date_format=DATE_FORMAT,
-            default_lang=DEFAULT_LANG,
+            date_format=config.date_format,
+            default_lang=config.default_lang,
             timezone=timezone,
             options=options,
         ))
     return pageses
 
 
-def main(
-    *,
-    write_tipuesearch_json: bool = True,
-    write_rss: bool = True,
-    write_atom: bool = True,
-    write_sitemap: bool = True,
-    include_draft: bool = False,
-):
+def main(config: Config):
     """Parasite static site generator.
-
-    :param write_tipuesearch_json: write tipuesearch JSON file.
-    :param write_rss: write RSS feed.
-    :param write_atom: write atom feed.
-    :param write_sitemap: write sitemap.
-    :param include_draft: output draft posts as well.
     """
     time_elapse = TimeElapse()
-    if JS:
+    if config.compress_js:
         minifies_js = [
             app_minify(
                 inputs=[File(path) for path in paths],
                 outputs=[File(out_path)]
             )
-            for out_path, paths in JS.items()
+            for out_path, paths in config.compress_js.items()
         ]
-    if CSS:
+    if config.compress_css:
         minifies = [
             app_minify(
                 inputs=[File(path) for path in paths],
                 outputs=[File(out_path)]
             )
-            for out_path, paths in CSS.items()
+            for out_path, paths in config.compress_css.items()
         ]
-    if FILES_FOLDERS:
+    if config.files_folders:
         rsyncs = [
-            app_rsync(in_dir, OUTPUT_DIR, out_sub_dir)
-            for in_dir, out_sub_dir in FILES_FOLDERS.items()
+            app_rsync(in_dir, config.output_dir, out_sub_dir)
+            for in_dir, out_sub_dir in config.files_folders.items()
         ]
     time_elapse.report('staging for minifies and rsync.')
 
-    pages = Pages(sum((pages_.pages for pages_ in get_pages(PAGES, Pages, timezone=TIMEZONE)), []))
-    posts = Posts(sum((pages_.pages for pages_ in get_pages(POSTS, Posts, timezone=TIMEZONE)), []))
+    pages = Pages(sum((pages_.pages for pages_ in get_pages(config.pages, Pages, config, timezone=config.timezone)), []))
+    posts = Posts(sum((pages_.pages for pages_ in get_pages(config.posts, Posts, config, timezone=config.timezone)), []))
     time_elapse.report('glob pages/posts from file system.')
 
     pages_ast_futures = [
         app_read_md_to_ast(
-            pandoc_input_options,
-            panflute_input_filters,
+            config.pandoc_input_options,
+            config.panflute_input_filters,
             inputs=[File(str((page.path)))],
         )
         for page in pages.pages
     ]
     posts_ast_futures = [
         app_read_md_to_ast_with_teaser(
-            pandoc_input_options,
-            panflute_input_filters,
+            config.pandoc_input_options,
+            config.panflute_input_filters,
             inputs=[File(str((page.path)))],
         )
         for page in posts.pages
@@ -173,7 +150,7 @@ def main(
         page.ast, page.teaser = future.result()
     time_elapse.report('got all ASTs.')
 
-    if not include_draft:
+    if not config.include_draft:
         pages = Pages([page for page in pages.pages if not page.is_draft])
         posts = Posts([page for page in posts.pages if not page.is_draft])
         time_elapse.report('filter out drafts.')
@@ -193,7 +170,7 @@ def main(
             page.lang,
             page.ext,
             inputs=[] if page.template is None else [File(str((page.template)))],
-            outputs=[File(str((OUTPUT_DIR / page.out_path)))],
+            outputs=[File(str((config.output_dir / page.out_path)))],
             **page.options,
         )
         for page in all_pages
@@ -210,20 +187,20 @@ def main(
             index_ast = posts_to_index_ast(
                 cat_posts,
                 name,
-                n_jumbotron=N_JUMBOTRON,
-                n_grid=N_GRID,
-                index_include_jumbotron=INDEX_INCLUDE_JUMBOTRON,
-                lang=DEFAULT_LANG,
+                n_jumbotron=config.n_jumbotron,
+                n_grid=config.n_grid,
+                index_include_jumbotron=config.index_include_jumbotron,
+                lang=config.default_lang,
             )
             output_futures.append(app_post_to_html(
                 index_ast,
                 '../..',
                 None,
                 None,
-                DEFAULT_LANG,
+                config.default_lang,
                 '.md',
-                inputs=[] if INDEX_TEMPLATE is None else [File(str((INDEX_TEMPLATE)))],
-                outputs=[File(str((OUTPUT_DIR / 'categories' / (name if case == 'tags' else f'cat_{name}') / 'index.html')))],
+                inputs=[] if config.index_template is None else [File(str((config.index_template)))],
+                outputs=[File(str((config.output_dir / 'categories' / (name if case == 'tags' else f'cat_{name}') / 'index.html')))],
                 **options,
             ))
     time_elapse.report('staging cat-index.')
@@ -233,20 +210,20 @@ def main(
     tag_ast = posts_to_tag_ast(
         posts.categories,
         posts.tags,
-        font_size_min=TAG_CLOUD_FONT_SIZE_MIN,
-        font_size_max=TAG_CLOUD_FONT_SIZE_MAX,
+        font_size_min=config.tag_cloud_font_size_min,
+        font_size_max=config.tag_cloud_font_size_max,
         root='..',
-        lang=DEFAULT_LANG,
+        lang=config.default_lang,
     )
     output_futures.append(app_post_to_html(
         tag_ast,
         '..',
         None,
         None,
-        DEFAULT_LANG,
+        config.default_lang,
         '.md',
         inputs=inputs,
-        outputs=[File(str((OUTPUT_DIR / 'categories' / 'index.html')))],
+        outputs=[File(str((config.output_dir / 'categories' / 'index.html')))],
         **options,
     ))
     time_elapse.report('staging tag page.')
@@ -254,94 +231,95 @@ def main(
     archive_ast = posts_to_archive_ast(
         posts.pages,
         root='..',
-        lang=DEFAULT_LANG,
+        lang=config.default_lang,
     )
     output_futures.append(app_post_to_html(
         archive_ast,
         '..',
         None,
         None,
-        DEFAULT_LANG,
+        config.default_lang,
         '.md',
         inputs=inputs,
-        outputs=[File(str((OUTPUT_DIR / 'archive' / 'index.html')))],
+        outputs=[File(str((config.output_dir / 'archive' / 'index.html')))],
         **options,
     ))
     time_elapse.report('staging archive page.')
     # index
     index_ast = posts_to_index_ast(
         posts.pages,
-        BLOG_TITLE[DEFAULT_LANG],
-        n_jumbotron=N_JUMBOTRON,
-        n_grid=N_GRID,
-        index_include_jumbotron=INDEX_INCLUDE_JUMBOTRON,
-        lang=DEFAULT_LANG,
+        config.blog_title[config.default_lang],
+        n_jumbotron=config.n_jumbotron,
+        n_grid=config.n_grid,
+        index_include_jumbotron=config.index_include_jumbotron,
+        lang=config.default_lang,
     )
     output_futures.append(app_post_to_html(
         index_ast,
         '.',
         None,
         None,
-        DEFAULT_LANG,
+        config.default_lang,
         '.md',
-        inputs=[] if INDEX_TEMPLATE is None else [File(str((INDEX_TEMPLATE)))],
-        outputs=[File(str((OUTPUT_DIR / 'index.html')))],
+        inputs=[] if config.index_template is None else [File(str((config.index_template)))],
+        outputs=[File(str((config.output_dir / 'index.html')))],
         **options,
     ))
     time_elapse.report('staging index.')
-    if write_tipuesearch_json:
+    if config.write_tipuesearch_json:
         # search: we're not using parsl here, as
         # it needs to be re-generated even if only one page is changed,
         # and the time taken is very small for now.
         # as site gets bigger, may need to cache the Page.text e.g. in app_read_md_to_ast*?
         write_tipuesearch(
-            OUTPUT_DIR / 'assets/js/tipuesearch_content.js',
+            config.output_dir / 'assets/js/tipuesearch_content.js',
             all_pages,
-            root=ROOT_RELATIVE_TO_SEARCH_FORM,
+            root=config.root_relative_to_search_form,
         )
         time_elapse.report('wrote tipuesearch.')
 
-    if write_atom or write_rss:
+    if config.write_atom or config.write_rss:
         to_feed(
             posts.pages,
-            BLOG_TITLE[DEFAULT_LANG],
-            BLOG_DESCRIPTION[DEFAULT_LANG],
-            BLOG_AUTHOR[DEFAULT_LANG],
-            BLOG_EMAIL,
-            SITE_URL,
-            LOGO_URL,
-            DEFAULT_LANG,
-            COPYRIGHT,
-            TIMEZONE,
-            output_dir=OUTPUT_DIR,
-            write_atom=write_atom,
-            write_rss=write_rss,
+            config.blog_title[config.default_lang],
+            config.blog_description[config.default_lang],
+            config.blog_author[config.default_lang],
+            config.blog_email,
+            config.site_url,
+            config.logo_url,
+            config.default_lang,
+            config.copyright,
+            config.timezone,
+            output_dir=config.output_dir,
+            write_atom=config.write_atom,
+            write_rss=config.write_rss,
         )
         time_elapse.report('wrote rss and/or atom feed.')
-    if write_sitemap:
+    if config.write_sitemap:
         to_sitemap(
-            SITE_URL,
+            config.site_url,
             all_pages,
-            output_dir=OUTPUT_DIR,
+            output_dir=config.output_dir,
         )
 
     for future in output_futures:
         future.result()
-    if FILES_FOLDERS:
+    if config.files_folders:
         for rsync in rsyncs:
             rsync.result()
-    if CSS:
+    if config.compress_css:
         for minify in minifies:
             minify.result()
-    if JS:
+    if config.compress_js:
         for minify in minifies_js:
             minify.result()
     time_elapse.report('collecting all futures.')
 
 
-def cli():
-    defopt.run(main)
+def cli(Config=Config):
+    config = defopt.run(Config, show_types=False, strict_kwonly=False)
+    main(config)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     cli()
