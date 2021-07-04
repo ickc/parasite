@@ -42,6 +42,11 @@ include = [
 
 [tool.poetry.dependencies]
 python = ">=3.8"
+parsl = "^1.1"
+urlpath = "^1.1"
+defopt = "^6"
+ujson = "^4"
+feedgen = "^0.9"
 
 # extras
 coloredlogs = {optional = true, version = ">=14,<16"}
@@ -62,7 +67,9 @@ sphinxcontrib-apidoc = {optional = true, version = "*"}
 
 [tool.poetry.dev-dependencies]
 tox = "*"
-data-science-types = "*"
+panflute = "^2.1"
+pantable = "^0.14"
+pandoc-crossref = "*"
 
 [tool.poetry.extras]
 extras = [
