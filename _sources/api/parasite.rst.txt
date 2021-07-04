@@ -22,7 +22,7 @@ Submodules
 
    parasite.apps
    parasite.apps_parsl
-   parasite.conf
+   parasite.config
    parasite.data
    parasite.helpers
    parasite.panflute_filters
