@@ -23,6 +23,8 @@ class Config:
 
     :param watch_single_page: if specified, watch a single page with this url and rerender if changed.
     :param serve: if specified, serve with this port.
+    :param open: if speicified and serve, open this url.
+    :param code: if speicified and serve, call watch_single_page by code (VSCode).
     :param write_tipuesearch_json: write tipuesearch JSON file.
     :param write_rss: write RSS feed.
     :param write_atom: write atom feed.
@@ -41,6 +43,8 @@ class Config:
     """
     watch_single_page: Optional[Url] = None
     serve: Optional[int] = None
+    open: Optional[Url] = None
+    code: bool = False
     site_url: str = ""
     blog_email: str = ""
     n_jumbotron: int = 1

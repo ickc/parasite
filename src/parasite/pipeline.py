@@ -24,7 +24,7 @@ from .apps_parsl import (app_minify, app_post_to_html, app_read_md_to_ast,
 from .data import Pages, Posts
 from .helpers import to_feed, to_sitemap, write_tipuesearch
 from .to_ast import posts_to_archive_ast, posts_to_index_ast, posts_to_tag_ast
-from .util import TimeElapse
+from .util import TimeElapse, open_browser, code
 from .config import Config
 
 if TYPE_CHECKING:
@@ -185,6 +185,8 @@ def watch_single_page(
         raise ValueError(f'Cannot find page/post with url {url}')
     else:
         time_elapse.report(f'Found file at path {page.path}')
+    if config.code:
+        code(config.output_dir / page.out_path)
     observe_single_page(page, config)
 
 
@@ -411,6 +413,8 @@ def main(config: Config):
         for minify in minifies_js:
             minify.result()
     time_elapse.report('collecting all futures.')
+    if config.open:
+        open_browser(config.open)
     if config.watch_single_page is not None:
         watch_single_page(
             all_pages,
@@ -419,7 +423,7 @@ def main(config: Config):
 
 
 def cli(Config=Config):
-    config = defopt.run(Config, show_types=False, strict_kwonly=False)
+    config = defopt.run(Config, show_types=True, strict_kwonly=False)
     main(config)
 
 
