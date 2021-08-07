@@ -22,6 +22,7 @@ class Config:
     """Configure static site.
 
     :param watch_single_page: if specified, watch a single page with this url and rerender if changed.
+    :param serve: if specified, serve with this port.
     :param write_tipuesearch_json: write tipuesearch JSON file.
     :param write_rss: write RSS feed.
     :param write_atom: write atom feed.
@@ -39,6 +40,7 @@ class Config:
     See `content_footer` for an example on how to do this.
     """
     watch_single_page: Optional[Url] = None
+    serve: Optional[int] = None
     site_url: str = ""
     blog_email: str = ""
     n_jumbotron: int = 1

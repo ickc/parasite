@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 from logging import getLogger
 from typing import TYPE_CHECKING
+from functools import partial
 
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
@@ -49,6 +50,14 @@ parsl.load(ParslConfig(
 
 # parsl.set_stream_logger()
 logger = getLogger('parasite')
+
+
+def serve(port: int, directory: Path):
+    from http.server import HTTPServer, SimpleHTTPRequestHandler
+
+    httpd = HTTPServer(('localhost', port), partial(SimpleHTTPRequestHandler, directory=directory))
+    logger.info('Serving at port %s.', port)
+    httpd.serve_forever()
 
 
 class PageEventHandler(FileSystemEventHandler):
@@ -401,6 +410,8 @@ def main(config: Config):
             all_pages,
             config,
         )
+    if config.serve is not None:
+        serve(config.serve, config.output_dir)
 
 
 def cli(Config=Config):
