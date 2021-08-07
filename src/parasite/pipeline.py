@@ -53,11 +53,12 @@ logger = getLogger('parasite')
 
 
 def serve(port: int, directory: Path):
+    from threading import Thread
     from http.server import HTTPServer, SimpleHTTPRequestHandler
 
     httpd = HTTPServer(('localhost', port), partial(SimpleHTTPRequestHandler, directory=directory))
     logger.info('Serving at port %s.', port)
-    httpd.serve_forever()
+    Thread(target=httpd.serve_forever).start()
 
 
 class PageEventHandler(FileSystemEventHandler):
@@ -191,6 +192,11 @@ def main(config: Config):
     """Parasite static site generator.
     """
     time_elapse = TimeElapse()
+
+    if config.serve is not None:
+        serve(config.serve, config.output_dir)
+        time_elapse.report('Serve in background.')
+
     if config.compress_js:
         minifies_js = [
             app_minify(
@@ -410,8 +416,6 @@ def main(config: Config):
             all_pages,
             config,
         )
-    if config.serve is not None:
-        serve(config.serve, config.output_dir)
 
 
 def cli(Config=Config):
