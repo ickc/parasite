@@ -18,6 +18,7 @@ from parsl.executors import ThreadPoolExecutor
 from parsl.utils import get_all_checkpoints
 from urlpath import URL as Url
 
+from .apps import post_to_html, read_md_to_ast
 from .apps_parsl import (app_minify, app_post_to_html, app_read_md_to_ast,
                          app_read_md_to_ast_with_teaser, app_rsync)
 from .data import Pages, Posts
@@ -77,23 +78,22 @@ class PageEventHandler(FileSystemEventHandler):
         url = config.watch_single_page
 
         time_elapse.update()
-        # TODO: don't use app
-        page.ast = app_read_md_to_ast(
+        page.ast = read_md_to_ast(
             config.pandoc_input_options,
             config.panflute_input_filters,
-            inputs=[File(str((page.path)))],
-        ).result()
-        app_post_to_html(
+            inputs=[page.path],
+        )
+        post_to_html(
             page.ast,
             page.root,
             page.prev,
             page.next,
             page.lang,
             page.ext,
-            inputs=[] if page.template is None else [File(str((page.template)))],
-            outputs=[File(str((config.output_dir / page.out_path)))],
+            inputs=[] if page.template is None else [page.template],
+            outputs=[config.output_dir / page.out_path],
             **page.options,
-        ).result()
+        )
         time_elapse.report(f'{url} redone.')
 
     def on_modified(self, event):
