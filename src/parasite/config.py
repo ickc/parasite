@@ -3,14 +3,16 @@ from __future__ import annotations
 from pathlib import Path
 import time
 from dataclasses import dataclass
-from typing import Callable, Dict, Union, TYPE_CHECKING
+from typing import Callable, Dict, Union, Optional, TYPE_CHECKING
+
+from urlpath import URL as Url
 
 from .helpers import nav, pretty_urls_present
 from .templates import INDEX_TEMPLATE, POST_TEMPLATE, SLIDE_TEMPLATE
 from .panflute_filters import lightgallery, lightgallery_from_dir
 
 if TYPE_CHECKING:
-    from typing import Tuple, Optional, List
+    from typing import Tuple, List
 
 THIS_YEAR = time.gmtime().tm_year
 
@@ -19,6 +21,7 @@ THIS_YEAR = time.gmtime().tm_year
 class Config:
     """Configure static site.
 
+    :param watch_single_page: if specified, watch a single page with this url and rerender if changed.
     :param write_tipuesearch_json: write tipuesearch JSON file.
     :param write_rss: write RSS feed.
     :param write_atom: write atom feed.
@@ -35,6 +38,7 @@ class Config:
     implement it as a property that returns a callable using closure.
     See `content_footer` for an example on how to do this.
     """
+    watch_single_page: Optional[Url] = None
     site_url: str = ""
     blog_email: str = ""
     n_jumbotron: int = 1

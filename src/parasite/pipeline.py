@@ -4,6 +4,8 @@ import os
 from logging import getLogger
 from typing import TYPE_CHECKING
 
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 import defopt
 import parsl
 import psutil
@@ -27,6 +29,8 @@ if TYPE_CHECKING:
     from typing import Path
     from typing import List, Optional, Tuple
 
+    from .data import Page
+
 executor = ThreadPoolExecutor(
     max_threads=psutil.cpu_count(logical=False),
     working_dir=os.getcwd(),
@@ -45,6 +49,46 @@ parsl.load(ParslConfig(
 
 # parsl.set_stream_logger()
 logger = getLogger('parasite')
+
+
+class PageEventHandler(FileSystemEventHandler):
+
+    def __init__(self, page: Page, config: Config):
+        self.page = page
+        self.config = config
+
+        self.time_elapse = TimeElapse()
+        logger.info('Watching %s', page.path)
+
+    def make_single_page(self):
+        page = self.page
+        config = self.config
+        time_elapse = self.time_elapse
+        url = config.watch_single_page
+
+        time_elapse.update()
+        # TODO: don't use app
+        page.ast = app_read_md_to_ast(
+            config.pandoc_input_options,
+            config.panflute_input_filters,
+            inputs=[File(str((page.path)))],
+        ).result()
+        app_post_to_html(
+            page.ast,
+            page.root,
+            page.prev,
+            page.next,
+            page.lang,
+            page.ext,
+            inputs=[] if page.template is None else [File(str((page.template)))],
+            outputs=[File(str((config.output_dir / page.out_path)))],
+            **page.options,
+        ).result()
+        time_elapse.report(f'{url} redone.')
+
+    def on_modified(self, event):
+        logger.info('event type: %s\npath : %s', event.event_type, event.src_path)
+        self.make_single_page()
 
 
 def get_pages(
@@ -94,6 +138,44 @@ def get_pages(
             options=options,
         ))
     return pageses
+
+
+def observe_single_page(
+    page: Page,
+    config: Config,
+):
+    path = page.path.resolve()
+
+    event_handler = PageEventHandler(page, config)
+    observer = Observer()
+    observer.schedule(event_handler, path, recursive=True)
+    try:
+        observer.start()
+    except KeyboardInterrupt:
+        observer.stop()
+    finally:
+        observer.join()
+
+
+def watch_single_page(
+    all_pages: List[Page],
+    config: Config,
+):
+    """Watch and re-render single page."""
+    url = config.watch_single_page
+    time_elapse = TimeElapse()
+
+    # get page with url
+    page: Optional[Page] = None
+    for cur_page in all_pages:
+        if cur_page.url == url:
+            page = cur_page
+            break
+    if page is None:
+        raise ValueError(f'Cannot find page/post with url {url}')
+    else:
+        time_elapse.report(f'Found file at path {page.path}')
+    observe_single_page(page, config)
 
 
 def main(config: Config):
@@ -314,6 +396,11 @@ def main(config: Config):
         for minify in minifies_js:
             minify.result()
     time_elapse.report('collecting all futures.')
+    if config.watch_single_page is not None:
+        watch_single_page(
+            all_pages,
+            config,
+        )
 
 
 def cli(Config=Config):
