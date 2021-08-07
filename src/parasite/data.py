@@ -145,14 +145,21 @@ class Page:
 
     # AST & its derivatives
 
-    def get_ast(self):
-        self._ast = read_md_to_ast([self.path])
+    # TODO: consider adding pandoc_input_options, panflute_input_filters
+    # to self.options s.t. we can pass it here?
+    # def get_ast(self):
+    # missing arg below
+    #     self._ast = read_md_to_ast([self.path])
 
     @property
     def ast(self) -> pf.elements.Doc:
-        if not hasattr(self, '_ast'):
-            self.get_ast()
-        return self._ast
+        # if not hasattr(self, '_ast'):
+        #     self.get_ast()
+        # return self._ast
+        try:
+            return self._ast
+        except AttributeError:
+            raise AttributeError('ast not set yet. Consider using parasite.apps.read_md_to_ast')
 
     @ast.setter
     def ast(self, doc: pf.elements.Doc):
