@@ -25,6 +25,7 @@ Submodules
    parasite.config
    parasite.data
    parasite.helpers
+   parasite.live
    parasite.panflute_filters
    parasite.pipeline
    parasite.to_ast
