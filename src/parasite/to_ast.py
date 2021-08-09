@@ -8,7 +8,9 @@ import panflute as pf
 from .translate import translate
 
 if TYPE_CHECKING:
-    from typing import Dict, List, Sequence
+    from typing import Any, Dict, List, Sequence, Union
+
+    from urlpath import URL as Url
 
     from .data import Post
 
@@ -35,7 +37,7 @@ def posts_to_index_ast(
         res["date"] = post.date
         return res
 
-    meta = {
+    meta: Dict[str, Any] = {
         "title": title,
         "lang": lang,
     }
@@ -72,7 +74,7 @@ def posts_to_tag_ast(
     root: str = "..",
     lang: str = "en",
 ) -> pf.elements.Doc:
-    meta = {
+    meta: Dict[str, Any] = {
         "title": translate("Tags and Categories", lang),
         "lang": lang,
         "Categories-archive-title": translate("Categories", lang),
@@ -94,7 +96,7 @@ def posts_to_tag_ast(
         except ZeroDivisionError:
             m = 0
             c = 100
-        temp = []
+        temp: List[Dict[str, Union[str, float]]] = []
         meta[f"{case}-archive"] = temp
         for name, count in counts_dict.items():
             font_size = m * count + c
@@ -147,7 +149,9 @@ def posts_to_archive_ast(
         "lang": lang,
     }
 
-    res = defaultdict(lambda: defaultdict(list))
+    res: Dict[int, Dict[str, List[Union[str, Url]]]] = defaultdict(
+        lambda: defaultdict(list)
+    )
     for page in posts:
         title = page.title
         url = page.url
