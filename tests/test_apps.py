@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
-
 from panflute.tools import convert_text
 
 from parasite import apps
