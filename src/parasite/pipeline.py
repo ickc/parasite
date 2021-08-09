@@ -255,12 +255,10 @@ def main(config: Config):
                     outputs=[
                         File(
                             str(
-                                (
-                                    config.output_dir
-                                    / "categories"
-                                    / (name if case == "tags" else f"cat_{name}")
-                                    / "index.html"
-                                )
+                                config.output_dir
+                                / "categories"
+                                / (name if case == "tags" else f"cat_{name}")
+                                / "index.html"
                             )
                         )
                     ],
