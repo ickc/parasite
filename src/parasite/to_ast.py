@@ -8,13 +8,13 @@ import panflute as pf
 from .translate import translate
 
 if TYPE_CHECKING:
-    from typing import Dict, List, Tuple
+    from typing import Dict, List, Sequence
 
     from .data import Post
 
 
 def posts_to_index_ast(
-    posts: List[Post],
+    posts: Sequence[Post],
     title: str,
     n_jumbotron: int = 1,
     n_grid: int = 2,
@@ -65,8 +65,8 @@ def posts_to_index_ast(
 
 
 def posts_to_tag_ast(
-    categories: Dict[str, List[Post]],
-    tags: Dict[str, List[Post]],
+    categories: Dict[str, Sequence[Post]],
+    tags: Dict[str, Sequence[Post]],
     font_size_min: int = 70,
     font_size_max: int = 280,
     root: str = "..",
@@ -138,7 +138,7 @@ def posts_to_tag_ast(
 
 
 def posts_to_archive_ast(
-    posts: List[Post],
+    posts: Sequence[Post],
     root: str = "..",
     lang: str = "en",
 ) -> pf.elements.Doc:

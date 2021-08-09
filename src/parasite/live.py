@@ -17,7 +17,7 @@ from .util import TimeElapse
 
 if TYPE_CHECKING:
     from pathlib import Path
-    from typing import List, Optional
+    from typing import Optional, Sequence
 
     from urlpath import URL as Url
 
@@ -132,7 +132,7 @@ def observe_single_page_serve(
 
 
 def watch_single_page(
-    all_pages: List[Page],
+    all_pages: Sequence[Page],
     config: Config,
 ):
     """Watch and re-render single page."""
@@ -158,7 +158,7 @@ def watch_single_page(
 
 
 def live(
-    all_pages: List[Page],
+    all_pages: Sequence[Page],
     config: Config,
 ):
     """Go live."""

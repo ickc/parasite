@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from typing import Dict, List, Tuple, Union
+    from typing import Dict, List, Sequence, Tuple, Union
 
     from .data import Page, Post
 
@@ -59,7 +59,7 @@ def pretty_urls_present(parent: Path, stem: str) -> Path:
 
 
 def tipuesearch(
-    pages: List[Page],
+    pages: Sequence[Page],
     root: str = "..",
 ) -> Dict[str, List[Dict[str, str]]]:
     return {
@@ -79,7 +79,7 @@ def tipuesearch(
 
 def write_tipuesearch(
     path: Path,
-    pages: List[Page],
+    pages: Sequence[Page],
     root: str = "..",
 ):
     import ujson as json
@@ -114,7 +114,7 @@ def minify_html(html: str) -> str:
 
 
 def to_feed(
-    posts: List[Post],
+    posts: Sequence[Post],
     title: str,
     description: str,
     author: str,
@@ -168,7 +168,7 @@ def to_feed(
 
 def to_sitemap(
     site_url: str,
-    pages: List[Page],
+    pages: Sequence[Page],
     output_dir: Path = Path("output"),
     filename: str = "sitemapindex.xml",
 ):

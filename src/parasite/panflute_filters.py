@@ -12,7 +12,7 @@ from panflute.elements import Div, Image, Link, MetaBlocks, MetaList, Plain, Raw
 from urlpath import URL as Url
 
 if TYPE_CHECKING:
-    from typing import List, Optional
+    from typing import List, Optional, Sequence
 
     from panflute.base import Block
     from panflute.containers import ListContainer
@@ -93,7 +93,7 @@ def lightgallery_from_dir(
     elem: ListContainer[Block],
     doc: Doc,
     attribute: str = "lightgallery",
-    suffices: List[str] = [".jpg"],
+    suffices: Sequence[str] = [".jpg"],
     script_include_after: str = """lightGallery(document.getElementById('{identifier}'), {{
 plugins: [lgThumbnail,],
 thumbnail: true,
