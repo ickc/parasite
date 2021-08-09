@@ -29,7 +29,13 @@ pygments_style = "solarizedlight"
 html_theme = "bootstrap"
 html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
 html_theme_options = {
-    "navbar_links": [("GitHub", "https://github.com/ickc/parasite/", True,)],
+    "navbar_links": [
+        (
+            "GitHub",
+            "https://github.com/ickc/parasite/",
+            True,
+        )
+    ],
     "source_link_position": None,
     "bootswatch_theme": "readable",
     "bootstrap_version": "3",
@@ -45,6 +51,6 @@ napoleon_use_rtype = False
 napoleon_use_param = False
 
 # sphinxcontrib.apidoc
-apidoc_module_dir = '../src/parasite'
+apidoc_module_dir = "../src/parasite"
 apidoc_separate_modules = True
 apidoc_module_first = True

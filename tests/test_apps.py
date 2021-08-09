@@ -12,7 +12,7 @@ from parasite import apps
 if TYPE_CHECKING:
     from typing import Callable, List
 
-example_path = Path('docs/README.md')
+example_path = Path("docs/README.md")
 
 
 def panflute_filters(ext: str) -> List[Callable]:
@@ -20,7 +20,7 @@ def panflute_filters(ext: str) -> List[Callable]:
 
 
 def pandoc_options(ext: str) -> List[str]:
-    return ['--from=markdown']
+    return ["--from=markdown"]
 
 
 @pytest.mark.parametrize(
@@ -28,7 +28,7 @@ def pandoc_options(ext: str) -> List[str]:
     [
         panflute_filters,
         lambda x: None,
-    ]
+    ],
 )
 def test_read_md_to_ast(panflute_filters):
     """Test app.read_md_to_ast
@@ -72,10 +72,10 @@ no_teaser = """Some post
             no_teaser,
             no_teaser,
         ],
-    ]
+    ],
 )
 def test_get_teaser(input: str, output: str):
     doc = convert_text(input, standalone=False)
     content = apps.get_teaser(doc)
-    converted = convert_text(content, input_format='panflute', output_format='markdown')
+    converted = convert_text(content, input_format="panflute", output_format="markdown")
     assert converted == output
