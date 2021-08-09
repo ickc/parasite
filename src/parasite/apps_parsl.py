@@ -119,7 +119,7 @@ from parsl.data_provider.files import File
 from parsl.dataflow.memoization import id_for_memo
 from urlpath import URL as Url
 
-logger = getLogger('parasite')
+logger = getLogger(__name__)
 
 
 @id_for_memo.register(pf.elements.Doc)

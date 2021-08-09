@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from panflute.containers import ListContainer
     from panflute.elements import Doc, MetaMap
 
-logger = getLogger('parasite')
+logger = getLogger(__name__)
 
 
 def meta_append(meta: MetaMap, key: str, value: str):

@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 
     import pandas as pd
 
-logger = getLogger('parasite')
+logger = getLogger(__name__)
 
 
 @dataclass

@@ -20,7 +20,7 @@ from .apps_parsl import (app_minify, app_post_to_html, app_read_md_to_ast,
 from .data import Pages, Posts
 from .helpers import to_feed, to_sitemap, write_tipuesearch
 from .to_ast import posts_to_archive_ast, posts_to_index_ast, posts_to_tag_ast
-from .util import TimeElapse
+from .util import TimeElapse, setup_logging
 from .config import Config
 from .live import live
 
@@ -45,7 +45,8 @@ parsl.load(ParslConfig(
 ))
 
 # parsl.set_stream_logger()
-logger = getLogger('parasite')
+setup_logging()
+logger = getLogger(__name__)
 
 
 def get_pages(
@@ -100,7 +101,7 @@ def get_pages(
 def main(config: Config):
     """Parasite static site generator.
     """
-    time_elapse = TimeElapse()
+    time_elapse = TimeElapse(logger)
 
     if config.compress_js:
         minifies_js = [

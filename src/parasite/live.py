@@ -61,7 +61,7 @@ def code(path: Path):
 
 
 def _make_single_page(page: Page, config: Config):
-    time_elapse = TimeElapse()
+    time_elapse = TimeElapse(logger)
 
     url = config.watch_single_page
 
@@ -136,7 +136,7 @@ def watch_single_page(
 ):
     """Watch and re-render single page."""
     url = config.watch_single_page
-    time_elapse = TimeElapse()
+    time_elapse = TimeElapse(logger)
 
     # get page with url
     page: Optional[Page] = None
