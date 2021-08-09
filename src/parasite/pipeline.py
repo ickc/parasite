@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 from logging import getLogger
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 import defopt
 import parsl
@@ -27,6 +27,8 @@ if TYPE_CHECKING:
     from pathlib import Path
     from typing import List, Optional, Tuple
 
+    from .data import Page, Post
+
 executor = ThreadPoolExecutor(
     max_threads=psutil.cpu_count(logical=False),
     working_dir=os.getcwd(),
@@ -50,7 +52,8 @@ setup_logging()
 logger = getLogger(__name__)
 
 
-def get_pages(
+def _get_pages(
+    page_class,
     PAGES: Tuple[
         Tuple[
             str,  # in-dir
@@ -60,10 +63,9 @@ def get_pages(
         ],
         ...,
     ],
-    page_class,
     config: Config,
     timezone: str = r"America/Los_Angeles",
-) -> List[Pages]:
+) -> list:
     pageses = []
     for path, out_path, ext, template in PAGES:
         pretty_urls = config.pretty_urls[ext]
@@ -101,6 +103,38 @@ def get_pages(
     return pageses
 
 
+def get_pages(
+    PAGES: Tuple[
+        Tuple[
+            str,  # in-dir
+            str,  # out-dir
+            str,  # ext
+            Optional[Path],  # template
+        ],
+        ...,
+    ],
+    config: Config,
+    timezone: str = r"America/Los_Angeles",
+) -> List[Pages]:
+    return _get_pages(Pages, PAGES, config, timezone=timezone)
+
+
+def get_posts(
+    PAGES: Tuple[
+        Tuple[
+            str,  # in-dir
+            str,  # out-dir
+            str,  # ext
+            Optional[Path],  # template
+        ],
+        ...,
+    ],
+    config: Config,
+    timezone: str = r"America/Los_Angeles",
+) -> List[Posts]:
+    return _get_pages(Posts, PAGES, config, timezone=timezone)
+
+
 def main(config: Config):
     """Parasite static site generator."""
     time_elapse = TimeElapse(logger)
@@ -126,9 +160,7 @@ def main(config: Config):
         sum(
             (
                 pages_.pages
-                for pages_ in get_pages(
-                    config.pages, Pages, config, timezone=config.timezone
-                )
+                for pages_ in get_pages(config.pages, config, timezone=config.timezone)
             ),
             [],
         )
@@ -137,9 +169,7 @@ def main(config: Config):
         sum(
             (
                 pages_.pages
-                for pages_ in get_pages(
-                    config.posts, Posts, config, timezone=config.timezone
-                )
+                for pages_ in get_posts(config.posts, config, timezone=config.timezone)
             ),
             [],
         )
@@ -179,7 +209,7 @@ def main(config: Config):
     posts.get_neighbor_urls()
     time_elapse.report("get neighbor urls.")
 
-    all_pages = pages.pages + posts.pages
+    all_pages: List[Union[Page, Post]] = list(pages.pages) + list(posts.pages)
     output_futures = [
         app_post_to_html(
             page.ast,
