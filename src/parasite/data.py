@@ -361,13 +361,13 @@ class Pages:
 
 @dataclass
 class Posts(Pages):
-    pages: List[Post]
+    pages: Sequence[Post]
     page_class: ClassVar[type] = Post
 
     # AST's derivatives
 
     def sort(self):
-        self.pages.sort(key=lambda page: page.time, reverse=True)
+        self.pages = sorted(self.pages, key=lambda page: page.time, reverse=True)
 
     @cached_property
     def tags(self) -> Dict[str, List[Post]]:
