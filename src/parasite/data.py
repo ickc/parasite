@@ -7,14 +7,14 @@ from datetime import datetime, timezone
 from functools import cached_property
 from logging import getLogger
 from pathlib import Path
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING, ClassVar
 from zoneinfo import ZoneInfo
 
 import panflute as pf
 from panflute.tools import convert_text
 from urlpath import URL as Url
 
-from .apps import get_teaser, read_md_to_ast
+from .apps import get_teaser
 
 if TYPE_CHECKING:
     from typing import Callable, Dict, List, Optional, Tuple, Union
@@ -304,7 +304,7 @@ class Post(Page):
 @dataclass
 class Pages:
     pages: List[Page]
-    page_class: Final = Page
+    page_class: ClassVar[type] = Page
 
     @classmethod
     def from_file_system(
@@ -362,7 +362,7 @@ class Pages:
 @dataclass
 class Posts(Pages):
     pages: List[Post]
-    page_class: Final = Post
+    page_class: ClassVar[type] = Post
 
     # AST's derivatives
 
