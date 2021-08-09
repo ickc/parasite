@@ -46,6 +46,7 @@ dependencies:
   - isort
   - mypy
   - bandit
+  - black
   - bump2version
   - pandoc-crossref
   - ghp-import >=2,<3
