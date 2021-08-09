@@ -44,7 +44,7 @@ class Page:
             del self.out_path
 
     @property
-    def dict(self) -> dict:
+    def _dict(self) -> dict:
         """A dict representation of self including all attributes and properties
 
         Primarily for dataframe
@@ -70,7 +70,7 @@ class Page:
 
         Primarily for dataframe
         """
-        res = self.dict
+        res = self._dict
         res["lang"] = self.lang
         for key in self.ast.metadata.content:
             res["ast." + key] = self.ast.get_metadata(key)
@@ -339,8 +339,8 @@ class Pages:
         )
 
     @property
-    def dict(self) -> List[dict]:
-        return [page.dict for page in self.pages]
+    def _dict(self) -> List[dict]:
+        return [page._dict for page in self.pages]
 
     @property
     def dict_ast(self) -> List[dict]:
@@ -350,7 +350,7 @@ class Pages:
     def dataframe(self) -> pd.DataFrame:
         import pandas as pd
 
-        return pd.DataFrame(self.dict)
+        return pd.DataFrame(self._dict)
 
     @cached_property
     def dataframe_ast(self) -> pd.DataFrame:
