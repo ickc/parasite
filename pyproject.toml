@@ -50,6 +50,8 @@ feedgen = "^0.9"
 
 # extras
 coloredlogs = {optional = true, version = ">=14,<16"}
+watchdog = {optional = true, version = "^2"}
+livereload = {optional = true, version = "^2"}
 
 # tests
 coverage = {optional = true, version = "*"}
@@ -69,6 +71,10 @@ sphinxcontrib-apidoc = {optional = true, version = "*"}
 tox = "*"
 panflute = "^2.1"
 pantable = "^0.14"
+ipykernel = "*"
+mypy = "*"
+bandit = "*"
+bump2version = "*"
 pandoc-crossref = "*"
 ghp-import = "^2"
 nbconvert = "^6"
@@ -76,6 +82,8 @@ nbconvert = "^6"
 [tool.poetry.extras]
 extras = [
     "coloredlogs",
+    "watchdog",
+    "livereload",
 ]
 tests = [
     "coverage",

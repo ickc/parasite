@@ -24,8 +24,8 @@ dependencies:
   # run_constrained:
   - pandoc >=2.11.2,<2.15
   - coloredlogs >=14,<16
-  - tabulate >=0.8,<0.9
-  - yamlloader >=0.5,<0.6
+  - watchdog >=2,<3
+  - livereload >=2,<3
   # tests:
   - coverage
   - coveralls
