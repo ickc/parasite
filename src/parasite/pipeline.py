@@ -10,19 +10,12 @@ import psutil
 from parsl.config import Config as ParslConfig
 from parsl.data_provider.files import File
 from parsl.executors import ThreadPoolExecutor
-
 # from parsl.executors import HighThroughputExecutor
 # from parsl.providers import LocalProvider
 from parsl.utils import get_all_checkpoints
 from urlpath import URL as Url
 
-from .apps_parsl import (
-    app_minify,
-    app_post_to_html,
-    app_read_md_to_ast,
-    app_read_md_to_ast_with_teaser,
-    app_rsync,
-)
+from .apps_parsl import app_minify, app_post_to_html, app_read_md_to_ast, app_read_md_to_ast_with_teaser, app_rsync
 from .config import Config
 from .data import Pages, Posts
 from .helpers import to_feed, to_sitemap, write_tipuesearch
