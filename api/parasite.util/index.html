@@ -123,7 +123,7 @@
 <span id="parasite-util-module"></span><h1>parasite.util module<a class="headerlink" href="#module-parasite.util" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="parasite.util.TimeElapse">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">parasite.util.</span></code><code class="sig-name descname"><span class="pre">TimeElapse</span></code><a class="reference internal" href="../../_modules/parasite/util/#TimeElapse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.util.TimeElapse" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">parasite.util.</span></code><code class="sig-name descname"><span class="pre">TimeElapse</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">logger=&lt;Logger</span> <span class="pre">parasite.util</span> <span class="pre">(WARNING)&gt;</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/parasite/util/#TimeElapse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.util.TimeElapse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
 <dt id="parasite.util.TimeElapse.report">
@@ -135,6 +135,17 @@
 <code class="sig-name descname"><span class="pre">update</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/parasite/util/#TimeElapse.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.util.TimeElapse.update" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+</dd></dl>
+
+<dl class="py function">
+<dt id="parasite.util.setup_logging">
+<code class="sig-prename descclassname"><span class="pre">parasite.util.</span></code><code class="sig-name descname"><span class="pre">setup_logging</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'parasite'</span></em>, <em class="sig-param"><span class="pre">level:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'INFO'</span></em>, <em class="sig-param"><span class="pre">env_var:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'PARASITELOGLEVEL'</span></em>, <em class="sig-param"><span class="pre">fmt:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'%(name)s</span> <span class="pre">%(levelname)s</span> <span class="pre">%(message)s'</span></em>, <em class="sig-param"><span class="pre">Handler=&lt;class</span> <span class="pre">'logging.StreamHandler'&gt;</span></em>, <em class="sig-param"><span class="pre">Formatter=&lt;class</span> <span class="pre">'logging.Formatter'&gt;</span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">logging.Logger</span><a class="reference internal" href="../../_modules/parasite/util/#setup_logging"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.util.setup_logging" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup logging.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>env_var</strong> – if not empty, set log level from this environment variable.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </div>

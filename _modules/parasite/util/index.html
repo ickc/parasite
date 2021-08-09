@@ -109,16 +109,49 @@
   <h1>Source code for parasite.util</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">from</span> <span class="nn">logging</span> <span class="kn">import</span> <span class="n">getLogger</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">timeit</span> <span class="kn">import</span> <span class="n">default_timer</span> <span class="k">as</span> <span class="n">timer</span>
 
-<span class="n">logger</span> <span class="o">=</span> <span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;parasite&#39;</span><span class="p">)</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">coloredlogs</span> <span class="kn">import</span> <span class="n">ColoredFormatter</span> <span class="k">as</span> <span class="n">Formatter</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">logging</span> <span class="kn">import</span> <span class="n">Formatter</span>
+
+
+<div class="viewcode-block" id="setup_logging"><a class="viewcode-back" href="../../../api/parasite.util/#parasite.util.setup_logging">[docs]</a><span class="k">def</span> <span class="nf">setup_logging</span><span class="p">(</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;parasite&#39;</span><span class="p">,</span>
+    <span class="n">level</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;INFO&quot;</span><span class="p">,</span>
+    <span class="n">env_var</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;PARASITELOGLEVEL&quot;</span><span class="p">,</span>
+    <span class="n">fmt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%(name)s</span><span class="s2"> </span><span class="si">%(levelname)s</span><span class="s2"> </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">Handler</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">,</span>
+    <span class="n">Formatter</span><span class="o">=</span><span class="n">Formatter</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Setup logging.</span>
+
+<span class="sd">    :param env_var: if not empty, set log level from this environment variable.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">handler</span> <span class="o">=</span> <span class="n">Handler</span><span class="p">()</span>
+    <span class="n">handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">Formatter</span><span class="p">(</span><span class="n">fmt</span><span class="p">))</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">env_var</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_level</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">env_var</span><span class="p">,</span> <span class="n">level</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">_level</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">level</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">=</span><span class="si">%s</span><span class="s1"> is not a valid logging level, set to default </span><span class="si">%s</span><span class="s1">.&#39;</span><span class="p">,</span> <span class="n">env_var</span><span class="p">,</span> <span class="n">_level</span><span class="p">,</span> <span class="n">level</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">level</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">logger</span></div>
 
 
 <div class="viewcode-block" id="TimeElapse"><a class="viewcode-back" href="../../../api/parasite.util/#parasite.util.TimeElapse">[docs]</a><span class="k">class</span> <span class="nc">TimeElapse</span><span class="p">:</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">=</span> <span class="n">timer</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span>
 
 <div class="viewcode-block" id="TimeElapse.update"><a class="viewcode-back" href="../../../api/parasite.util/#parasite.util.TimeElapse.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">=</span> <span class="n">timer</span><span class="p">()</span></div>
@@ -126,7 +159,7 @@
 <div class="viewcode-block" id="TimeElapse.report"><a class="viewcode-back" href="../../../api/parasite.util/#parasite.util.TimeElapse.report">[docs]</a>    <span class="k">def</span> <span class="nf">report</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
         <span class="n">time_original</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">-</span> <span class="n">time_original</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1">s spent: </span><span class="si">{</span><span class="n">string</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">-</span> <span class="n">time_original</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1">s spent: </span><span class="si">{</span><span class="n">string</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div></div>
 </pre></div>
 
     </div>
