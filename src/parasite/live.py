@@ -12,9 +12,6 @@ from typing import TYPE_CHECKING
 import logging
 from functools import partial
 
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
-
 from .apps import post_to_html, read_md_to_ast
 from .util import TimeElapse
 
@@ -87,27 +84,25 @@ def _make_single_page(page: Page, config: Config):
     time_elapse.report(f'{url} redone.')
 
 
-class PageEventHandler(FileSystemEventHandler):
-
-    def __init__(self, page: Page, config: Config):
-        self.page = page
-        self.config = config
-
-        self.time_elapse = TimeElapse()
-        logger.info('Watching %s', page.path)
-
-    def make_single_page(self):
-        _make_single_page(self.page, self.config)
-
-    def on_modified(self, event):
-        logger.info('event type: %s\npath : %s', event.event_type, event.src_path)
-        self.make_single_page()
-
-
 def observe_single_page_no_serve(
     page: Page,
     config: Config,
 ):
+    from watchdog.observers import Observer
+    from watchdog.events import FileSystemEventHandler
+
+    class PageEventHandler(FileSystemEventHandler):
+
+        def __init__(self, page: Page, config: Config):
+            self.page = page
+            self.config = config
+
+            logger.info('Watching %s', page.path)
+
+        def on_modified(self, event):
+            logger.info('%s %s. Updating...', event.src_path, event.event_type)
+            _make_single_page(self.page, self.config)
+
     path = page.path.resolve()
 
     event_handler = PageEventHandler(page, config)
