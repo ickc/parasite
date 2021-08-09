@@ -10,13 +10,7 @@ if TYPE_CHECKING:
 
 
 def _nav(
-    data: Tuple[
-        Union[
-            Tuple[str, str],
-            Tuple[Tuple[Tuple[str, str], ...], str]
-        ],
-        ...
-    ],
+    data: Tuple[Union[Tuple[str, str], Tuple[Tuple[Tuple[str, str], ...], str]], ...],
     ul_class: str = "navbar-nav nav-fill d-flex w-100",
     li_class: str = "nav-item",
     a_class: str = "nav-link",
@@ -32,47 +26,49 @@ def _nav(
         type_ = type(datum[0])
         if type_ == str:
             url, title = datum
-            res.append(f'<li class="{li_class}"><a href="{url}" class="{a_class}">{title}</a></li>')
+            res.append(
+                f'<li class="{li_class}"><a href="{url}" class="{a_class}">{title}</a></li>'
+            )
         elif type_ == tuple:
             inner_data, title = datum
-            res.append(f'<li class="{dropdown_li_class}"><a href="#" class="{dropdown_a_class}" {dropdown_a_attrs}>{title}</a>')
-            res += _nav(inner_data, ul_class=inner_ul_class, li_class=inner_li_class, a_class=inner_a_class)
-            res.append('</li>')
+            res.append(
+                f'<li class="{dropdown_li_class}"><a href="#" class="{dropdown_a_class}" {dropdown_a_attrs}>{title}</a>'
+            )
+            res += _nav(
+                inner_data,
+                ul_class=inner_ul_class,
+                li_class=inner_li_class,
+                a_class=inner_a_class,
+            )
+            res.append("</li>")
         else:
-            raise TypeError('Unknown type inside nav data: {type_}.')
-    res.append('</ul>')
+            raise TypeError("Unknown type inside nav data: {type_}.")
+    res.append("</ul>")
     return res
 
 
 def nav(
-    data: Tuple[
-        Union[
-            Tuple[str, str],
-            Tuple[Tuple[Tuple[str, str], ...], str]
-        ],
-        ...
-    ]
+    data: Tuple[Union[Tuple[str, str], Tuple[Tuple[Tuple[str, str], ...], str]], ...]
 ) -> str:
-    return ''.join(_nav(data))
+    return "".join(_nav(data))
 
 
 def pretty_urls_present(parent: Path, stem: str) -> Path:
-    """An example "pretty_urls" callable for present.html
-    """
-    return parent / stem / 'present.html'
+    """An example "pretty_urls" callable for present.html"""
+    return parent / stem / "present.html"
 
 
 def tipuesearch(
     pages: List[Page],
-    root: str = '..',
+    root: str = "..",
 ) -> Dict[str, List[Dict[str, str]]]:
     return {
-        'pages': [
+        "pages": [
             {
-                'title': page.title,
-                'text': page.text,
-                'tags': ','.join(page.tags),
-                'url': str(root / page.url),
+                "title": page.title,
+                "text": page.text,
+                "tags": ",".join(page.tags),
+                "url": str(root / page.url),
                 # doesn't work
                 # 'image': None if page.previewimage is None else str(root / page.previewimage),
             }
@@ -84,13 +80,13 @@ def tipuesearch(
 def write_tipuesearch(
     path: Path,
     pages: List[Page],
-    root: str = '..',
+    root: str = "..",
 ):
     import ujson as json
 
     data = tipuesearch(pages, root=root)
-    with open(path, 'w') as f:
-        print('var tipuesearch=', file=f, end='')
+    with open(path, "w") as f:
+        print("var tipuesearch=", file=f, end="")
         json.dump(data, f)
 
 
@@ -99,14 +95,14 @@ def minify_html(html: str) -> str:
 
     res = subprocess.run(
         [
-            'minify',
-            '--type=html',
-            '--html-keep-conditional-comments',
-            '--html-keep-default-attrvals',
-            '--html-keep-document-tags',
-            '--html-keep-end-tags',
-            '--html-keep-quotes',
-            '--html-keep-whitespace',
+            "minify",
+            "--type=html",
+            "--html-keep-conditional-comments",
+            "--html-keep-default-attrvals",
+            "--html-keep-document-tags",
+            "--html-keep-end-tags",
+            "--html-keep-quotes",
+            "--html-keep-whitespace",
         ],
         input=html,
         text=True,
@@ -128,7 +124,7 @@ def to_feed(
     lang: str,
     copy_right: str,
     time_zone: str,
-    output_dir: Path = Path('output'),
+    output_dir: Path = Path("output"),
     write_atom: bool = True,
     write_rss: bool = True,
 ):
@@ -137,12 +133,14 @@ def to_feed(
     from feedgen.feed import FeedGenerator
 
     # https://stackoverflow.com/a/25920392/5769446
-    regex = re.compile('[^\u0020-\uD7FF\u0009\u000A\u000D\uE000-\uFFFD\U00010000-\U0010FFFF]+')
+    regex = re.compile(
+        "[^\u0020-\uD7FF\u0009\u000A\u000D\uE000-\uFFFD\U00010000-\U0010FFFF]+"
+    )
 
     fg = FeedGenerator()
     fg.id(site_url)
-    fg.link(href=site_url, rel='alternate')
-    fg.link(href=site_url + 'rss.xml', rel='self')
+    fg.link(href=site_url, rel="alternate")
+    fg.link(href=site_url + "rss.xml", rel="self")
     fg.title(title)
     fg.author(name=author, email=email)
     fg.logo(site_url + logo_url)
@@ -160,31 +158,31 @@ def to_feed(
         fe.author(name=post.author)
         fe.published(post.time)
         # xml don't like invalid characters that somehow pandoc can produce
-        fe.content(regex.sub('', post.html), type='CDATA')
+        fe.content(regex.sub("", post.html), type="CDATA")
 
     if write_atom:
-        fg.atom_file(str(output_dir / 'atom.xml'))
+        fg.atom_file(str(output_dir / "atom.xml"))
     if write_rss:
-        fg.rss_file(str(output_dir / 'rss.xml'))
+        fg.rss_file(str(output_dir / "rss.xml"))
 
 
 def to_sitemap(
     site_url: str,
     pages: List[Page],
-    output_dir: Path = Path('output'),
-    filename: str = 'sitemapindex.xml',
+    output_dir: Path = Path("output"),
+    filename: str = "sitemapindex.xml",
 ):
     from xml.etree.ElementTree import Element, ElementTree, SubElement
 
-    urlset = Element('urlset', xmlns="http://www.sitemaps.org/schemas/sitemap/0.9")
+    urlset = Element("urlset", xmlns="http://www.sitemaps.org/schemas/sitemap/0.9")
     tree = ElementTree(urlset)
 
     for page in pages:
-        url = SubElement(urlset, 'url')
+        url = SubElement(urlset, "url")
 
-        loc = SubElement(url, 'loc')
+        loc = SubElement(url, "loc")
         loc.text = str(site_url / page.url)
 
-        lastmod = SubElement(url, 'lastmod')
+        lastmod = SubElement(url, "lastmod")
         lastmod.text = page.committed_date_str
-    tree.write(output_dir / filename, encoding='utf-8', xml_declaration=True)
+    tree.write(output_dir / filename, encoding="utf-8", xml_declaration=True)

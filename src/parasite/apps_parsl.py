@@ -54,7 +54,7 @@ def app_post_to_html(
     next,
     lang,
     ext,
-    inputs=[],   # template
+    inputs=[],  # template
     outputs=[],  # out_path
     **kwargs,
 ):
@@ -83,15 +83,15 @@ def app_rsync(in_dir: str, out_base_dir: str, out_sub_dir: str) -> str:
 
     out_dir = Path(out_base_dir) / out_sub_dir
     out_dir.mkdir(exist_ok=True, parents=True)
-    return f'rsync -a {in_dir}/ {out_dir}/'
+    return f"rsync -a {in_dir}/ {out_dir}/"
 
 
 @bash_app
 def app_minify(inputs=[], outputs=[]):
-    '''minify using the Go minifier
+    """minify using the Go minifier
 
     https://github.com/tdewolff/minify/tree/master/cmd/minify
-    '''
+    """
     from pathlib import Path
 
     input_paths = [file.filepath for file in inputs]

@@ -11,7 +11,7 @@ except ImportError:
 
 
 def setup_logging(
-    name: str = 'parasite',
+    name: str = "parasite",
     level: str = "INFO",
     env_var: str = "PARASITELOGLEVEL",
     fmt: str = "%(name)s %(levelname)s %(message)s",
@@ -32,14 +32,18 @@ def setup_logging(
             logger.setLevel(level=_level)
         except ValueError:
             logger.setLevel(level=level)
-            logger.error('%s=%s is not a valid logging level, set to default %s.', env_var, _level, level)
+            logger.error(
+                "%s=%s is not a valid logging level, set to default %s.",
+                env_var,
+                _level,
+                level,
+            )
     else:
         logger.setLevel(level=level)
     return logger
 
 
 class TimeElapse:
-
     def __init__(self, logger=logging.getLogger(__name__)):
         self.time = timer()
         self.logger = logger
@@ -50,4 +54,4 @@ class TimeElapse:
     def report(self, string):
         time_original = self.time
         self.update()
-        self.logger.info(f'{self.time - time_original:.3f}s spent: {string}')
+        self.logger.info(f"{self.time - time_original:.3f}s spent: {string}")

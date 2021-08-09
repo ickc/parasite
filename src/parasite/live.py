@@ -31,15 +31,17 @@ def serve(port: int, directory: Path):
     from http.server import HTTPServer, SimpleHTTPRequestHandler
     from threading import Thread
 
-    httpd = HTTPServer(('localhost', port), partial(SimpleHTTPRequestHandler, directory=directory))
-    logger.info('Serving at port %s.', port)
+    httpd = HTTPServer(
+        ("localhost", port), partial(SimpleHTTPRequestHandler, directory=directory)
+    )
+    logger.info("Serving at port %s.", port)
     Thread(target=httpd.serve_forever).start()
 
 
 def open_browser(url: Url):
     import webbrowser
 
-    logger.info('Opening %s in browser.', url)
+    logger.info("Opening %s in browser.", url)
     webbrowser.open(str(url), new=2)
 
 
@@ -47,13 +49,13 @@ def code(path: Path):
     import subprocess
 
     cmd = [
-        'code',
+        "code",
         str(path),
     ]
-    logger.info('Running %s', ' '.join(cmd))
+    logger.info("Running %s", " ".join(cmd))
     subprocess.run(
         [
-            'code',
+            "code",
             str(path),
         ],
         check=True,
@@ -81,7 +83,7 @@ def _make_single_page(page: Page, config: Config):
         outputs=[config.output_dir / page.out_path],
         **page.options,
     )
-    time_elapse.report(f'{url} redone.')
+    time_elapse.report(f"{url} redone.")
 
 
 def observe_single_page_no_serve(
@@ -92,15 +94,14 @@ def observe_single_page_no_serve(
     from watchdog.observers import Observer
 
     class PageEventHandler(FileSystemEventHandler):
-
         def __init__(self, page: Page, config: Config):
             self.page = page
             self.config = config
 
-            logger.info('Watching %s', page.path)
+            logger.info("Watching %s", page.path)
 
         def on_modified(self, event):
-            logger.info('%s %s. Updating...', event.src_path, event.event_type)
+            logger.info("%s %s. Updating...", event.src_path, event.event_type)
             _make_single_page(self.page, self.config)
 
     path = page.path.resolve()
@@ -145,9 +146,9 @@ def watch_single_page(
             page = cur_page
             break
     if page is None:
-        raise ValueError(f'Cannot find page/post with url {url}')
+        raise ValueError(f"Cannot find page/post with url {url}")
     else:
-        time_elapse.report(f'Found file at path {page.path}')
+        time_elapse.report(f"Found file at path {page.path}")
     if config.code:
         code(config.output_dir / page.out_path)
     if config.serve is None:

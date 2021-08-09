@@ -22,8 +22,7 @@ logger = getLogger(__name__)
 
 
 def meta_append(meta: MetaMap, key: str, value: str):
-    '''Append or create key in meta with value in-place.
-    '''
+    """Append or create key in meta with value in-place."""
     raw_block = MetaBlocks(RawBlock(value))
     if key in meta:
         temp = meta[key]
@@ -40,10 +39,10 @@ def extract_image(
     doc: Doc,
     outputs: list = [],
 ):
-    '''Append Image to outputs.
+    """Append Image to outputs.
 
     This filter does nothing to the elem/doc.
-    '''
+    """
     if type(elem) == Image:
         outputs.append(elem)
 
@@ -51,15 +50,14 @@ def extract_image(
 def lightgallery(
     elem: ListContainer[Block],
     doc: Doc,
-    cls: str = 'lightgallery',
+    cls: str = "lightgallery",
     script_include_after: str = """lightGallery(document.getElementById('{identifier}'), {{
 plugins: [lgThumbnail,],
 thumbnail: true,
 }});
 $("#{identifier}").justifiedGallery();""",
 ) -> Optional[ListContainer[Block]]:
-    """Transform contents of Div with class lightgallery to that lightgallery needs.
-    """
+    """Transform contents of Div with class lightgallery to that lightgallery needs."""
     if type(elem) == Div and cls in elem.classes:
         images: List[Image] = []
         elem.walk(partial(extract_image, outputs=images))
@@ -67,10 +65,18 @@ $("#{identifier}").justifiedGallery();""",
 
         identifier: str = elem.identifier
         if not identifier:
-            identifier = ''.join(random.choices(string.ascii_uppercase + string.digits, k=44))
-            logger.info(f'Created random identifier {identifier} for lightgallery in {doc.get_metadata("title")}.')
+            identifier = "".join(
+                random.choices(string.ascii_uppercase + string.digits, k=44)
+            )
+            logger.info(
+                f'Created random identifier {identifier} for lightgallery in {doc.get_metadata("title")}.'
+            )
 
-        meta_append(doc.metadata, 'script-include-after', script_include_after.format(identifier=identifier))
+        meta_append(
+            doc.metadata,
+            "script-include-after",
+            script_include_after.format(identifier=identifier),
+        )
         div = Div(
             Plain(*res),
             identifier=identifier,
@@ -86,27 +92,41 @@ $("#{identifier}").justifiedGallery();""",
 def lightgallery_from_dir(
     elem: ListContainer[Block],
     doc: Doc,
-    attribute: str = 'lightgallery',
-    suffices: List[str] = ['.jpg'],
+    attribute: str = "lightgallery",
+    suffices: List[str] = [".jpg"],
     script_include_after: str = """lightGallery(document.getElementById('{identifier}'), {{
 plugins: [lgThumbnail,],
 thumbnail: true,
 }});
 $("#{identifier}").justifiedGallery();""",
 ) -> Optional[ListContainer[Block]]:
-    """Create lightgallery Div from directory.
-    """
+    """Create lightgallery Div from directory."""
     if type(elem) == Div and attribute in elem.attributes:
-        root = doc.get_metadata('root', '/')
+        root = doc.get_metadata("root", "/")
         res = [
             Link(Image(url=(url := str(root / Url(path)))), url=url)
-            for path in sorted(chain(*(Path(elem.attributes[attribute]).glob(f'**/*{suffix}') for suffix in suffices)))
+            for path in sorted(
+                chain(
+                    *(
+                        Path(elem.attributes[attribute]).glob(f"**/*{suffix}")
+                        for suffix in suffices
+                    )
+                )
+            )
         ]
 
-        identifier = ''.join(random.choices(string.ascii_uppercase + string.digits, k=44))
-        logger.info(f'Created random identifier {identifier} for lightgallery in {doc.get_metadata("title")}.')
+        identifier = "".join(
+            random.choices(string.ascii_uppercase + string.digits, k=44)
+        )
+        logger.info(
+            f'Created random identifier {identifier} for lightgallery in {doc.get_metadata("title")}.'
+        )
 
-        meta_append(doc.metadata, 'script-include-after', script_include_after.format(identifier=identifier))
+        meta_append(
+            doc.metadata,
+            "script-include-after",
+            script_include_after.format(identifier=identifier),
+        )
         div = Div(
             Plain(*res),
             identifier=identifier,

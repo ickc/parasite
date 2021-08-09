@@ -41,6 +41,7 @@ class Config:
     implement it as a property that returns a callable using closure.
     See `content_footer` for an example on how to do this.
     """
+
     watch_single_page: Optional[Url] = None
     serve: Optional[int] = None
     open: Optional[Url] = None
@@ -52,13 +53,13 @@ class Config:
     index_include_jumbotron: bool = True
     tag_cloud_font_size_min: int = 70
     tag_cloud_font_size_max: int = 280
-    logo_url: str = ''
+    logo_url: str = ""
     show_previewimage_in_post: bool = True
-    output_dir: Path = Path('output')
-    date_format: str = r'%Y-%m-%d'
+    output_dir: Path = Path("output")
+    date_format: str = r"%Y-%m-%d"
     mathjax_config: str = ""
     default_lang: str = "en"
-    root_relative_to_search_form: str = '..'
+    root_relative_to_search_form: str = ".."
     timezone: str = r"America/Los_Angeles"
 
     write_tipuesearch_json: bool = True
@@ -69,38 +70,38 @@ class Config:
 
     @property
     def copyright(self) -> str:
-        return f'Contents © 2021–{THIS_YEAR} {self.blog_author[self.default_lang]}'
+        return f"Contents © 2021–{THIS_YEAR} {self.blog_author[self.default_lang]}"
 
     @property
     def pretty_urls(self) -> Dict[str, Union[bool, Callable[[Path, str], Path]]]:
         return {
-            '.md': True,
-            '.markdown': pretty_urls_present,
+            ".md": True,
+            ".markdown": pretty_urls_present,
         }
 
     @property
     def blog_author(self) -> Dict[str, str]:
         return {
-            'en': '',
+            "en": "",
         }
 
     @property
     def blog_title(self) -> Dict[str, str]:
         return {
-            'en': "",
+            "en": "",
         }
 
     @property
     def blog_description(self) -> Dict[str, str]:
         return {
-            'en': "",
+            "en": "",
         }
 
     @property
     def files_folders(self) -> Dict[str, str]:
         return {
-            'files': '',
-            'media': 'media',
+            "files": "",
+            "media": "media",
         }
 
     @property
@@ -109,18 +110,18 @@ class Config:
 
     # input files for pandoc
     @property
-    def posts(self) -> Tuple[
+    def posts(
+        self,
+    ) -> Tuple[
         Tuple[
-            str,           # in-dir
-            str,           # out-dir
-            str,           # ext
-            Optional[Path]  # template
+            str,  # in-dir
+            str,  # out-dir
+            str,  # ext
+            Optional[Path],  # template
         ],
-        ...
+        ...,
     ]:
-        return (
-            ("posts", "", ".md", POST_TEMPLATE),
-        )
+        return (("posts", "", ".md", POST_TEMPLATE),)
 
     @property
     def pages(self) -> Tuple[Tuple[str, str, str, Optional[Path]], ...]:
@@ -131,32 +132,28 @@ class Config:
 
     # this will be compressed
     @property
-    def compress_css(self) -> Dict[
-        str,       # output file
-        List[str]  # input files
-    ]:
+    def compress_css(
+        self,
+    ) -> Dict[str, List[str]]:  # output file, input files
         return {
-            f'{self.output_dir}/assets/css/all-nocdn.css': [
-                '_css/bootstrap.css',
-                '_css/rst_base.css',
-                '_css/nikola_rst.css',
-                '_css/code.css',
-                '_css/theme.css',
-                '_css/bootblog.css',
-                '_css/custom.css',
-                '_css/tipuesearch.css',
+            f"{self.output_dir}/assets/css/all-nocdn.css": [
+                "_css/bootstrap.css",
+                "_css/rst_base.css",
+                "_css/nikola_rst.css",
+                "_css/code.css",
+                "_css/theme.css",
+                "_css/bootblog.css",
+                "_css/custom.css",
+                "_css/tipuesearch.css",
             ]
         }
 
     @property
-    def compress_js(self) -> Dict[
-        str,       # output file
-        List[str]  # input files
-    ]:
+    def compress_js(self) -> Dict[str, List[str]]:  # output file, input files
         return {
-            f'{self.output_dir}/assets/js/tipuesearch.js': [
-                '_js/tipuesearch_set.js',
-                '_js/tipuesearch.js',
+            f"{self.output_dir}/assets/js/tipuesearch.js": [
+                "_js/tipuesearch_set.js",
+                "_js/tipuesearch.js",
             ]
         }
 
@@ -177,86 +174,84 @@ class Config:
         blog_author = self.blog_author
 
         def _content_footer(lang: str, ext: str, out_ext: str) -> str:
-            if ext == '.md' and out_ext == '.html':
+            if ext == ".md" and out_ext == ".html":
                 return f'Contents © 2021–{THIS_YEAR}         <a href="mailto:{blog_email}">{blog_author}</a>'
             else:
-                return ''
+                return ""
 
         return _content_footer
 
     @staticmethod
     def search_form(lang: str, ext: str, out_ext: str) -> str:
-        if ext == '.md' and out_ext == '.html':
+        if ext == ".md" and out_ext == ".html":
             return """<form class="navbar-form navbar-left" action="{root}/search/" role="search">
     <div class="form-group">
         <input type="text" class="form-control" id="tipue_search_input" name="q" placeholder="Search" autocomplete="off" />
     </div>
 </form>"""
         else:
-            return ''
+            return ""
 
     @staticmethod
     def header_includes(lang: str, ext: str, out_ext: str) -> str:
-        return ''
+        return ""
 
     @staticmethod
     def include_before(lang: str, ext: str, out_ext: str) -> str:
-        return ''
+        return ""
 
     @staticmethod
     def include_after(lang: str, ext: str, out_ext: str) -> str:
-        return ''
+        return ""
 
     @staticmethod
     def nav_includes(lang: str, ext: str, out_ext: str) -> str:
-        if lang == 'en' and ext == '.md' and out_ext == '.html':
-            return nav((
-                ("{root}/index.html", "Home"),
-                ("{root}/about/", 'About'),
+        if lang == "en" and ext == ".md" and out_ext == ".html":
+            return nav(
                 (
+                    ("{root}/index.html", "Home"),
+                    ("{root}/about/", "About"),
                     (
-                        ("{root}/categories/", "Categories"),
-                        ("{root}/archive/", "Archive"),
+                        (
+                            ("{root}/categories/", "Categories"),
+                            ("{root}/archive/", "Archive"),
+                        ),
+                        "Archive",
                     ),
-                    "Archive",
-                ),
-                # ("{root}/rss.xml", "RSS feed"),
-            ))
+                    # ("{root}/rss.xml", "RSS feed"),
+                )
+            )
         else:
-            return ''
+            return ""
 
     @staticmethod
     def css(ext: str, out_ext: str) -> List[str]:
-        CSS: Dict[
-            str,        # input file extension
-            List[str],  # CSS urls
-        ] = {
-            '.md': [
-                '{root}/assets/css/all-nocdn.css',
-                'https://fonts.googleapis.com/css?family=Playfair+Display:700,900',
+        CSS: Dict[str, List[str]] = {
+            ".md": [
+                "{root}/assets/css/all-nocdn.css",
+                "https://fonts.googleapis.com/css?family=Playfair+Display:700,900",
             ],
-            '.markdown': [
-            ],
+            ".markdown": [],
         }
         return CSS[ext]
 
     @staticmethod
     def js(ext: str, out_ext: str) -> List[str]:
-        if ext == '.md' and out_ext == '.html':
+        if ext == ".md" and out_ext == ".html":
             return [
-                'https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js',
-                'https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.bundle.min.js',
-                'https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js',
-                'https://cdn.jsdelivr.net/npm/lightgallery@2/lightgallery.umd.js',
-                'https://cdn.jsdelivr.net/npm/lightgallery@2/plugins/thumbnail/lg-thumbnail.umd.js',
-                'https://cdn.jsdelivr.net/npm/justifiedGallery@3/dist/js/jquery.justifiedGallery.min.js',
+                "https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js",
+                "https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.bundle.min.js",
+                "https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js",
+                "https://cdn.jsdelivr.net/npm/lightgallery@2/lightgallery.umd.js",
+                "https://cdn.jsdelivr.net/npm/lightgallery@2/plugins/thumbnail/lg-thumbnail.umd.js",
+                "https://cdn.jsdelivr.net/npm/justifiedGallery@3/dist/js/jquery.justifiedGallery.min.js",
             ]
         else:
             return []
 
     @staticmethod
     def script_include_after(ext: str, out_ext: str) -> str:
-        if ext == '.md' and out_ext == '.html':
+        if ext == ".md" and out_ext == ".html":
             return """tocbot.init({{
   tocSelector: '.js-toc',
   contentSelector: '.entry-content',
@@ -264,7 +259,7 @@ class Config:
   collapseDepth: 1,
 }});"""
         else:
-            return ''
+            return ""
 
     @staticmethod
     def pandoc_input_options(ext: str) -> List[str]:
@@ -279,15 +274,15 @@ class Config:
     @staticmethod
     def pandoc_output_options(ext: str, out_ext: str) -> List[str]:
         res = []
-        if out_ext == '.html':
-            res.append('--mathjax')
-        if ext == '.markdown':
-            res.append('--to=slidy')
+        if out_ext == ".html":
+            res.append("--mathjax")
+        if ext == ".markdown":
+            res.append("--to=slidy")
         return res
 
     @staticmethod
     def panflute_output_filters(ext: str, out_ext: str) -> List[Callable]:
-        if out_ext == '.html':
+        if out_ext == ".html":
             return [
                 lightgallery,
             ]

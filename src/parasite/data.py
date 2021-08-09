@@ -32,55 +32,55 @@ class Page:
     template: Optional[Path]
     timezone: str = r"America/Los_Angeles"
     pretty_urls: Union[bool, Callable[[Path, str], Path]] = True
-    date_format: str = r'%Y-%m-%d'
-    default_lang: str = 'en'
+    date_format: str = r"%Y-%m-%d"
+    default_lang: str = "en"
     options: dict = field(default_factory=dict)
 
     def __post_init__(self):
         # special casing 404
-        if self.pretty_urls is True and str(self.out_path) == '404/index.html':
-            logger.debug(f'Forcing non-pretty URL for {self.path}.')
+        if self.pretty_urls is True and str(self.out_path) == "404/index.html":
+            logger.debug(f"Forcing non-pretty URL for {self.path}.")
             self.pretty_urls = False
             del self.out_path
 
     @property
     def dict(self) -> dict:
-        '''A dict representation of self including all attributes and properties
+        """A dict representation of self including all attributes and properties
 
         Primarily for dataframe
-        '''
+        """
         return {
             # init
-            'path': self.path,
-            'base_path': self.base_path,
-            'out_base_path': self.out_base_path,
-            'template': self.template,
-            'pretty_urls': self.pretty_urls,
+            "path": self.path,
+            "base_path": self.base_path,
+            "out_base_path": self.out_base_path,
+            "template": self.template,
+            "pretty_urls": self.pretty_urls,
             # property
-            'out_path': self.out_path,
-            'url': self.url,
-            'categories': self.categories,
-            'level': self.level,
-            'root': self.root,
+            "out_path": self.out_path,
+            "url": self.url,
+            "categories": self.categories,
+            "level": self.level,
+            "root": self.root,
         }
 
     @property
     def dict_ast(self) -> dict:
-        '''A dict representation of self including the AST derived attributes
+        """A dict representation of self including the AST derived attributes
 
         Primarily for dataframe
-        '''
+        """
         res = self.dict
-        res['time'] = self.time
-        res['lang'] = self.lang
+        res["time"] = self.time
+        res["lang"] = self.lang
         for key in self.ast.metadata.content:
-            res['ast.' + key] = self.ast.get_metadata(key)
+            res["ast." + key] = self.ast.get_metadata(key)
         prev = self.prev
-        res['prev.url'] = None if prev is None else prev[0]
-        res['prev.title'] = None if prev is None else prev[1]
+        res["prev.url"] = None if prev is None else prev[0]
+        res["prev.title"] = None if prev is None else prev[1]
         next = self.next
-        res['next.url'] = None if next is None else next[0]
-        res['next.title'] = None if next is None else next[1]
+        res["next.url"] = None if next is None else next[0]
+        res["next.title"] = None if next is None else next[1]
         return res
 
     @property
@@ -92,24 +92,24 @@ class Page:
         out_path = self.out_base_path / self.path.relative_to(self.base_path)
         pretty_urls = self.pretty_urls
         if pretty_urls is True:
-            out_path = out_path.parent / out_path.stem / 'index.html'
+            out_path = out_path.parent / out_path.stem / "index.html"
         elif callable(pretty_urls):
             out_path = pretty_urls(out_path.parent, out_path.stem)
         else:
-            out_path = out_path.parent / (out_path.stem + '.html')
+            out_path = out_path.parent / (out_path.stem + ".html")
         return out_path
 
     @cached_property
     def url(self) -> Url:
         out_path = self.out_path
         if self.pretty_urls is True:
-            return Url(str(out_path.parent) + '/')
+            return Url(str(out_path.parent) + "/")
         else:
             return Url(str(out_path))
 
     @cached_property
     def categories(self) -> str:
-        return '|'.join(self.path.relative_to(self.base_path).parent.parts)
+        return "|".join(self.path.relative_to(self.base_path).parent.parts)
 
     @cached_property
     def level(self) -> int:
@@ -119,9 +119,9 @@ class Page:
     def root(self) -> str:
         level = self.level
         if level == 0:
-            return '.'
+            return "."
         else:
-            return '/'.join(['..'] * level)
+            return "/".join([".."] * level)
 
     @cached_property
     def mtime(self) -> datetime:
@@ -136,12 +136,14 @@ class Page:
             commit = next(repo.iter_commits(paths=self.path, max_count=1))
             return datetime.fromtimestamp(commit.committed_date, timezone.utc)
         except StopIteration:
-            logger.warn(f'Cannot obtain committed date for {self.path}, returning mtime instead.')
+            logger.warn(
+                f"Cannot obtain committed date for {self.path}, returning mtime instead."
+            )
             return self.mtime
 
     @cached_property
     def committed_date_str(self) -> str:
-        return self.committed_date.strftime(r'%Y-%m-%d')
+        return self.committed_date.strftime(r"%Y-%m-%d")
 
     # AST & its derivatives
 
@@ -159,7 +161,9 @@ class Page:
         try:
             return self._ast
         except AttributeError:
-            raise AttributeError('ast not set yet. Consider using parasite.apps.read_md_to_ast')
+            raise AttributeError(
+                "ast not set yet. Consider using parasite.apps.read_md_to_ast"
+            )
 
     @ast.setter
     def ast(self, doc: pf.elements.Doc):
@@ -171,7 +175,7 @@ class Page:
 
     @cached_property
     def text(self) -> str:
-        return '\n'.join(pf.stringify(elem) for elem in self.ast.content)
+        return "\n".join(pf.stringify(elem) for elem in self.ast.content)
 
     @cached_property
     def html(self) -> str:
@@ -181,45 +185,47 @@ class Page:
 
         TODO: handle AST mutation
         """
-        return convert_text(self.ast, input_format='panflute', output_format='html', standalone=False)
+        return convert_text(
+            self.ast, input_format="panflute", output_format="html", standalone=False
+        )
 
     @property
     def title(self) -> Optional[str]:
-        return self.ast.get_metadata('title')
+        return self.ast.get_metadata("title")
 
     @property
     def author(self) -> Optional[str]:
-        return self.ast.get_metadata('author')
+        return self.ast.get_metadata("author")
 
     @property
     def lang(self) -> str:
-        lang = self.ast.get_metadata('lang')
+        lang = self.ast.get_metadata("lang")
         if lang is None:
             lang = self.default_lang
-            self.ast.metadata['lang'] = lang
+            self.ast.metadata["lang"] = lang
         return lang
 
     @property
     def tags(self) -> List[str]:
-        tags = self.ast.get_metadata('tags')
+        tags = self.ast.get_metadata("tags")
         if tags is None:
             tags = []
         return tags
 
     @property
     def previewimage(self) -> Optional[Url]:
-        res = self.ast.get_metadata('previewimage')
+        res = self.ast.get_metadata("previewimage")
         if res is not None:
             return Url(res)
         return None
 
     @property
     def status(self) -> str:
-        return self.ast.get_metadata('status', '')
+        return self.ast.get_metadata("status", "")
 
     @property
     def is_draft(self) -> bool:
-        return self.status == 'draft'
+        return self.status == "draft"
 
     @property
     def prev(self):
@@ -232,11 +238,10 @@ class Page:
 
 @dataclass
 class Post(Page):
-
     @property
     def dict_ast(self) -> dict:
         dict_ast = super().dict_ast
-        dict_ast['teaser'] = self.teaser
+        dict_ast["teaser"] = self.teaser
         return dict_ast
 
     # AST's derivatives
@@ -246,7 +251,7 @@ class Post(Page):
 
     @property
     def teaser(self) -> pf.elements.Doc:
-        if not hasattr(self, '_teaser'):
+        if not hasattr(self, "_teaser"):
             self.get_teaser()
         return self._teaser
 
@@ -260,9 +265,9 @@ class Post(Page):
 
     @property
     def date(self) -> str:
-        date = self.ast.get_metadata('date')
+        date = self.ast.get_metadata("date")
         if date is None:
-            raise ValueError(f'The following post has no date: {self.path}')
+            raise ValueError(f"The following post has no date: {self.path}")
         return date
 
     @cached_property
@@ -273,7 +278,7 @@ class Post(Page):
 
     @property
     def prev(self) -> Optional[Tuple[Url, Optional[str]]]:
-        return getattr(self, '_prev', None)
+        return getattr(self, "_prev", None)
 
     @prev.setter
     def prev(self, data: Tuple[Url, Optional[str]]):
@@ -285,7 +290,7 @@ class Post(Page):
 
     @property
     def next(self) -> Optional[Tuple[Url, Optional[str]]]:
-        return getattr(self, '_next', None)
+        return getattr(self, "_next", None)
 
     @next.setter
     def next(self, data: Tuple[Url, Optional[str]]):
@@ -310,8 +315,8 @@ class Pages:
         template: Optional[Path],
         timezone: str = r"America/Los_Angeles",
         pretty_urls: Union[bool, Callable[[Path, str], Path]] = True,
-        date_format: str = r'%Y-%m-%d',
-        default_lang: str = 'en',
+        date_format: str = r"%Y-%m-%d",
+        default_lang: str = "en",
         options: dict = {},
     ):
         path = Path(path)
@@ -329,7 +334,7 @@ class Pages:
                     default_lang=default_lang,
                     options=options,
                 )
-                for path_ in Path(path).glob(f'**/*{ext}')
+                for path_ in Path(path).glob(f"**/*{ext}")
             ]
         )
 
