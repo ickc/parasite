@@ -17,7 +17,7 @@ from urlpath import URL as Url
 from .apps import get_teaser
 
 if TYPE_CHECKING:
-    from typing import Callable, Dict, List, Optional, Tuple, Union
+    from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union
 
     import pandas as pd
 
@@ -303,7 +303,7 @@ class Post(Page):
 
 @dataclass
 class Pages:
-    pages: List[Page]
+    pages: Sequence[Page]
     page_class: ClassVar[type] = Page
 
     @classmethod
