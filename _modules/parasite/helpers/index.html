@@ -119,13 +119,7 @@
 
 
 <span class="k">def</span> <span class="nf">_nav</span><span class="p">(</span>
-    <span class="n">data</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span>
-        <span class="n">Union</span><span class="p">[</span>
-            <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
-            <span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span>
-        <span class="p">],</span>
-        <span class="o">...</span>
-    <span class="p">],</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">],</span> <span class="nb">str</span><span class="p">]],</span> <span class="o">...</span><span class="p">],</span>
     <span class="n">ul_class</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;navbar-nav nav-fill d-flex w-100&quot;</span><span class="p">,</span>
     <span class="n">li_class</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;nav-item&quot;</span><span class="p">,</span>
     <span class="n">a_class</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;nav-link&quot;</span><span class="p">,</span>
@@ -141,47 +135,49 @@
         <span class="n">type_</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">datum</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">type_</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
             <span class="n">url</span><span class="p">,</span> <span class="n">title</span> <span class="o">=</span> <span class="n">datum</span>
-            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;&lt;li class=&quot;</span><span class="si">{</span><span class="n">li_class</span><span class="si">}</span><span class="s1">&quot;&gt;&lt;a href=&quot;</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s1">&quot; class=&quot;</span><span class="si">{</span><span class="n">a_class</span><span class="si">}</span><span class="s1">&quot;&gt;</span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s1">&lt;/a&gt;&lt;/li&gt;&#39;</span><span class="p">)</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;&lt;li class=&quot;</span><span class="si">{</span><span class="n">li_class</span><span class="si">}</span><span class="s1">&quot;&gt;&lt;a href=&quot;</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s1">&quot; class=&quot;</span><span class="si">{</span><span class="n">a_class</span><span class="si">}</span><span class="s1">&quot;&gt;</span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s1">&lt;/a&gt;&lt;/li&gt;&#39;</span>
+            <span class="p">)</span>
         <span class="k">elif</span> <span class="n">type_</span> <span class="o">==</span> <span class="nb">tuple</span><span class="p">:</span>
             <span class="n">inner_data</span><span class="p">,</span> <span class="n">title</span> <span class="o">=</span> <span class="n">datum</span>
-            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;&lt;li class=&quot;</span><span class="si">{</span><span class="n">dropdown_li_class</span><span class="si">}</span><span class="s1">&quot;&gt;&lt;a href=&quot;#&quot; class=&quot;</span><span class="si">{</span><span class="n">dropdown_a_class</span><span class="si">}</span><span class="s1">&quot; </span><span class="si">{</span><span class="n">dropdown_a_attrs</span><span class="si">}</span><span class="s1">&gt;</span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s1">&lt;/a&gt;&#39;</span><span class="p">)</span>
-            <span class="n">res</span> <span class="o">+=</span> <span class="n">_nav</span><span class="p">(</span><span class="n">inner_data</span><span class="p">,</span> <span class="n">ul_class</span><span class="o">=</span><span class="n">inner_ul_class</span><span class="p">,</span> <span class="n">li_class</span><span class="o">=</span><span class="n">inner_li_class</span><span class="p">,</span> <span class="n">a_class</span><span class="o">=</span><span class="n">inner_a_class</span><span class="p">)</span>
-            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&lt;/li&gt;&#39;</span><span class="p">)</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;&lt;li class=&quot;</span><span class="si">{</span><span class="n">dropdown_li_class</span><span class="si">}</span><span class="s1">&quot;&gt;&lt;a href=&quot;#&quot; class=&quot;</span><span class="si">{</span><span class="n">dropdown_a_class</span><span class="si">}</span><span class="s1">&quot; </span><span class="si">{</span><span class="n">dropdown_a_attrs</span><span class="si">}</span><span class="s1">&gt;</span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s1">&lt;/a&gt;&#39;</span>
+            <span class="p">)</span>
+            <span class="n">res</span> <span class="o">+=</span> <span class="n">_nav</span><span class="p">(</span>
+                <span class="n">inner_data</span><span class="p">,</span>
+                <span class="n">ul_class</span><span class="o">=</span><span class="n">inner_ul_class</span><span class="p">,</span>
+                <span class="n">li_class</span><span class="o">=</span><span class="n">inner_li_class</span><span class="p">,</span>
+                <span class="n">a_class</span><span class="o">=</span><span class="n">inner_a_class</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&lt;/li&gt;&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Unknown type inside nav data: </span><span class="si">{type_}</span><span class="s1">.&#39;</span><span class="p">)</span>
-    <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&lt;/ul&gt;&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Unknown type inside nav data: </span><span class="si">{type_}</span><span class="s2">.&quot;</span><span class="p">)</span>
+    <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&lt;/ul&gt;&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">res</span>
 
 
 <div class="viewcode-block" id="nav"><a class="viewcode-back" href="../../../api/parasite.helpers/#parasite.helpers.nav">[docs]</a><span class="k">def</span> <span class="nf">nav</span><span class="p">(</span>
-    <span class="n">data</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span>
-        <span class="n">Union</span><span class="p">[</span>
-            <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
-            <span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span>
-        <span class="p">],</span>
-        <span class="o">...</span>
-    <span class="p">]</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">...</span><span class="p">],</span> <span class="nb">str</span><span class="p">]],</span> <span class="o">...</span><span class="p">]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_nav</span><span class="p">(</span><span class="n">data</span><span class="p">))</span></div>
+    <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_nav</span><span class="p">(</span><span class="n">data</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="pretty_urls_present"><a class="viewcode-back" href="../../../api/parasite.helpers/#parasite.helpers.pretty_urls_present">[docs]</a><span class="k">def</span> <span class="nf">pretty_urls_present</span><span class="p">(</span><span class="n">parent</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">stem</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;An example &quot;pretty_urls&quot; callable for present.html</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">parent</span> <span class="o">/</span> <span class="n">stem</span> <span class="o">/</span> <span class="s1">&#39;present.html&#39;</span></div>
+    <span class="sd">&quot;&quot;&quot;An example &quot;pretty_urls&quot; callable for present.html&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">parent</span> <span class="o">/</span> <span class="n">stem</span> <span class="o">/</span> <span class="s2">&quot;present.html&quot;</span></div>
 
 
 <div class="viewcode-block" id="tipuesearch"><a class="viewcode-back" href="../../../api/parasite.helpers/#parasite.helpers.tipuesearch">[docs]</a><span class="k">def</span> <span class="nf">tipuesearch</span><span class="p">(</span>
     <span class="n">pages</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Page</span><span class="p">],</span>
-    <span class="n">root</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;..&#39;</span><span class="p">,</span>
+    <span class="n">root</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;..&quot;</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]]:</span>
     <span class="k">return</span> <span class="p">{</span>
-        <span class="s1">&#39;pages&#39;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;pages&quot;</span><span class="p">:</span> <span class="p">[</span>
             <span class="p">{</span>
-                <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="n">page</span><span class="o">.</span><span class="n">title</span><span class="p">,</span>
-                <span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="n">page</span><span class="o">.</span><span class="n">text</span><span class="p">,</span>
-                <span class="s1">&#39;tags&#39;</span><span class="p">:</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">tags</span><span class="p">),</span>
-                <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">root</span> <span class="o">/</span> <span class="n">page</span><span class="o">.</span><span class="n">url</span><span class="p">),</span>
+                <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="n">page</span><span class="o">.</span><span class="n">title</span><span class="p">,</span>
+                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="n">page</span><span class="o">.</span><span class="n">text</span><span class="p">,</span>
+                <span class="s2">&quot;tags&quot;</span><span class="p">:</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">tags</span><span class="p">),</span>
+                <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">root</span> <span class="o">/</span> <span class="n">page</span><span class="o">.</span><span class="n">url</span><span class="p">),</span>
                 <span class="c1"># doesn&#39;t work</span>
                 <span class="c1"># &#39;image&#39;: None if page.previewimage is None else str(root / page.previewimage),</span>
             <span class="p">}</span>
@@ -193,13 +189,13 @@
 <div class="viewcode-block" id="write_tipuesearch"><a class="viewcode-back" href="../../../api/parasite.helpers/#parasite.helpers.write_tipuesearch">[docs]</a><span class="k">def</span> <span class="nf">write_tipuesearch</span><span class="p">(</span>
     <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
     <span class="n">pages</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Page</span><span class="p">],</span>
-    <span class="n">root</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;..&#39;</span><span class="p">,</span>
+    <span class="n">root</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;..&quot;</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="kn">import</span> <span class="nn">ujson</span> <span class="k">as</span> <span class="nn">json</span>
 
     <span class="n">data</span> <span class="o">=</span> <span class="n">tipuesearch</span><span class="p">(</span><span class="n">pages</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="n">root</span><span class="p">)</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;var tipuesearch=&#39;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">f</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;var tipuesearch=&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">f</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
         <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span></div>
 
 
@@ -208,14 +204,14 @@
 
     <span class="n">res</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
         <span class="p">[</span>
-            <span class="s1">&#39;minify&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;--type=html&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;--html-keep-conditional-comments&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;--html-keep-default-attrvals&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;--html-keep-document-tags&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;--html-keep-end-tags&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;--html-keep-quotes&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;--html-keep-whitespace&#39;</span><span class="p">,</span>
+            <span class="s2">&quot;minify&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;--type=html&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;--html-keep-conditional-comments&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;--html-keep-default-attrvals&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;--html-keep-document-tags&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;--html-keep-end-tags&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;--html-keep-quotes&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;--html-keep-whitespace&quot;</span><span class="p">,</span>
         <span class="p">],</span>
         <span class="nb">input</span><span class="o">=</span><span class="n">html</span><span class="p">,</span>
         <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -237,7 +233,7 @@
     <span class="n">lang</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">copy_right</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">time_zone</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">output_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;output&#39;</span><span class="p">),</span>
+    <span class="n">output_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;output&quot;</span><span class="p">),</span>
     <span class="n">write_atom</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">write_rss</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">):</span>
@@ -246,12 +242,14 @@
     <span class="kn">from</span> <span class="nn">feedgen.feed</span> <span class="kn">import</span> <span class="n">FeedGenerator</span>
 
     <span class="c1"># https://stackoverflow.com/a/25920392/5769446</span>
-    <span class="n">regex</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;[^</span><span class="se">\u0020</span><span class="s1">-</span><span class="se">\uD7FF\u0009\u000A\u000D\uE000</span><span class="s1">-</span><span class="se">\uFFFD\U00010000</span><span class="s1">-</span><span class="se">\U0010FFFF</span><span class="s1">]+&#39;</span><span class="p">)</span>
+    <span class="n">regex</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+        <span class="s2">&quot;[^</span><span class="se">\u0020</span><span class="s2">-</span><span class="se">\uD7FF\u0009\u000A\u000D\uE000</span><span class="s2">-</span><span class="se">\uFFFD\U00010000</span><span class="s2">-</span><span class="se">\U0010FFFF</span><span class="s2">]+&quot;</span>
+    <span class="p">)</span>
 
     <span class="n">fg</span> <span class="o">=</span> <span class="n">FeedGenerator</span><span class="p">()</span>
     <span class="n">fg</span><span class="o">.</span><span class="n">id</span><span class="p">(</span><span class="n">site_url</span><span class="p">)</span>
-    <span class="n">fg</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="n">href</span><span class="o">=</span><span class="n">site_url</span><span class="p">,</span> <span class="n">rel</span><span class="o">=</span><span class="s1">&#39;alternate&#39;</span><span class="p">)</span>
-    <span class="n">fg</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="n">href</span><span class="o">=</span><span class="n">site_url</span> <span class="o">+</span> <span class="s1">&#39;rss.xml&#39;</span><span class="p">,</span> <span class="n">rel</span><span class="o">=</span><span class="s1">&#39;self&#39;</span><span class="p">)</span>
+    <span class="n">fg</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="n">href</span><span class="o">=</span><span class="n">site_url</span><span class="p">,</span> <span class="n">rel</span><span class="o">=</span><span class="s2">&quot;alternate&quot;</span><span class="p">)</span>
+    <span class="n">fg</span><span class="o">.</span><span class="n">link</span><span class="p">(</span><span class="n">href</span><span class="o">=</span><span class="n">site_url</span> <span class="o">+</span> <span class="s2">&quot;rss.xml&quot;</span><span class="p">,</span> <span class="n">rel</span><span class="o">=</span><span class="s2">&quot;self&quot;</span><span class="p">)</span>
     <span class="n">fg</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
     <span class="n">fg</span><span class="o">.</span><span class="n">author</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">author</span><span class="p">,</span> <span class="n">email</span><span class="o">=</span><span class="n">email</span><span class="p">)</span>
     <span class="n">fg</span><span class="o">.</span><span class="n">logo</span><span class="p">(</span><span class="n">site_url</span> <span class="o">+</span> <span class="n">logo_url</span><span class="p">)</span>
@@ -269,34 +267,34 @@
         <span class="n">fe</span><span class="o">.</span><span class="n">author</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">post</span><span class="o">.</span><span class="n">author</span><span class="p">)</span>
         <span class="n">fe</span><span class="o">.</span><span class="n">published</span><span class="p">(</span><span class="n">post</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
         <span class="c1"># xml don&#39;t like invalid characters that somehow pandoc can produce</span>
-        <span class="n">fe</span><span class="o">.</span><span class="n">content</span><span class="p">(</span><span class="n">regex</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">post</span><span class="o">.</span><span class="n">html</span><span class="p">),</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;CDATA&#39;</span><span class="p">)</span>
+        <span class="n">fe</span><span class="o">.</span><span class="n">content</span><span class="p">(</span><span class="n">regex</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">post</span><span class="o">.</span><span class="n">html</span><span class="p">),</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;CDATA&quot;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">write_atom</span><span class="p">:</span>
-        <span class="n">fg</span><span class="o">.</span><span class="n">atom_file</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="s1">&#39;atom.xml&#39;</span><span class="p">))</span>
+        <span class="n">fg</span><span class="o">.</span><span class="n">atom_file</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="s2">&quot;atom.xml&quot;</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">write_rss</span><span class="p">:</span>
-        <span class="n">fg</span><span class="o">.</span><span class="n">rss_file</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="s1">&#39;rss.xml&#39;</span><span class="p">))</span></div>
+        <span class="n">fg</span><span class="o">.</span><span class="n">rss_file</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="s2">&quot;rss.xml&quot;</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="to_sitemap"><a class="viewcode-back" href="../../../api/parasite.helpers/#parasite.helpers.to_sitemap">[docs]</a><span class="k">def</span> <span class="nf">to_sitemap</span><span class="p">(</span>
     <span class="n">site_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">pages</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Page</span><span class="p">],</span>
-    <span class="n">output_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;output&#39;</span><span class="p">),</span>
-    <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;sitemapindex.xml&#39;</span><span class="p">,</span>
+    <span class="n">output_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;output&quot;</span><span class="p">),</span>
+    <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;sitemapindex.xml&quot;</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="kn">from</span> <span class="nn">xml.etree.ElementTree</span> <span class="kn">import</span> <span class="n">Element</span><span class="p">,</span> <span class="n">ElementTree</span><span class="p">,</span> <span class="n">SubElement</span>
 
-    <span class="n">urlset</span> <span class="o">=</span> <span class="n">Element</span><span class="p">(</span><span class="s1">&#39;urlset&#39;</span><span class="p">,</span> <span class="n">xmlns</span><span class="o">=</span><span class="s2">&quot;http://www.sitemaps.org/schemas/sitemap/0.9&quot;</span><span class="p">)</span>
+    <span class="n">urlset</span> <span class="o">=</span> <span class="n">Element</span><span class="p">(</span><span class="s2">&quot;urlset&quot;</span><span class="p">,</span> <span class="n">xmlns</span><span class="o">=</span><span class="s2">&quot;http://www.sitemaps.org/schemas/sitemap/0.9&quot;</span><span class="p">)</span>
     <span class="n">tree</span> <span class="o">=</span> <span class="n">ElementTree</span><span class="p">(</span><span class="n">urlset</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">pages</span><span class="p">:</span>
-        <span class="n">url</span> <span class="o">=</span> <span class="n">SubElement</span><span class="p">(</span><span class="n">urlset</span><span class="p">,</span> <span class="s1">&#39;url&#39;</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">SubElement</span><span class="p">(</span><span class="n">urlset</span><span class="p">,</span> <span class="s2">&quot;url&quot;</span><span class="p">)</span>
 
-        <span class="n">loc</span> <span class="o">=</span> <span class="n">SubElement</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="s1">&#39;loc&#39;</span><span class="p">)</span>
+        <span class="n">loc</span> <span class="o">=</span> <span class="n">SubElement</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="s2">&quot;loc&quot;</span><span class="p">)</span>
         <span class="n">loc</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">site_url</span> <span class="o">/</span> <span class="n">page</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
 
-        <span class="n">lastmod</span> <span class="o">=</span> <span class="n">SubElement</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="s1">&#39;lastmod&#39;</span><span class="p">)</span>
+        <span class="n">lastmod</span> <span class="o">=</span> <span class="n">SubElement</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="s2">&quot;lastmod&quot;</span><span class="p">)</span>
         <span class="n">lastmod</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="n">committed_date_str</span>
-    <span class="n">tree</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="n">filename</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">,</span> <span class="n">xml_declaration</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+    <span class="n">tree</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">output_dir</span> <span class="o">/</span> <span class="n">filename</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span> <span class="n">xml_declaration</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 </pre></div>
 
     </div>
