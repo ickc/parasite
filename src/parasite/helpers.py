@@ -39,7 +39,7 @@ def _nav(
                 ul_class=inner_ul_class,
                 li_class=inner_li_class,
                 a_class=inner_a_class,
-            )
+            )  # type: ignore
             res.append("</li>")
         else:
             raise TypeError("Unknown type inside nav data: {type_}.")
