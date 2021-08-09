@@ -71,7 +71,6 @@ class Page:
         Primarily for dataframe
         """
         res = self.dict
-        res["time"] = self.time
         res["lang"] = self.lang
         for key in self.ast.metadata.content:
             res["ast." + key] = self.ast.get_metadata(key)
@@ -241,6 +240,7 @@ class Post(Page):
     @property
     def dict_ast(self) -> dict:
         dict_ast = super().dict_ast
+        dict_ast["time"] = self.time
         dict_ast["teaser"] = self.teaser
         return dict_ast
 
