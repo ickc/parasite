@@ -148,7 +148,7 @@
                 <span class="n">ul_class</span><span class="o">=</span><span class="n">inner_ul_class</span><span class="p">,</span>
                 <span class="n">li_class</span><span class="o">=</span><span class="n">inner_li_class</span><span class="p">,</span>
                 <span class="n">a_class</span><span class="o">=</span><span class="n">inner_a_class</span><span class="p">,</span>
-            <span class="p">)</span>
+            <span class="p">)</span>  <span class="c1"># type: ignore</span>
             <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&lt;/li&gt;&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Unknown type inside nav data: </span><span class="si">{type_}</span><span class="s2">.&quot;</span><span class="p">)</span>
