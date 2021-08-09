@@ -144,7 +144,8 @@ def id_for_memo_File(f: File, output_ref: bool = False) -> bytes:
         return id_for_memo(f.url)
     else:
         logger.debug("hashing File as input with content: {}".format(f))
-        assert f.scheme == "file"
+        if f.scheme != "file":
+            raise TypeError(f'{f} has a scheme {f.scheme} different from "file".')
         filename = f.filepath
         stat_result = os.stat(filename)
 
