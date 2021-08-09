@@ -2,7 +2,6 @@ SHELL = /usr/bin/env bash
 
 _python ?= python
 PYTESTPARALLEL ?= --workers auto
-EXTRAS ?=
 COVHTML ?= --cov-report html
 # for bump2version, valid options are: major, minor, patch
 PART ?= patch
