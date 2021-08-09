@@ -15,17 +15,16 @@ from parsl.executors import ThreadPoolExecutor
 from parsl.utils import get_all_checkpoints
 from urlpath import URL as Url
 
-from .apps_parsl import (app_minify, app_post_to_html, app_read_md_to_ast,
-                         app_read_md_to_ast_with_teaser, app_rsync)
+from .apps_parsl import app_minify, app_post_to_html, app_read_md_to_ast, app_read_md_to_ast_with_teaser, app_rsync
+from .config import Config
 from .data import Pages, Posts
 from .helpers import to_feed, to_sitemap, write_tipuesearch
+from .live import live
 from .to_ast import posts_to_archive_ast, posts_to_index_ast, posts_to_tag_ast
 from .util import TimeElapse, setup_logging
-from .config import Config
-from .live import live
 
 if TYPE_CHECKING:
-    from typing import Path
+    from pathlib import Path
     from typing import List, Optional, Tuple
 
 executor = ThreadPoolExecutor(

@@ -8,28 +8,28 @@ code
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
 import logging
 from functools import partial
+from typing import TYPE_CHECKING
 
 from .apps import post_to_html, read_md_to_ast
 from .util import TimeElapse
 
 if TYPE_CHECKING:
     from pathlib import Path
-    from typing import Optional, List
+    from typing import List, Optional
 
     from urlpath import URL as Url
 
-    from .data import Page
     from .config import Config
+    from .data import Page
 
 logger = logging.getLogger(__name__)
 
 
 def serve(port: int, directory: Path):
-    from threading import Thread
     from http.server import HTTPServer, SimpleHTTPRequestHandler
+    from threading import Thread
 
     httpd = HTTPServer(('localhost', port), partial(SimpleHTTPRequestHandler, directory=directory))
     logger.info('Serving at port %s.', port)
@@ -88,8 +88,8 @@ def observe_single_page_no_serve(
     page: Page,
     config: Config,
 ):
-    from watchdog.observers import Observer
     from watchdog.events import FileSystemEventHandler
+    from watchdog.observers import Observer
 
     class PageEventHandler(FileSystemEventHandler):
 

@@ -1,18 +1,18 @@
 from __future__ import annotations
 
-from pathlib import Path
 import time
 from dataclasses import dataclass
-from typing import Callable, Dict, Union, Optional, TYPE_CHECKING
+from pathlib import Path
+from typing import TYPE_CHECKING, Callable, Dict, Optional, Union
 
 from urlpath import URL as Url
 
 from .helpers import nav, pretty_urls_present
-from .templates import INDEX_TEMPLATE, POST_TEMPLATE, SLIDE_TEMPLATE
 from .panflute_filters import lightgallery, lightgallery_from_dir
+from .templates import INDEX_TEMPLATE, POST_TEMPLATE, SLIDE_TEMPLATE
 
 if TYPE_CHECKING:
-    from typing import Tuple, List
+    from typing import List, Tuple
 
 THIS_YEAR = time.gmtime().tm_year
 
