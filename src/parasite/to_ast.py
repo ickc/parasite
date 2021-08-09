@@ -65,8 +65,8 @@ def posts_to_index_ast(
 
 
 def posts_to_tag_ast(
-    categories: Dict[str, Sequence[Post]],
-    tags: Dict[str, Sequence[Post]],
+    categories: Dict[str, List[Post]],
+    tags: Dict[str, List[Post]],
     font_size_min: int = 70,
     font_size_max: int = 280,
     root: str = "..",
