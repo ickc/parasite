@@ -8,7 +8,7 @@ import panflute as pf
 from .translate import translate
 
 if TYPE_CHECKING:
-    from typing import Any, Dict, List, Sequence, Union
+    from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
     from urlpath import URL as Url
 
@@ -149,7 +149,7 @@ def posts_to_archive_ast(
         "lang": lang,
     }
 
-    res: Dict[int, Dict[str, List[Union[str, Url]]]] = defaultdict(
+    res: Dict[int, Dict[str, List[Tuple[str, Optional[str], Url]]]] = defaultdict(
         lambda: defaultdict(list)
     )
     for page in posts:
