@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 from logging import getLogger
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 import defopt
 import parsl
@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     from pathlib import Path
     from typing import List, Optional, Tuple
 
-    from .data import Page, Post
+    from .data import Page
 
 executor = ThreadPoolExecutor(
     max_threads=psutil.cpu_count(logical=False),
@@ -209,7 +209,7 @@ def main(config: Config):
     posts.get_neighbor_urls()
     time_elapse.report("get neighbor urls.")
 
-    all_pages: List[Union[Page, Post]] = list(pages.pages) + list(posts.pages)
+    all_pages: List[Page] = list(pages.pages) + list(posts.pages)
     output_futures = [
         app_post_to_html(
             page.ast,
