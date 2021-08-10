@@ -1,19 +1,19 @@
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, Dict, Optional, Union
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Union
 
-from urlpath import URL as Url
 from custom_inherit import DocInheritMeta
+from urlpath import URL as Url
 
 from .helpers import nav, pretty_urls_present
 from .panflute_filters import lightgallery, lightgallery_from_dir
 from .templates import INDEX_TEMPLATE, POST_TEMPLATE, SLIDE_TEMPLATE
 
 if TYPE_CHECKING:
-    from typing import List, Tuple
+    from typing import Tuple
 
 THIS_YEAR = time.gmtime().tm_year
 
@@ -23,10 +23,13 @@ class Config(metaclass=DocInheritMeta(style="google")):
     """Configure static site.
 
     Args:
-      watch_single_page: if specified, watch a single page with this url and rerender if changed.
-      serve: if specified, serve with this port.
-      open: if speicified and serve, open this url.
-      code: if speicified and serve, call watch_single_page by code (VSCode).
+      watch: glob patterns of source files to be watched (relative to current directory)
+      watch_open: if specified, open all pages that are currently watching.
+      watch_code: if specified, open all sources that are currently watching in VSCode.
+      serve: if specified, open a server and serve indefinitely.
+      serve_host: the host to serve.
+      serve_port: the port to serve.
+      serve_open: if specified, open this relative url.
       write_tipuesearch_json: write tipuesearch JSON file.
       write_rss: write RSS feed.
       write_atom: write atom feed.
@@ -44,10 +47,14 @@ class Config(metaclass=DocInheritMeta(style="google")):
     See `content_footer` for an example on how to do this.
     """
 
-    watch_single_page: Optional[Url] = None
-    serve: Optional[int] = None
-    open: Optional[Url] = None
-    code: bool = False
+    watch: List[str] = field(default_factory=list)
+    watch_open: bool = False
+    watch_code: bool = False
+    serve: bool = False
+    serve_host: str = "localhost"
+    serve_port: int = 5500
+    serve_open: Optional[Url] = None
+
     site_url: str = ""
     blog_email: str = ""
     n_jumbotron: int = 1
