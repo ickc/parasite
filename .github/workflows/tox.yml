@@ -27,6 +27,13 @@ jobs:
         # let coverage read setup.py instead of pyproject.toml
         make setup.py
         mv pyproject.toml .pyproject.toml
+    - name: Install dependencies—pandoc
+      run: |
+        # pandoc
+        [[ ${{ matrix.pandoc-version }} == "latest" ]] && url="https://github.com/jgm/pandoc/releases/latest" || url="https://github.com/jgm/pandoc/releases/tag/${{ matrix.pandoc-version }}"
+        downloadUrl="https://github.com$(curl -L $url | grep -o '/jgm/pandoc/releases/download/.*-amd64\.deb')"
+        wget --quiet "$downloadUrl"
+        sudo dpkg -i "${downloadUrl##*/}"
     - name: Sanity check
       run: |
         pip check
