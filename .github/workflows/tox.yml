@@ -31,6 +31,6 @@ jobs:
       run: |
         pip check
         python -c 'import parasite'
-    # - name: Tests
-    #   run: |
-    #     make test COVHTML='--cov-report=xml'
+    - name: Tests
+      run: |
+        make test COVHTML='--cov-report=xml'
