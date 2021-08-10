@@ -19,18 +19,19 @@ THIS_YEAR = time.gmtime().tm_year
 
 
 @dataclass
-class Config(metaclass=DocInheritMeta()):
+class Config(metaclass=DocInheritMeta(style="google")):
     """Configure static site.
 
-    :param watch_single_page: if specified, watch a single page with this url and rerender if changed.
-    :param serve: if specified, serve with this port.
-    :param open: if speicified and serve, open this url.
-    :param code: if speicified and serve, call watch_single_page by code (VSCode).
-    :param write_tipuesearch_json: write tipuesearch JSON file.
-    :param write_rss: write RSS feed.
-    :param write_atom: write atom feed.
-    :param write_sitemap: write sitemap.
-    :param include_draft: output draft posts as well.
+    Args:
+      watch_single_page: if specified, watch a single page with this url and rerender if changed.
+      serve: if specified, serve with this port.
+      open: if speicified and serve, open this url.
+      code: if speicified and serve, call watch_single_page by code (VSCode).
+      write_tipuesearch_json: write tipuesearch JSON file.
+      write_rss: write RSS feed.
+      write_atom: write atom feed.
+      write_sitemap: write sitemap.
+      include_draft: output draft posts as well.
 
     All attributes, properties, and methods must be runtime constant
     (i.e. not changing after initiated),
