@@ -128,7 +128,12 @@ def main(config: Config):
         sum(
             (
                 pages_.pages
-                for pages_ in get_pages(Pages, config.pages, config, timezone=config.timezone)
+                for pages_ in get_pages(
+                    Pages,
+                    config.pages,
+                    config,
+                    timezone=config.timezone,
+                )
             ),
             [],
         )
@@ -137,7 +142,12 @@ def main(config: Config):
         sum(
             (
                 pages_.pages
-                for pages_ in get_pages(Posts, config.posts, config, timezone=config.timezone)
+                for pages_ in get_pages(
+                    Posts,
+                    config.posts,
+                    config,
+                    timezone=config.timezone,
+                )
             ),
             [],
         )
