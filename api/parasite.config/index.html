@@ -119,8 +119,282 @@
   <div class="row">
     <div class="body col-md-12 content" role="main">
       
-  <div class="section" id="parasite-config-module">
-<h1>parasite.config module<a class="headerlink" href="#parasite-config-module" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-parasite.config">
+<span id="parasite-config-module"></span><h1>parasite.config module<a class="headerlink" href="#module-parasite.config" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="parasite.config.Config">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">parasite.config.</span></code><code class="sig-name descname"><span class="pre">Config</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">watch_single_page</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">urlpath.URL</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">serve</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">open</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">urlpath.URL</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">code</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">site_url</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blog_email</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jumbotron</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_grid</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index_include_jumbotron</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag_cloud_font_size_min</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">70</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag_cloud_font_size_max</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">280</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logo_url</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_previewimage_in_post</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pathlib.Path</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">PosixPath('output')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date_format</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'%Y-%m-%d'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mathjax_config</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_lang</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'en'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root_relative_to_search_form</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'..'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timezone</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'America/Los_Angeles'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_tipuesearch_json</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_rss</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_atom</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_sitemap</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_draft</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/parasite/config/#Config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.config.Config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Configure static site.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>watch_single_page</strong> – if specified, watch a single page with this url and rerender if changed.</p></li>
+<li><p><strong>serve</strong> – if specified, serve with this port.</p></li>
+<li><p><strong>open</strong> – if speicified and serve, open this url.</p></li>
+<li><p><strong>code</strong> – if speicified and serve, call watch_single_page by code (VSCode).</p></li>
+<li><p><strong>write_tipuesearch_json</strong> – write tipuesearch JSON file.</p></li>
+<li><p><strong>write_rss</strong> – write RSS feed.</p></li>
+<li><p><strong>write_atom</strong> – write atom feed.</p></li>
+<li><p><strong>write_sitemap</strong> – write sitemap.</p></li>
+<li><p><strong>include_draft</strong> – output draft posts as well.</p></li>
+</ul>
+</dd>
+</dl>
+<p>All attributes, properties, and methods must be runtime constant
+(i.e. not changing after initiated),
+to ensure caching works properly.</p>
+<p>That means methods can only be static methods.</p>
+<p>If a method has to depends on self,
+implement it as a property that returns a callable using closure.
+See <cite>content_footer</cite> for an example on how to do this.</p>
+<dl class="py method">
+<dt id="parasite.config.Config.blog_author">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">blog_author</span></code><a class="headerlink" href="#parasite.config.Config.blog_author" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.config.Config.blog_description">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">blog_description</span></code><a class="headerlink" href="#parasite.config.Config.blog_description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.config.Config.blog_email">
+<code class="sig-name descname"><span class="pre">blog_email</span></code><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><em class="property"> <span class="pre">=</span> <span class="pre">''</span></em><a class="headerlink" href="#parasite.config.Config.blog_email" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.config.Config.blog_title">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">blog_title</span></code><a class="headerlink" href="#parasite.config.Config.blog_title" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.config.Config.code">
+<code class="sig-name descname"><span class="pre">code</span></code><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><em class="property"> <span class="pre">=</span> <span class="pre">False</span></em><a class="headerlink" href="#parasite.config.Config.code" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.config.Config.compress_css">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">compress_css</span></code><a class="headerlink" href="#parasite.config.Config.compress_css" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.config.Config.compress_js">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">compress_js</span></code><a class="headerlink" href="#parasite.config.Config.compress_js" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.config.Config.content_footer">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">content_footer</span></code><a class="headerlink" href="#parasite.config.Config.content_footer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.config.Config.copyright">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">copyright</span></code><a class="headerlink" href="#parasite.config.Config.copyright" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.config.Config.css">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">css</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_ext</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><a class="reference internal" href="../../_modules/parasite/config/#Config.css"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.config.Config.css" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.config.Config.date_format">
+<code class="sig-name descname"><span class="pre">date_format</span></code><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><em class="property"> <span class="pre">=</span> <span class="pre">'%Y-%m-%d'</span></em><a class="headerlink" href="#parasite.config.Config.date_format" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.config.Config.default_lang">
+<code class="sig-name descname"><span class="pre">default_lang</span></code><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><em class="property"> <span class="pre">=</span> <span class="pre">'en'</span></em><a class="headerlink" href="#parasite.config.Config.default_lang" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.config.Config.files_folders">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">files_folders</span></code><a class="headerlink" href="#parasite.config.Config.files_folders" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.config.Config.header_includes">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">header_includes</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lang</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_ext</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="reference internal" href="../../_modules/parasite/config/#Config.header_includes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.config.Config.header_includes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.config.Config.html_filters">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">html_filters</span></code><a class="headerlink" href="#parasite.config.Config.html_filters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.config.Config.include_after">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">include_after</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lang</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_ext</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="reference internal" href="../../_modules/parasite/config/#Config.include_after"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.config.Config.include_after" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.config.Config.include_before">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">include_before</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lang</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_ext</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="reference internal" href="../../_modules/parasite/config/#Config.include_before"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.config.Config.include_before" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.config.Config.include_draft">
+<code class="sig-name descname"><span class="pre">include_draft</span></code><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><em class="property"> <span class="pre">=</span> <span class="pre">False</span></em><a class="headerlink" href="#parasite.config.Config.include_draft" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.config.Config.index_include_jumbotron">
+<code class="sig-name descname"><span class="pre">index_include_jumbotron</span></code><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><em class="property"> <span class="pre">=</span> <span class="pre">True</span></em><a class="headerlink" href="#parasite.config.Config.index_include_jumbotron" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.config.Config.index_template">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">index_template</span></code><a class="headerlink" href="#parasite.config.Config.index_template" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.config.Config.js">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">js</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_ext</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><a class="reference internal" href="../../_modules/parasite/config/#Config.js"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.config.Config.js" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.config.Config.logo_url">
+<code class="sig-name descname"><span class="pre">logo_url</span></code><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><em class="property"> <span class="pre">=</span> <span class="pre">''</span></em><a class="headerlink" href="#parasite.config.Config.logo_url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.config.Config.mathjax_config">
+<code class="sig-name descname"><span class="pre">mathjax_config</span></code><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><em class="property"> <span class="pre">=</span> <span class="pre">''</span></em><a class="headerlink" href="#parasite.config.Config.mathjax_config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.config.Config.n_grid">
+<code class="sig-name descname"><span class="pre">n_grid</span></code><em class="property"><span class="pre">:</span> <span class="pre">int</span></em><em class="property"> <span class="pre">=</span> <span class="pre">2</span></em><a class="headerlink" href="#parasite.config.Config.n_grid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.config.Config.n_jumbotron">
+<code class="sig-name descname"><span class="pre">n_jumbotron</span></code><em class="property"><span class="pre">:</span> <span class="pre">int</span></em><em class="property"> <span class="pre">=</span> <span class="pre">1</span></em><a class="headerlink" href="#parasite.config.Config.n_jumbotron" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.config.Config.nav_includes">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">nav_includes</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lang</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_ext</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="reference internal" href="../../_modules/parasite/config/#Config.nav_includes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.config.Config.nav_includes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.config.Config.open">
+<code class="sig-name descname"><span class="pre">open</span></code><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">urlpath.URL</span><span class="p"><span class="pre">]</span></span></em><em class="property"> <span class="pre">=</span> <span class="pre">None</span></em><a class="headerlink" href="#parasite.config.Config.open" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.config.Config.output_dir">
+<code class="sig-name descname"><span class="pre">output_dir</span></code><em class="property"><span class="pre">:</span> <span class="pre">pathlib.Path</span></em><em class="property"> <span class="pre">=</span> <span class="pre">PosixPath('output')</span></em><a class="headerlink" href="#parasite.config.Config.output_dir" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.config.Config.pages">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">pages</span></code><a class="headerlink" href="#parasite.config.Config.pages" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.config.Config.pandoc_input_options">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">pandoc_input_options</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><a class="reference internal" href="../../_modules/parasite/config/#Config.pandoc_input_options"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.config.Config.pandoc_input_options" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.config.Config.pandoc_output_options">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">pandoc_output_options</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_ext</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><a class="reference internal" href="../../_modules/parasite/config/#Config.pandoc_output_options"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.config.Config.pandoc_output_options" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.config.Config.panflute_input_filters">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">panflute_input_filters</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span><a class="reference internal" href="../../_modules/parasite/config/#Config.panflute_input_filters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.config.Config.panflute_input_filters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.config.Config.panflute_output_filters">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">panflute_output_filters</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_ext</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span><a class="reference internal" href="../../_modules/parasite/config/#Config.panflute_output_filters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.config.Config.panflute_output_filters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.config.Config.posts">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">posts</span></code><a class="headerlink" href="#parasite.config.Config.posts" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.config.Config.pretty_urls">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">pretty_urls</span></code><a class="headerlink" href="#parasite.config.Config.pretty_urls" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.config.Config.root_relative_to_search_form">
+<code class="sig-name descname"><span class="pre">root_relative_to_search_form</span></code><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><em class="property"> <span class="pre">=</span> <span class="pre">'..'</span></em><a class="headerlink" href="#parasite.config.Config.root_relative_to_search_form" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.config.Config.script_include_after">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">script_include_after</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_ext</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="reference internal" href="../../_modules/parasite/config/#Config.script_include_after"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.config.Config.script_include_after" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.config.Config.search_form">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">search_form</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lang</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_ext</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">str</span><a class="reference internal" href="../../_modules/parasite/config/#Config.search_form"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.config.Config.search_form" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.config.Config.serve">
+<code class="sig-name descname"><span class="pre">serve</span></code><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><em class="property"> <span class="pre">=</span> <span class="pre">None</span></em><a class="headerlink" href="#parasite.config.Config.serve" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.config.Config.show_previewimage_in_post">
+<code class="sig-name descname"><span class="pre">show_previewimage_in_post</span></code><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><em class="property"> <span class="pre">=</span> <span class="pre">True</span></em><a class="headerlink" href="#parasite.config.Config.show_previewimage_in_post" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.config.Config.site_url">
+<code class="sig-name descname"><span class="pre">site_url</span></code><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><em class="property"> <span class="pre">=</span> <span class="pre">''</span></em><a class="headerlink" href="#parasite.config.Config.site_url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.config.Config.tag_cloud_font_size_max">
+<code class="sig-name descname"><span class="pre">tag_cloud_font_size_max</span></code><em class="property"><span class="pre">:</span> <span class="pre">int</span></em><em class="property"> <span class="pre">=</span> <span class="pre">280</span></em><a class="headerlink" href="#parasite.config.Config.tag_cloud_font_size_max" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.config.Config.tag_cloud_font_size_min">
+<code class="sig-name descname"><span class="pre">tag_cloud_font_size_min</span></code><em class="property"><span class="pre">:</span> <span class="pre">int</span></em><em class="property"> <span class="pre">=</span> <span class="pre">70</span></em><a class="headerlink" href="#parasite.config.Config.tag_cloud_font_size_min" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.config.Config.timezone">
+<code class="sig-name descname"><span class="pre">timezone</span></code><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><em class="property"> <span class="pre">=</span> <span class="pre">'America/Los_Angeles'</span></em><a class="headerlink" href="#parasite.config.Config.timezone" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.config.Config.watch_single_page">
+<code class="sig-name descname"><span class="pre">watch_single_page</span></code><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">urlpath.URL</span><span class="p"><span class="pre">]</span></span></em><em class="property"> <span class="pre">=</span> <span class="pre">None</span></em><a class="headerlink" href="#parasite.config.Config.watch_single_page" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.config.Config.write_atom">
+<code class="sig-name descname"><span class="pre">write_atom</span></code><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><em class="property"> <span class="pre">=</span> <span class="pre">True</span></em><a class="headerlink" href="#parasite.config.Config.write_atom" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.config.Config.write_rss">
+<code class="sig-name descname"><span class="pre">write_rss</span></code><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><em class="property"> <span class="pre">=</span> <span class="pre">True</span></em><a class="headerlink" href="#parasite.config.Config.write_rss" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.config.Config.write_sitemap">
+<code class="sig-name descname"><span class="pre">write_sitemap</span></code><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><em class="property"> <span class="pre">=</span> <span class="pre">True</span></em><a class="headerlink" href="#parasite.config.Config.write_sitemap" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.config.Config.write_tipuesearch_json">
+<code class="sig-name descname"><span class="pre">write_tipuesearch_json</span></code><em class="property"><span class="pre">:</span> <span class="pre">bool</span></em><em class="property"> <span class="pre">=</span> <span class="pre">True</span></em><a class="headerlink" href="#parasite.config.Config.write_tipuesearch_json" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </div>
 
 

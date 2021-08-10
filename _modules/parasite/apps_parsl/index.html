@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>parasite.apps_parsl &#8212; parasite 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/ickc/markdown-latex-css/css/_table.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/ickc/markdown-latex-css/fonts/fonts.min.css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex/" />
+    <link rel="search" title="Search" href="../../../search/" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../">
+          parasite</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.1.0</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="https://github.com/ickc/parasite/">GitHub</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../readme/">parasite—pandoc centric static site generator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation/">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/">Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing/">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../authors/">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../changelog/">Revision history for <code class="docutils literal notranslate"><span class="pre">parasite</span></code></a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search/" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for parasite.apps_parsl</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Wrapping apps to parsl apps.</span>
+
+<span class="sd">all functions should be imported inside functions for parsl.</span>
+
+<span class="sd">We&#39;re not running unit tests for anything defined here,</span>
+<span class="sd">as they should be thin wrappers.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span> <span class="nn">parsl</span> <span class="kn">import</span> <span class="n">bash_app</span><span class="p">,</span> <span class="n">python_app</span>
+
+
+<span class="nd">@python_app</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">app_read_md_to_ast</span><span class="p">(</span>
+    <span class="n">pandoc_options</span><span class="p">,</span>
+    <span class="n">panflute_filters</span><span class="p">,</span>
+    <span class="n">inputs</span><span class="o">=</span><span class="p">[],</span>
+<span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+    <span class="kn">from</span> <span class="nn">.apps</span> <span class="kn">import</span> <span class="n">read_md_to_ast</span>
+
+    <span class="n">input_paths</span> <span class="o">=</span> <span class="p">[</span><span class="n">Path</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">filepath</span><span class="p">)</span> <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">read_md_to_ast</span><span class="p">(</span>
+        <span class="n">pandoc_options</span><span class="p">,</span>
+        <span class="n">panflute_filters</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="o">=</span><span class="n">input_paths</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<span class="nd">@python_app</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">app_read_md_to_ast_with_teaser</span><span class="p">(</span>
+    <span class="n">pandoc_options</span><span class="p">,</span>
+    <span class="n">panflute_filters</span><span class="p">,</span>
+    <span class="n">inputs</span><span class="o">=</span><span class="p">[],</span>
+<span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+    <span class="kn">from</span> <span class="nn">.apps</span> <span class="kn">import</span> <span class="n">read_md_to_ast_with_teaser</span>
+
+    <span class="n">input_paths</span> <span class="o">=</span> <span class="p">[</span><span class="n">Path</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">filepath</span><span class="p">)</span> <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">read_md_to_ast_with_teaser</span><span class="p">(</span>
+        <span class="n">pandoc_options</span><span class="p">,</span>
+        <span class="n">panflute_filters</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="o">=</span><span class="n">input_paths</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<span class="nd">@python_app</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">app_post_to_html</span><span class="p">(</span>
+    <span class="n">ast</span><span class="p">,</span>
+    <span class="n">root</span><span class="p">,</span>
+    <span class="n">prev</span><span class="p">,</span>
+    <span class="nb">next</span><span class="p">,</span>
+    <span class="n">lang</span><span class="p">,</span>
+    <span class="n">ext</span><span class="p">,</span>
+    <span class="n">inputs</span><span class="o">=</span><span class="p">[],</span>  <span class="c1"># template</span>
+    <span class="n">outputs</span><span class="o">=</span><span class="p">[],</span>  <span class="c1"># out_path</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+    <span class="kn">from</span> <span class="nn">.apps</span> <span class="kn">import</span> <span class="n">post_to_html</span>
+
+    <span class="n">input_paths</span> <span class="o">=</span> <span class="p">[</span><span class="n">Path</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">filepath</span><span class="p">)</span> <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">]</span>
+    <span class="n">output_paths</span> <span class="o">=</span> <span class="p">[</span><span class="n">Path</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">filepath</span><span class="p">)</span> <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">post_to_html</span><span class="p">(</span>
+        <span class="n">ast</span><span class="p">,</span>
+        <span class="n">root</span><span class="p">,</span>
+        <span class="n">prev</span><span class="p">,</span>
+        <span class="nb">next</span><span class="p">,</span>
+        <span class="n">lang</span><span class="p">,</span>
+        <span class="n">ext</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="o">=</span><span class="n">input_paths</span><span class="p">,</span>
+        <span class="n">outputs</span><span class="o">=</span><span class="n">output_paths</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<span class="nd">@bash_app</span>
+<span class="k">def</span> <span class="nf">app_rsync</span><span class="p">(</span><span class="n">in_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">out_base_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">out_sub_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+    <span class="n">out_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">out_base_dir</span><span class="p">)</span> <span class="o">/</span> <span class="n">out_sub_dir</span>
+    <span class="n">out_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;rsync -a </span><span class="si">{</span><span class="n">in_dir</span><span class="si">}</span><span class="s2">/ </span><span class="si">{</span><span class="n">out_dir</span><span class="si">}</span><span class="s2">/&quot;</span>
+
+
+<span class="nd">@bash_app</span>
+<span class="k">def</span> <span class="nf">app_minify</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="p">[],</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[]):</span>
+    <span class="sd">&quot;&quot;&quot;minify using the Go minifier</span>
+
+<span class="sd">    https://github.com/tdewolff/minify/tree/master/cmd/minify</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+    <span class="n">input_paths</span> <span class="o">=</span> <span class="p">[</span><span class="n">file</span><span class="o">.</span><span class="n">filepath</span> <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">]</span>
+    <span class="n">output_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">outputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">filepath</span><span class="p">)</span>
+    <span class="n">output_path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;minify --type </span><span class="si">{</span><span class="n">output_path</span><span class="o">.</span><span class="n">suffix</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="si">}</span><span class="s1"> -b -o </span><span class="si">{</span><span class="n">output_path</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">input_paths</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
+
+
+<span class="nd">@bash_app</span>
+<span class="k">def</span> <span class="nf">app_closure_compiler</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="p">[],</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[]):</span>
+    <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+    <span class="n">input_paths</span> <span class="o">=</span> <span class="p">[</span><span class="n">file</span><span class="o">.</span><span class="n">filepath</span> <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">]</span>
+    <span class="n">output_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">outputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">filepath</span><span class="p">)</span>
+    <span class="n">output_path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;closure-compiler -O SIMPLE --js </span><span class="si">{</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">input_paths</span><span class="p">)</span><span class="si">}</span><span class="s1"> --js_output_file </span><span class="si">{</span><span class="n">output_path</span><span class="si">}</span><span class="s1"> -W QUIET --jscomp_off=checkVars&#39;</span>
+
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">logging</span> <span class="kn">import</span> <span class="n">getLogger</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span> <span class="nn">panflute</span> <span class="k">as</span> <span class="nn">pf</span>
+<span class="kn">from</span> <span class="nn">parsl.data_provider.files</span> <span class="kn">import</span> <span class="n">File</span>
+<span class="kn">from</span> <span class="nn">parsl.dataflow.memoization</span> <span class="kn">import</span> <span class="n">id_for_memo</span>
+<span class="kn">from</span> <span class="nn">urlpath</span> <span class="kn">import</span> <span class="n">URL</span> <span class="k">as</span> <span class="n">Url</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="id_for_memo_doc"><a class="viewcode-back" href="../../../api/parasite.apps_parsl/#parasite.apps_parsl.id_for_memo_doc">[docs]</a><span class="nd">@id_for_memo</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">pf</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">Doc</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">id_for_memo_doc</span><span class="p">(</span><span class="n">doc</span><span class="p">:</span> <span class="n">pf</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">Doc</span><span class="p">,</span> <span class="n">output_ref</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">id_for_memo</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">to_json</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="id_for_memo_path"><a class="viewcode-back" href="../../../api/parasite.apps_parsl/#parasite.apps_parsl.id_for_memo_path">[docs]</a><span class="nd">@id_for_memo</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">Path</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">id_for_memo_path</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">output_ref</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">id_for_memo</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="id_for_memo_url"><a class="viewcode-back" href="../../../api/parasite.apps_parsl/#parasite.apps_parsl.id_for_memo_url">[docs]</a><span class="nd">@id_for_memo</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">Url</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">id_for_memo_url</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="n">Url</span><span class="p">,</span> <span class="n">output_ref</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">id_for_memo</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">url</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="id_for_memo_File"><a class="viewcode-back" href="../../../api/parasite.apps_parsl/#parasite.apps_parsl.id_for_memo_File">[docs]</a><span class="nd">@id_for_memo</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">File</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">id_for_memo_File</span><span class="p">(</span><span class="n">f</span><span class="p">:</span> <span class="n">File</span><span class="p">,</span> <span class="n">output_ref</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">output_ref</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;hashing File as output ref without content: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">f</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">id_for_memo</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;hashing File as input with content: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">f</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">scheme</span> <span class="o">!=</span> <span class="s2">&quot;file&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">f</span><span class="si">}</span><span class="s1"> has a scheme </span><span class="si">{</span><span class="n">f</span><span class="o">.</span><span class="n">scheme</span><span class="si">}</span><span class="s1"> different from &quot;file&quot;.&#39;</span><span class="p">)</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">filepath</span>
+        <span class="n">stat_result</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">id_for_memo</span><span class="p">([</span><span class="n">f</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="n">stat_result</span><span class="o">.</span><span class="n">st_size</span><span class="p">,</span> <span class="n">stat_result</span><span class="o">.</span><span class="n">st_mtime</span><span class="p">])</span></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2021, Kolen Cheung.<br/>
+      Last updated on Aug 10, 2021.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.5.4.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

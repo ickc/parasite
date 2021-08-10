@@ -119,8 +119,316 @@
   <div class="row">
     <div class="body col-md-12 content" role="main">
       
-  <div class="section" id="parasite-data-module">
-<h1>parasite.data module<a class="headerlink" href="#parasite-data-module" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-parasite.data">
+<span id="parasite-data-module"></span><h1>parasite.data module<a class="headerlink" href="#module-parasite.data" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="parasite.data.Page">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">parasite.data.</span></code><code class="sig-name descname"><span class="pre">Page</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">path:</span> <span class="pre">'Path',</span> <span class="pre">base_path:</span> <span class="pre">'Path',</span> <span class="pre">out_base_path:</span> <span class="pre">'Path',</span> <span class="pre">template:</span> <span class="pre">'Optional[Path]',</span> <span class="pre">timezone:</span> <span class="pre">'str'</span> <span class="pre">=</span> <span class="pre">'America/Los_Angeles',</span> <span class="pre">pretty_urls:</span> <span class="pre">'Union[bool,</span> <span class="pre">Callable[[Path,</span> <span class="pre">str],</span> <span class="pre">Path]]'</span> <span class="pre">=</span> <span class="pre">True,</span> <span class="pre">date_format:</span> <span class="pre">'str'</span> <span class="pre">=</span> <span class="pre">'%Y-%m-%d',</span> <span class="pre">default_lang:</span> <span class="pre">'str'</span> <span class="pre">=</span> <span class="pre">'en',</span> <span class="pre">options:</span> <span class="pre">'dict'</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/parasite/data/#Page"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.data.Page" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="parasite.data.Page.ast">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">ast</span></code><a class="headerlink" href="#parasite.data.Page.ast" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.data.Page.author">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">author</span></code><a class="headerlink" href="#parasite.data.Page.author" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.data.Page.base_path">
+<code class="sig-name descname"><span class="pre">base_path</span></code><em class="property"><span class="pre">:</span> <span class="pre">Path</span></em><a class="headerlink" href="#parasite.data.Page.base_path" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.data.Page.categories">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">categories</span></code><a class="headerlink" href="#parasite.data.Page.categories" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.data.Page.committed_date">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">committed_date</span></code><a class="headerlink" href="#parasite.data.Page.committed_date" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.data.Page.committed_date_str">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">committed_date_str</span></code><a class="headerlink" href="#parasite.data.Page.committed_date_str" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.data.Page.date_format">
+<code class="sig-name descname"><span class="pre">date_format</span></code><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><em class="property"> <span class="pre">=</span> <span class="pre">'%Y-%m-%d'</span></em><a class="headerlink" href="#parasite.data.Page.date_format" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.data.Page.default_lang">
+<code class="sig-name descname"><span class="pre">default_lang</span></code><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><em class="property"> <span class="pre">=</span> <span class="pre">'en'</span></em><a class="headerlink" href="#parasite.data.Page.default_lang" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.data.Page.dict_ast">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">dict_ast</span></code><a class="headerlink" href="#parasite.data.Page.dict_ast" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dict representation of self including the AST derived attributes</p>
+<p>Primarily for dataframe</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="parasite.data.Page.ext">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">ext</span></code><a class="headerlink" href="#parasite.data.Page.ext" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.data.Page.html">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">html</span></code><a class="headerlink" href="#parasite.data.Page.html" title="Permalink to this definition">¶</a></dt>
+<dd><p>HTML frament.</p>
+<p>Primarily for feed.</p>
+<p>TODO: handle AST mutation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="parasite.data.Page.is_draft">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">is_draft</span></code><a class="headerlink" href="#parasite.data.Page.is_draft" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.data.Page.lang">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">lang</span></code><a class="headerlink" href="#parasite.data.Page.lang" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.data.Page.level">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">level</span></code><a class="headerlink" href="#parasite.data.Page.level" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.data.Page.mtime">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">mtime</span></code><a class="headerlink" href="#parasite.data.Page.mtime" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.data.Page.next">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">next</span></code><a class="headerlink" href="#parasite.data.Page.next" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.data.Page.options">
+<code class="sig-name descname"><span class="pre">options</span></code><em class="property"><span class="pre">:</span> <span class="pre">dict</span></em><a class="headerlink" href="#parasite.data.Page.options" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.data.Page.out_base_path">
+<code class="sig-name descname"><span class="pre">out_base_path</span></code><em class="property"><span class="pre">:</span> <span class="pre">Path</span></em><a class="headerlink" href="#parasite.data.Page.out_base_path" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.data.Page.out_path">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">out_path</span></code><a class="headerlink" href="#parasite.data.Page.out_path" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.data.Page.path">
+<code class="sig-name descname"><span class="pre">path</span></code><em class="property"><span class="pre">:</span> <span class="pre">Path</span></em><a class="headerlink" href="#parasite.data.Page.path" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.data.Page.pretty_urls">
+<code class="sig-name descname"><span class="pre">pretty_urls</span></code><em class="property"><span class="pre">:</span> <span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">,</span> </span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"> <span class="pre">=</span> <span class="pre">True</span></em><a class="headerlink" href="#parasite.data.Page.pretty_urls" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.data.Page.prev">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">prev</span></code><a class="headerlink" href="#parasite.data.Page.prev" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.data.Page.previewimage">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">previewimage</span></code><a class="headerlink" href="#parasite.data.Page.previewimage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.data.Page.root">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">root</span></code><a class="headerlink" href="#parasite.data.Page.root" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.data.Page.status">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">status</span></code><a class="headerlink" href="#parasite.data.Page.status" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.data.Page.tags">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">tags</span></code><a class="headerlink" href="#parasite.data.Page.tags" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.data.Page.template">
+<code class="sig-name descname"><span class="pre">template</span></code><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#parasite.data.Page.template" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.data.Page.text">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">text</span></code><a class="headerlink" href="#parasite.data.Page.text" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.data.Page.timezone">
+<code class="sig-name descname"><span class="pre">timezone</span></code><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><em class="property"> <span class="pre">=</span> <span class="pre">'America/Los_Angeles'</span></em><a class="headerlink" href="#parasite.data.Page.timezone" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.data.Page.title">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">title</span></code><a class="headerlink" href="#parasite.data.Page.title" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.data.Page.url">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">url</span></code><a class="headerlink" href="#parasite.data.Page.url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="parasite.data.Pages">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">parasite.data.</span></code><code class="sig-name descname"><span class="pre">Pages</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pages</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Sequence[Page]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/parasite/data/#Pages"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.data.Pages" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="parasite.data.Pages.dataframe">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">dataframe</span></code><a class="headerlink" href="#parasite.data.Pages.dataframe" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.data.Pages.dataframe_ast">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">dataframe_ast</span></code><a class="headerlink" href="#parasite.data.Pages.dataframe_ast" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.data.Pages.dict_ast">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">dict_ast</span></code><a class="headerlink" href="#parasite.data.Pages.dict_ast" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.data.Pages.from_file_system">
+<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">from_file_system</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ext</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">template</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timezone</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'America/Los_Angeles'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pretty_urls</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">,</span> </span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">,</span> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date_format</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'%Y-%m-%d'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_lang</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">'en'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/parasite/data/#Pages.from_file_system"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.data.Pages.from_file_system" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.data.Pages.page_class">
+<code class="sig-name descname"><span class="pre">page_class</span></code><a class="headerlink" href="#parasite.data.Pages.page_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#parasite.data.Page" title="parasite.data.Page"><code class="xref py py-class docutils literal notranslate"><span class="pre">parasite.data.Page</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.data.Pages.pages">
+<code class="sig-name descname"><span class="pre">pages</span></code><em class="property"><span class="pre">:</span> <span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#parasite.data.Page" title="parasite.data.Page"><span class="pre">Page</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#parasite.data.Pages.pages" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="parasite.data.Post">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">parasite.data.</span></code><code class="sig-name descname"><span class="pre">Post</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">path:</span> <span class="pre">'Path',</span> <span class="pre">base_path:</span> <span class="pre">'Path',</span> <span class="pre">out_base_path:</span> <span class="pre">'Path',</span> <span class="pre">template:</span> <span class="pre">'Optional[Path]',</span> <span class="pre">timezone:</span> <span class="pre">'str'</span> <span class="pre">=</span> <span class="pre">'America/Los_Angeles',</span> <span class="pre">pretty_urls:</span> <span class="pre">'Union[bool,</span> <span class="pre">Callable[[Path,</span> <span class="pre">str],</span> <span class="pre">Path]]'</span> <span class="pre">=</span> <span class="pre">True,</span> <span class="pre">date_format:</span> <span class="pre">'str'</span> <span class="pre">=</span> <span class="pre">'%Y-%m-%d',</span> <span class="pre">default_lang:</span> <span class="pre">'str'</span> <span class="pre">=</span> <span class="pre">'en',</span> <span class="pre">options:</span> <span class="pre">'dict'</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/parasite/data/#Post"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.data.Post" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#parasite.data.Page" title="parasite.data.Page"><code class="xref py py-class docutils literal notranslate"><span class="pre">parasite.data.Page</span></code></a></p>
+<dl class="py attribute">
+<dt id="parasite.data.Post.base_path">
+<code class="sig-name descname"><span class="pre">base_path</span></code><em class="property"><span class="pre">:</span> <span class="pre">Path</span></em><a class="headerlink" href="#parasite.data.Post.base_path" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.data.Post.date">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">date</span></code><a class="headerlink" href="#parasite.data.Post.date" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.data.Post.dict_ast">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">dict_ast</span></code><a class="headerlink" href="#parasite.data.Post.dict_ast" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dict representation of self including the AST derived attributes</p>
+<p>Primarily for dataframe</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="parasite.data.Post.get_teaser">
+<code class="sig-name descname"><span class="pre">get_teaser</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/parasite/data/#Post.get_teaser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.data.Post.get_teaser" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.data.Post.next">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">next</span></code><a class="headerlink" href="#parasite.data.Post.next" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.data.Post.options">
+<code class="sig-name descname"><span class="pre">options</span></code><em class="property"><span class="pre">:</span> <span class="pre">dict</span></em><a class="headerlink" href="#parasite.data.Post.options" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.data.Post.out_base_path">
+<code class="sig-name descname"><span class="pre">out_base_path</span></code><em class="property"><span class="pre">:</span> <span class="pre">Path</span></em><a class="headerlink" href="#parasite.data.Post.out_base_path" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.data.Post.path">
+<code class="sig-name descname"><span class="pre">path</span></code><em class="property"><span class="pre">:</span> <span class="pre">Path</span></em><a class="headerlink" href="#parasite.data.Post.path" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.data.Post.prev">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">prev</span></code><a class="headerlink" href="#parasite.data.Post.prev" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.data.Post.teaser">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">teaser</span></code><a class="headerlink" href="#parasite.data.Post.teaser" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.data.Post.template">
+<code class="sig-name descname"><span class="pre">template</span></code><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#parasite.data.Post.template" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.data.Post.time">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">time</span></code><a class="headerlink" href="#parasite.data.Post.time" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="parasite.data.Posts">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">parasite.data.</span></code><code class="sig-name descname"><span class="pre">Posts</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pages</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Sequence[Post]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/parasite/data/#Posts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.data.Posts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#parasite.data.Pages" title="parasite.data.Pages"><code class="xref py py-class docutils literal notranslate"><span class="pre">parasite.data.Pages</span></code></a></p>
+<dl class="py method">
+<dt id="parasite.data.Posts.categories">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">categories</span></code><a class="headerlink" href="#parasite.data.Posts.categories" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.data.Posts.get_neighbor_urls">
+<code class="sig-name descname"><span class="pre">get_neighbor_urls</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/parasite/data/#Posts.get_neighbor_urls"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.data.Posts.get_neighbor_urls" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.data.Posts.page_class">
+<code class="sig-name descname"><span class="pre">page_class</span></code><a class="headerlink" href="#parasite.data.Posts.page_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#parasite.data.Post" title="parasite.data.Post"><code class="xref py py-class docutils literal notranslate"><span class="pre">parasite.data.Post</span></code></a></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="parasite.data.Posts.pages">
+<code class="sig-name descname"><span class="pre">pages</span></code><em class="property"><span class="pre">:</span> <span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#parasite.data.Post" title="parasite.data.Post"><span class="pre">Post</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#parasite.data.Posts.pages" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.data.Posts.sort">
+<code class="sig-name descname"><span class="pre">sort</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/parasite/data/#Posts.sort"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.data.Posts.sort" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="parasite.data.Posts.tags">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">tags</span></code><a class="headerlink" href="#parasite.data.Posts.tags" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </div>
 
 
