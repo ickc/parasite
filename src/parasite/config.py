@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Callable, Dict, Optional, Union
 
 from urlpath import URL as Url
+from custom_inherit import DocInheritMeta
 
 from .helpers import nav, pretty_urls_present
 from .panflute_filters import lightgallery, lightgallery_from_dir
@@ -18,7 +19,7 @@ THIS_YEAR = time.gmtime().tm_year
 
 
 @dataclass
-class Config:
+class Config(metaclass=DocInheritMeta()):
     """Configure static site.
 
     :param watch_single_page: if specified, watch a single page with this url and rerender if changed.

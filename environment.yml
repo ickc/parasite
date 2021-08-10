@@ -16,6 +16,7 @@ dependencies:
   - python >=3.8
   - poetry >=1,<2
   # run:
+  - custom-inherit>=2,<3
   - panflute >=2.1,<3
   - parsl >=1.1,<2
   - urlpath >=1.1,<2

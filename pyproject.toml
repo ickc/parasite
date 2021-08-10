@@ -42,6 +42,7 @@ include = [
 
 [tool.poetry.dependencies]
 python = ">=3.8"
+custom-inherit = "^2"
 panflute = "^2.1"
 parsl = "^1.1"
 urlpath = "^1.1"
