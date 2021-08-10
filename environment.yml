@@ -16,6 +16,7 @@ dependencies:
   - python >=3.8
   - poetry >=1,<2
   # run:
+  - panflute >=2.1,<3
   - parsl >=1.1,<2
   - urlpath >=1.1,<2
   - defopt >=6,<7
@@ -41,7 +42,6 @@ dependencies:
   - sphinxcontrib-apidoc
   # dev:
   - tox
-  - panflute >=2.1,<3
   - pantable >=0.14,<0.15
   - ipykernel
   - isort
