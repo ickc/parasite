@@ -128,18 +128,19 @@
 
 
 <div class="viewcode-block" id="Config"><a class="viewcode-back" href="../../../api/parasite.config/#parasite.config.Config">[docs]</a><span class="nd">@dataclass</span>
-<span class="k">class</span> <span class="nc">Config</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">DocInheritMeta</span><span class="p">()):</span>
+<span class="k">class</span> <span class="nc">Config</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">DocInheritMeta</span><span class="p">(</span><span class="n">style</span><span class="o">=</span><span class="s2">&quot;google&quot;</span><span class="p">)):</span>
     <span class="sd">&quot;&quot;&quot;Configure static site.</span>
 
-<span class="sd">    :param watch_single_page: if specified, watch a single page with this url and rerender if changed.</span>
-<span class="sd">    :param serve: if specified, serve with this port.</span>
-<span class="sd">    :param open: if speicified and serve, open this url.</span>
-<span class="sd">    :param code: if speicified and serve, call watch_single_page by code (VSCode).</span>
-<span class="sd">    :param write_tipuesearch_json: write tipuesearch JSON file.</span>
-<span class="sd">    :param write_rss: write RSS feed.</span>
-<span class="sd">    :param write_atom: write atom feed.</span>
-<span class="sd">    :param write_sitemap: write sitemap.</span>
-<span class="sd">    :param include_draft: output draft posts as well.</span>
+<span class="sd">    Args:</span>
+<span class="sd">      watch_single_page: if specified, watch a single page with this url and rerender if changed.</span>
+<span class="sd">      serve: if specified, serve with this port.</span>
+<span class="sd">      open: if speicified and serve, open this url.</span>
+<span class="sd">      code: if speicified and serve, call watch_single_page by code (VSCode).</span>
+<span class="sd">      write_tipuesearch_json: write tipuesearch JSON file.</span>
+<span class="sd">      write_rss: write RSS feed.</span>
+<span class="sd">      write_atom: write atom feed.</span>
+<span class="sd">      write_sitemap: write sitemap.</span>
+<span class="sd">      include_draft: output draft posts as well.</span>
 
 <span class="sd">    All attributes, properties, and methods must be runtime constant</span>
 <span class="sd">    (i.e. not changing after initiated),</span>
