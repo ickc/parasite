@@ -23,7 +23,7 @@ jobs:
     - name: Install dependencies—pip
       run: |
         pip install -U poetry setuptools
-        pip install .
+        pip install .[extras,tests]
         # let coverage read setup.py instead of pyproject.toml
         make setup.py
         mv pyproject.toml .pyproject.toml
