@@ -13,6 +13,8 @@ jobs:
           - '3.8'
           # TODO: numba doesn't support 3.9 yet
           # - '3.9'
+        pandoc-version:
+          - latest
 
     steps:
     - uses: actions/checkout@v2
