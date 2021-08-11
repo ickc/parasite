@@ -53,7 +53,7 @@ README.rst: docs/README.md docs/badges.csv
 	$(_pandoc) $(pandocArgs) $< -s -t rst >> $@
 
 dist/docs/:
-	tox -e docs
+	sphinx-build -E -b dirhtml docs dist/docs
 
 # maintenance ##################################################################
 
@@ -65,7 +65,6 @@ pypi:
 ## Manually
 pypiManual:
 	rm -rf dist
-	# tox -e check
 	poetry build
 	twine upload dist/*
 
