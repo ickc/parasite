@@ -130,18 +130,10 @@ precision = 2
 
 [tool.pytest.ini_options]
 
-python_files = [
-    'test_*.py',
-    '*_test.py',
-    'tests.py',
-]
-
 addopts = [
     '-ra',
     '--strict-markers',
-    '--doctest-modules',
-    '--doctest-glob=\*.rst',
-    '--tb=short',
+    '--tb=auto',
 ]
 
 testpaths = [
@@ -149,10 +141,11 @@ testpaths = [
 ]
 
 [tool.isort]
-line_length = 120
+line_length = 88
 known_first_party = 'parasite'
 default_section = 'THIRDPARTY'
-forced_separate = 'test_parasite'
+forced_separate = 'tests'
+profile = 'black'
 skip = [
     '.tox',
     '.eggs',
@@ -160,6 +153,17 @@ skip = [
     'build',
     'dist',
 ]
+
+[tool.pylint.messages_control]
+disable = "C0330, C0326"
+
+[tool.pylint.format]
+max-line-length = 88
+
+[tool.black]
+line-length = 88
+experimental-string-processing = true
+target-version = ['py37']
 
 [tool.tox]
 legacy_tox_ini = '''
