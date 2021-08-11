@@ -64,15 +64,14 @@ pytest-cov = { optional = true, version = "*" }
 pytest-parallel = { optional = true, version = "*" }
 pytest-xdist = { optional = true, version = "*" }
 
-# docs: sync this with tox.testenv.docs below
+# docs
 sphinx = { optional = true, version = "^3.3" }
 sphinx-bootstrap-theme = { optional = true, version = "*" }
 pygments-style-solarized = { optional = true, version = "*" }
 sphinxcontrib-apidoc = { optional = true, version = "*" }
+pantable = { optional = true, version = "^0.14" }
 
 [tool.poetry.dev-dependencies]
-tox = "*"
-pantable = "^0.14"
 ipykernel = "*"
 isort = "*"
 mypy = "*"
@@ -103,6 +102,7 @@ docs = [
     "sphinx-bootstrap-theme",
     "pygments-style-solarized",
     "sphinxcontrib-apidoc",
+    "pantable",
 ]
 
 [tool.poetry.scripts]
@@ -147,7 +147,6 @@ default_section = 'THIRDPARTY'
 forced_separate = 'tests'
 profile = 'black'
 skip = [
-    '.tox',
     '.eggs',
     'ci/templates',
     'build',

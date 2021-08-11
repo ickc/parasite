@@ -42,7 +42,6 @@ dependencies:
   - pygments-style-solarized
   - sphinxcontrib-apidoc
   # dev:
-  - tox
   - pantable >=0.14,<0.15
   - ipykernel
   - isort

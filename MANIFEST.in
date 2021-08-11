@@ -13,6 +13,6 @@ include CONTRIBUTING.rst
 include LICENSE
 include README.rst
 
-include tox.ini .readthedocs.yml
+include .readthedocs.yml
 
 global-exclude *.py[cod] __pycache__/* *.so *.dylib
