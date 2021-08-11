@@ -109,26 +109,30 @@
   <h1>Source code for parasite.live</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;This handle the following config specific to live events:</span>
 
-<span class="sd">watch_single_page</span>
+<span class="sd">watch</span>
+<span class="sd">watch_open</span>
+<span class="sd">watch_code</span>
 <span class="sd">serve</span>
-<span class="sd">open</span>
-<span class="sd">code</span>
+<span class="sd">serve_host</span>
+<span class="sd">serve_port</span>
+<span class="sd">serve_open</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">chain</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
+
+<span class="kn">from</span> <span class="nn">urlpath</span> <span class="kn">import</span> <span class="n">URL</span> <span class="k">as</span> <span class="n">Url</span>
 
 <span class="kn">from</span> <span class="nn">.apps</span> <span class="kn">import</span> <span class="n">post_to_html</span><span class="p">,</span> <span class="n">read_md_to_ast</span>
 <span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">TimeElapse</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-    <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span>
-
-    <span class="kn">from</span> <span class="nn">urlpath</span> <span class="kn">import</span> <span class="n">URL</span> <span class="k">as</span> <span class="n">Url</span>
+    <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span>
 
     <span class="kn">from</span> <span class="nn">.config</span> <span class="kn">import</span> <span class="n">Config</span>
     <span class="kn">from</span> <span class="nn">.data</span> <span class="kn">import</span> <span class="n">Page</span>
@@ -136,22 +140,36 @@
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="serve"><a class="viewcode-back" href="../../../api/parasite.live/#parasite.live.serve">[docs]</a><span class="k">def</span> <span class="nf">serve</span><span class="p">(</span><span class="n">port</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">directory</span><span class="p">:</span> <span class="n">Path</span><span class="p">):</span>
+<div class="viewcode-block" id="serve"><a class="viewcode-back" href="../../../api/parasite.live/#parasite.live.serve">[docs]</a><span class="k">def</span> <span class="nf">serve</span><span class="p">(</span>
+    <span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">port</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">directory</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">url</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Url</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
     <span class="kn">from</span> <span class="nn">http.server</span> <span class="kn">import</span> <span class="n">HTTPServer</span><span class="p">,</span> <span class="n">SimpleHTTPRequestHandler</span>
     <span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Thread</span>
 
     <span class="n">httpd</span> <span class="o">=</span> <span class="n">HTTPServer</span><span class="p">(</span>
-        <span class="p">(</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span> <span class="n">port</span><span class="p">),</span> <span class="n">partial</span><span class="p">(</span><span class="n">SimpleHTTPRequestHandler</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="n">directory</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">),</span>
+        <span class="n">partial</span><span class="p">(</span><span class="n">SimpleHTTPRequestHandler</span><span class="p">,</span> <span class="n">directory</span><span class="o">=</span><span class="n">directory</span><span class="p">),</span>
     <span class="p">)</span>
+    <span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">httpd</span><span class="o">.</span><span class="n">serve_forever</span><span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Serving at port </span><span class="si">%s</span><span class="s2">.&quot;</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
-    <span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">httpd</span><span class="o">.</span><span class="n">serve_forever</span><span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></div>
+    <span class="c1"># always open with serve</span>
+    <span class="k">if</span> <span class="n">url</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">open_browser</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="open_browser"><a class="viewcode-back" href="../../../api/parasite.live/#parasite.live.open_browser">[docs]</a><span class="k">def</span> <span class="nf">open_browser</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="n">Url</span><span class="p">):</span>
+<div class="viewcode-block" id="open_browser"><a class="viewcode-back" href="../../../api/parasite.live/#parasite.live.open_browser">[docs]</a><span class="k">def</span> <span class="nf">open_browser</span><span class="p">(</span>
+    <span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">port</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">url</span><span class="p">:</span> <span class="n">Url</span> <span class="o">=</span> <span class="n">Url</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">),</span>
+<span class="p">):</span>
     <span class="kn">import</span> <span class="nn">webbrowser</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Opening </span><span class="si">%s</span><span class="s2"> in browser.&quot;</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
-    <span class="n">webbrowser</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">url</span><span class="p">),</span> <span class="n">new</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span></div>
+    <span class="n">full_url</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;http://</span><span class="si">{</span><span class="n">host</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Opening </span><span class="si">%s</span><span class="s2"> in browser.&quot;</span><span class="p">,</span> <span class="n">full_url</span><span class="p">)</span>
+    <span class="n">webbrowser</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">full_url</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="code"><a class="viewcode-back" href="../../../api/parasite.live/#parasite.live.code">[docs]</a><span class="k">def</span> <span class="nf">code</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">):</span>
@@ -173,9 +191,6 @@
 
 <span class="k">def</span> <span class="nf">_make_single_page</span><span class="p">(</span><span class="n">page</span><span class="p">:</span> <span class="n">Page</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Config</span><span class="p">):</span>
     <span class="n">time_elapse</span> <span class="o">=</span> <span class="n">TimeElapse</span><span class="p">(</span><span class="n">logger</span><span class="p">)</span>
-
-    <span class="n">url</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">watch_single_page</span>
-
     <span class="n">page</span><span class="o">.</span><span class="n">ast</span> <span class="o">=</span> <span class="n">read_md_to_ast</span><span class="p">(</span>
         <span class="n">config</span><span class="o">.</span><span class="n">pandoc_input_options</span><span class="p">,</span>
         <span class="n">config</span><span class="o">.</span><span class="n">panflute_input_filters</span><span class="p">,</span>
@@ -192,32 +207,34 @@
         <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="n">config</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">/</span> <span class="n">page</span><span class="o">.</span><span class="n">out_path</span><span class="p">],</span>
         <span class="o">**</span><span class="n">page</span><span class="o">.</span><span class="n">options</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">time_elapse</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2"> redone.&quot;</span><span class="p">)</span>
+    <span class="n">time_elapse</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">page</span><span class="o">.</span><span class="n">path</span><span class="si">}</span><span class="s2"> redone.&quot;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="observe_single_page_no_serve"><a class="viewcode-back" href="../../../api/parasite.live/#parasite.live.observe_single_page_no_serve">[docs]</a><span class="k">def</span> <span class="nf">observe_single_page_no_serve</span><span class="p">(</span>
-    <span class="n">page</span><span class="p">:</span> <span class="n">Page</span><span class="p">,</span>
+<div class="viewcode-block" id="observe_pages_without_serve"><a class="viewcode-back" href="../../../api/parasite.live/#parasite.live.observe_pages_without_serve">[docs]</a><span class="k">def</span> <span class="nf">observe_pages_without_serve</span><span class="p">(</span>
+    <span class="n">pages</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Page</span><span class="p">],</span>
     <span class="n">config</span><span class="p">:</span> <span class="n">Config</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="kn">from</span> <span class="nn">watchdog.events</span> <span class="kn">import</span> <span class="n">FileSystemEventHandler</span>
     <span class="kn">from</span> <span class="nn">watchdog.observers</span> <span class="kn">import</span> <span class="n">Observer</span>
 
     <span class="k">class</span> <span class="nc">PageEventHandler</span><span class="p">(</span><span class="n">FileSystemEventHandler</span><span class="p">):</span>
-        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">page</span><span class="p">:</span> <span class="n">Page</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Config</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">page</span> <span class="o">=</span> <span class="n">page</span>
+        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pages</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Page</span><span class="p">],</span> <span class="n">config</span><span class="p">:</span> <span class="n">Config</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pages</span> <span class="o">=</span> <span class="n">pages</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
 
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Watching </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">page</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
-
         <span class="k">def</span> <span class="nf">on_modified</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">. Updating...&quot;</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">src_path</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">event_type</span><span class="p">)</span>
-            <span class="n">_make_single_page</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">page</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">src_path</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">. Updating...&quot;</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">event_type</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pages</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">absolute</span><span class="p">())</span> <span class="o">==</span> <span class="n">path</span><span class="p">:</span>
+                    <span class="n">_make_single_page</span><span class="p">(</span><span class="n">page</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
 
-    <span class="n">path</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
-
-    <span class="n">event_handler</span> <span class="o">=</span> <span class="n">PageEventHandler</span><span class="p">(</span><span class="n">page</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+    <span class="n">event_handler</span> <span class="o">=</span> <span class="n">PageEventHandler</span><span class="p">(</span><span class="n">pages</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
     <span class="n">observer</span> <span class="o">=</span> <span class="n">Observer</span><span class="p">()</span>
-    <span class="n">observer</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="n">event_handler</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">pages</span><span class="p">:</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="n">path</span>
+        <span class="n">observer</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="n">event_handler</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Watching </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">observer</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
     <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
@@ -226,44 +243,57 @@
         <span class="n">observer</span><span class="o">.</span><span class="n">join</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="observe_single_page_serve"><a class="viewcode-back" href="../../../api/parasite.live/#parasite.live.observe_single_page_serve">[docs]</a><span class="k">def</span> <span class="nf">observe_single_page_serve</span><span class="p">(</span>
-    <span class="n">page</span><span class="p">:</span> <span class="n">Page</span><span class="p">,</span>
+<div class="viewcode-block" id="observe_pages_with_serve"><a class="viewcode-back" href="../../../api/parasite.live/#parasite.live.observe_pages_with_serve">[docs]</a><span class="k">def</span> <span class="nf">observe_pages_with_serve</span><span class="p">(</span>
+    <span class="n">pages</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Page</span><span class="p">],</span>
     <span class="n">config</span><span class="p">:</span> <span class="n">Config</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="kn">from</span> <span class="nn">livereload</span> <span class="kn">import</span> <span class="n">Server</span>
 
     <span class="n">server</span> <span class="o">=</span> <span class="n">Server</span><span class="p">()</span>
-    <span class="n">server</span><span class="o">.</span><span class="n">watch</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">path</span><span class="p">),</span> <span class="n">partial</span><span class="p">(</span><span class="n">_make_single_page</span><span class="p">,</span> <span class="n">page</span><span class="p">,</span> <span class="n">config</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">pages</span><span class="p">:</span>
+        <span class="n">server</span><span class="o">.</span><span class="n">watch</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">path</span><span class="p">),</span> <span class="n">partial</span><span class="p">(</span><span class="n">_make_single_page</span><span class="p">,</span> <span class="n">page</span><span class="p">,</span> <span class="n">config</span><span class="p">))</span>
     <span class="c1"># always open with serve</span>
-    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">open</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">open_browser</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">open</span><span class="p">)</span>
-    <span class="n">server</span><span class="o">.</span><span class="n">serve</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">output_dir</span><span class="p">),</span> <span class="n">port</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">serve</span><span class="p">)</span></div>
+    <span class="n">port</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">serve_port</span>
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">watch_open</span><span class="p">:</span>
+        <span class="n">host</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">serve_host</span>
+        <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">pages</span><span class="p">:</span>
+            <span class="n">open_browser</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">page</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+    <span class="n">server</span><span class="o">.</span><span class="n">serve</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">output_dir</span><span class="p">),</span> <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="watch_single_page"><a class="viewcode-back" href="../../../api/parasite.live/#parasite.live.watch_single_page">[docs]</a><span class="k">def</span> <span class="nf">watch_single_page</span><span class="p">(</span>
+<div class="viewcode-block" id="watch_pages"><a class="viewcode-back" href="../../../api/parasite.live/#parasite.live.watch_pages">[docs]</a><span class="k">def</span> <span class="nf">watch_pages</span><span class="p">(</span>
     <span class="n">all_pages</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Page</span><span class="p">],</span>
     <span class="n">config</span><span class="p">:</span> <span class="n">Config</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Watch and re-render single page.&quot;&quot;&quot;</span>
-    <span class="n">url</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">watch_single_page</span>
+    <span class="n">globs</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">watch</span>
     <span class="n">time_elapse</span> <span class="o">=</span> <span class="n">TimeElapse</span><span class="p">(</span><span class="n">logger</span><span class="p">)</span>
 
+    <span class="n">cur_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+    <span class="n">paths</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span><span class="n">cur_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">glob</span><span class="p">)</span> <span class="k">for</span> <span class="n">glob</span> <span class="ow">in</span> <span class="n">globs</span><span class="p">))</span>
+    <span class="n">time_elapse</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">paths</span><span class="p">)</span><span class="si">}</span><span class="s2"> paths to watch.&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Watching the following paths: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">paths</span><span class="p">)</span>
+
     <span class="c1"># get page with url</span>
-    <span class="n">page</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Page</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">for</span> <span class="n">cur_page</span> <span class="ow">in</span> <span class="n">all_pages</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">cur_page</span><span class="o">.</span><span class="n">url</span> <span class="o">==</span> <span class="n">url</span><span class="p">:</span>
-            <span class="n">page</span> <span class="o">=</span> <span class="n">cur_page</span>
-            <span class="k">break</span>
-    <span class="k">if</span> <span class="n">page</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot find page/post with url </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">pages</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Page</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
+        <span class="n">page</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Page</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">cur_page</span> <span class="ow">in</span> <span class="n">all_pages</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">cur_page</span><span class="o">.</span><span class="n">path</span> <span class="o">==</span> <span class="n">path</span><span class="p">:</span>
+                <span class="n">page</span> <span class="o">=</span> <span class="n">cur_page</span>
+                <span class="k">break</span>
+        <span class="k">if</span> <span class="n">page</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot find page/post with path </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
+    <span class="n">time_elapse</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">pages</span><span class="p">)</span><span class="si">}</span><span class="s2"> pages.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">watch_code</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">pages</span><span class="p">:</span>
+            <span class="n">code</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">/</span> <span class="n">page</span><span class="o">.</span><span class="n">out_path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">serve</span><span class="p">:</span>
+        <span class="n">observe_pages_with_serve</span><span class="p">(</span><span class="n">pages</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">time_elapse</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found file at path </span><span class="si">{</span><span class="n">page</span><span class="o">.</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">code</span><span class="p">:</span>
-        <span class="n">code</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">/</span> <span class="n">page</span><span class="o">.</span><span class="n">out_path</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">serve</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">observe_single_page_no_serve</span><span class="p">(</span><span class="n">page</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">observe_single_page_serve</span><span class="p">(</span><span class="n">page</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span></div>
+        <span class="n">observe_pages_without_serve</span><span class="p">(</span><span class="n">pages</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="live"><a class="viewcode-back" href="../../../api/parasite.live/#parasite.live.live">[docs]</a><span class="k">def</span> <span class="nf">live</span><span class="p">(</span>
@@ -272,14 +302,16 @@
 <span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Go live.&quot;&quot;&quot;</span>
     <span class="c1"># only serve ourselves if not watching</span>
-    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">serve</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">config</span><span class="o">.</span><span class="n">watch_single_page</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">serve</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">serve</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span>
-        <span class="c1"># always open with serve</span>
-        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">open</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">open_browser</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">open</span><span class="p">)</span>
-    <span class="c1"># let watch_single_page handle serve cases</span>
-    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">watch_single_page</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">watch_single_page</span><span class="p">(</span>
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">serve</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">config</span><span class="o">.</span><span class="n">watch</span><span class="p">:</span>
+        <span class="n">serve</span><span class="p">(</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">serve_host</span><span class="p">,</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">serve_port</span><span class="p">,</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">output_dir</span><span class="p">,</span>
+            <span class="n">url</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">serve_open</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="c1"># let watch_pages handle serve cases</span>
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">watch</span><span class="p">:</span>
+        <span class="n">watch_pages</span><span class="p">(</span>
             <span class="n">all_pages</span><span class="p">,</span>
             <span class="n">config</span><span class="p">,</span>
         <span class="p">)</span></div>
@@ -297,7 +329,7 @@
     </p>
     <p>
         &copy; Copyright 2021, Kolen Cheung.<br/>
-      Last updated on Aug 10, 2021.<br/>
+      Last updated on Aug 11, 2021.<br/>
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.5.4.<br/>
     </p>
   </div>

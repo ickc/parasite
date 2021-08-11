@@ -237,7 +237,12 @@
         <span class="nb">sum</span><span class="p">(</span>
             <span class="p">(</span>
                 <span class="n">pages_</span><span class="o">.</span><span class="n">pages</span>
-                <span class="k">for</span> <span class="n">pages_</span> <span class="ow">in</span> <span class="n">get_pages</span><span class="p">(</span><span class="n">Pages</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">pages</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">timezone</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">timezone</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">pages_</span> <span class="ow">in</span> <span class="n">get_pages</span><span class="p">(</span>
+                    <span class="n">Pages</span><span class="p">,</span>
+                    <span class="n">config</span><span class="o">.</span><span class="n">pages</span><span class="p">,</span>
+                    <span class="n">config</span><span class="p">,</span>
+                    <span class="n">timezone</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">timezone</span><span class="p">,</span>
+                <span class="p">)</span>
             <span class="p">),</span>
             <span class="p">[],</span>
         <span class="p">)</span>
@@ -246,7 +251,12 @@
         <span class="nb">sum</span><span class="p">(</span>
             <span class="p">(</span>
                 <span class="n">pages_</span><span class="o">.</span><span class="n">pages</span>
-                <span class="k">for</span> <span class="n">pages_</span> <span class="ow">in</span> <span class="n">get_pages</span><span class="p">(</span><span class="n">Posts</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">posts</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">timezone</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">timezone</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">pages_</span> <span class="ow">in</span> <span class="n">get_pages</span><span class="p">(</span>
+                    <span class="n">Posts</span><span class="p">,</span>
+                    <span class="n">config</span><span class="o">.</span><span class="n">posts</span><span class="p">,</span>
+                    <span class="n">config</span><span class="p">,</span>
+                    <span class="n">timezone</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">timezone</span><span class="p">,</span>
+                <span class="p">)</span>
             <span class="p">),</span>
             <span class="p">[],</span>
         <span class="p">)</span>
@@ -485,7 +495,7 @@
     </p>
     <p>
         &copy; Copyright 2021, Kolen Cheung.<br/>
-      Last updated on Aug 10, 2021.<br/>
+      Last updated on Aug 11, 2021.<br/>
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.5.4.<br/>
     </p>
   </div>

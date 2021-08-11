@@ -122,13 +122,16 @@
   <div class="section" id="module-parasite.live">
 <span id="parasite-live-module"></span><h1>parasite.live module<a class="headerlink" href="#module-parasite.live" title="Permalink to this headline">¶</a></h1>
 <p>This handle the following config specific to live events:</p>
-<p>watch_single_page
+<p>watch
+watch_open
+watch_code
 serve
-open
-code</p>
+serve_host
+serve_port
+serve_open</p>
 <dl class="py function">
 <dt id="parasite.live.code">
-<code class="sig-prename descclassname"><span class="pre">parasite.live.</span></code><code class="sig-name descname"><span class="pre">code</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/parasite/live/#code"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.live.code" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">parasite.live.</span></code><code class="sig-name descname"><span class="pre">code</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pathlib.Path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/parasite/live/#code"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.live.code" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -138,28 +141,28 @@ code</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="parasite.live.observe_single_page_no_serve">
-<code class="sig-prename descclassname"><span class="pre">parasite.live.</span></code><code class="sig-name descname"><span class="pre">observe_single_page_no_serve</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">page</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Page</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/parasite/live/#observe_single_page_no_serve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.live.observe_single_page_no_serve" title="Permalink to this definition">¶</a></dt>
+<dt id="parasite.live.observe_pages_with_serve">
+<code class="sig-prename descclassname"><span class="pre">parasite.live.</span></code><code class="sig-name descname"><span class="pre">observe_pages_with_serve</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pages</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Page</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/parasite/live/#observe_pages_with_serve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.live.observe_pages_with_serve" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
-<dt id="parasite.live.observe_single_page_serve">
-<code class="sig-prename descclassname"><span class="pre">parasite.live.</span></code><code class="sig-name descname"><span class="pre">observe_single_page_serve</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">page</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Page</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/parasite/live/#observe_single_page_serve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.live.observe_single_page_serve" title="Permalink to this definition">¶</a></dt>
+<dt id="parasite.live.observe_pages_without_serve">
+<code class="sig-prename descclassname"><span class="pre">parasite.live.</span></code><code class="sig-name descname"><span class="pre">observe_pages_without_serve</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pages</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Page</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/parasite/live/#observe_pages_without_serve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.live.observe_pages_without_serve" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt id="parasite.live.open_browser">
-<code class="sig-prename descclassname"><span class="pre">parasite.live.</span></code><code class="sig-name descname"><span class="pre">open_browser</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Url</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/parasite/live/#open_browser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.live.open_browser" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">parasite.live.</span></code><code class="sig-name descname"><span class="pre">open_browser</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">urlpath.URL</span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">URL('')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/parasite/live/#open_browser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.live.open_browser" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt id="parasite.live.serve">
-<code class="sig-prename descclassname"><span class="pre">parasite.live.</span></code><code class="sig-name descname"><span class="pre">serve</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/parasite/live/#serve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.live.serve" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname"><span class="pre">parasite.live.</span></code><code class="sig-name descname"><span class="pre">serve</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Url</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/parasite/live/#serve"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.live.serve" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
-<dt id="parasite.live.watch_single_page">
-<code class="sig-prename descclassname"><span class="pre">parasite.live.</span></code><code class="sig-name descname"><span class="pre">watch_single_page</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_pages</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Page</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/parasite/live/#watch_single_page"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.live.watch_single_page" title="Permalink to this definition">¶</a></dt>
+<dt id="parasite.live.watch_pages">
+<code class="sig-prename descclassname"><span class="pre">parasite.live.</span></code><code class="sig-name descname"><span class="pre">watch_pages</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_pages</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">Page</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/parasite/live/#watch_pages"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.live.watch_pages" title="Permalink to this definition">¶</a></dt>
 <dd><p>Watch and re-render single page.</p>
 </dd></dl>
 
@@ -178,7 +181,7 @@ code</p>
     </p>
     <p>
         &copy; Copyright 2021, Kolen Cheung.<br/>
-      Last updated on Aug 10, 2021.<br/>
+      Last updated on Aug 11, 2021.<br/>
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.5.4.<br/>
     </p>
   </div>
