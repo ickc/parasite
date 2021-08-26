@@ -67,7 +67,6 @@ pytest-xdist = { optional = true, version = "*" }
 # docs
 sphinx = { optional = true, version = "^3.3" }
 sphinx-bootstrap-theme = { optional = true, version = "*" }
-pygments-style-solarized = { optional = true, version = "*" }
 sphinxcontrib-apidoc = { optional = true, version = "*" }
 pantable = { optional = true, version = "^0.14" }
 
@@ -100,7 +99,6 @@ tests = [
 docs = [
     "sphinx",
     "sphinx-bootstrap-theme",
-    "pygments-style-solarized",
     "sphinxcontrib-apidoc",
     "pantable",
 ]
