@@ -51,3 +51,11 @@ dependencies:
   - pandoc-crossref
   - ghp-import >=2,<3
   - nbconvert >=6,<7
+  - pylint
+  - rstcheck
+  - types-pyyaml
+  # texp dep
+  - makefun >=1.11,<2
+  - custom-inherit >=2.3,<3
+  - nbsphinx >=0.8
+  - pandas

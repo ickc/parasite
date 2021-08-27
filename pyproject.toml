@@ -80,6 +80,13 @@ bump2version = "*"
 pandoc-crossref = "*"
 ghp-import = "^2"
 nbconvert = "^6"
+pylint = "*"
+rstcheck = "*"
+types-pyyaml = "*"
+makefun = "^1.11"
+custom-inherit = "^2.3"
+nbsphinx = ">=0.8"
+pandas = "*"
 
 [tool.poetry.extras]
 extras = [
