@@ -12,23 +12,47 @@ serve_open
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass, field
 from functools import partial
 from itertools import chain
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional
 
+from custom_inherit import DocInheritMeta
 from urlpath import URL as Url
 
 from .apps import post_to_html, read_md_to_ast
 from .util import TimeElapse
 
 if TYPE_CHECKING:
-    from typing import List, Optional, Sequence
+    from typing import Sequence
 
-    from .config import Config
     from .data import Page
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class Config(metaclass=DocInheritMeta(style="google_with_merge")):
+    """Configure live serving parameters.
+
+    Args:
+        watch: glob patterns of source files to be watched (relative to current directory)
+        watch_open: if specified, open all pages that are currently watching.
+        watch_code: if specified, open all sources that are currently watching in VSCode.
+        serve: if specified, open a server and serve indefinitely.
+        serve_host: the host to serve.
+        serve_port: the port to serve.
+        serve_open: if specified, open this relative url.
+    """
+
+    watch: List[str] = field(default_factory=list)
+    watch_open: bool = False
+    watch_code: bool = False
+    serve: bool = False
+    serve_host: str = "localhost"
+    serve_port: int = 5500
+    serve_open: Optional[Url] = None
 
 
 def serve(
