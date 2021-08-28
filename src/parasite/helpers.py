@@ -27,12 +27,14 @@ def _nav(
         if type_ == str:
             url, title = datum
             res.append(
-                f'<li class="{li_class}"><a href="{url}" class="{a_class}">{title}</a></li>'
+                f'<li class="{li_class}"><a href="{url}"'
+                f' class="{a_class}">{title}</a></li>'
             )
         elif type_ == tuple:
             inner_data, title = datum
             res.append(
-                f'<li class="{dropdown_li_class}"><a href="#" class="{dropdown_a_class}" {dropdown_a_attrs}>{title}</a>'
+                f'<li class="{dropdown_li_class}"><a href="#"'
+                f' class="{dropdown_a_class}" {dropdown_a_attrs}>{title}</a>'
             )
             res += _nav(
                 inner_data,

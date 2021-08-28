@@ -168,7 +168,10 @@ class Config(ConfigLive):
 
         def _content_footer(lang: str, ext: str, out_ext: str) -> str:
             if ext == ".md" and out_ext == ".html":
-                return f'Contents © 2021–{THIS_YEAR}         <a href="mailto:{blog_email}">{blog_author}</a>'
+                return (
+                    f"Contents © 2021–{THIS_YEAR}         <a"
+                    f' href="mailto:{blog_email}">{blog_author}</a>'
+                )
             else:
                 return ""
 

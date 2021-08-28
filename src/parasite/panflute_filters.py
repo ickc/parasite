@@ -69,7 +69,8 @@ $("#{identifier}").justifiedGallery();""",
                 random.choices(string.ascii_uppercase + string.digits, k=44)
             )
             logger.info(
-                f'Created random identifier {identifier} for lightgallery in {doc.get_metadata("title")}.'
+                f"Created random identifier {identifier} for lightgallery in"
+                f' {doc.get_metadata("title")}.'
             )
 
         meta_append(
@@ -119,7 +120,8 @@ $("#{identifier}").justifiedGallery();""",
             random.choices(string.ascii_uppercase + string.digits, k=44)
         )
         logger.info(
-            f'Created random identifier {identifier} for lightgallery in {doc.get_metadata("title")}.'
+            f"Created random identifier {identifier} for lightgallery in"
+            f' {doc.get_metadata("title")}.'
         )
 
         meta_append(

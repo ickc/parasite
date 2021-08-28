@@ -136,7 +136,8 @@ class Page:
             return datetime.fromtimestamp(commit.committed_date, timezone.utc)
         except StopIteration:
             logger.warn(
-                f"Cannot obtain committed date for {self.path}, returning mtime instead."
+                f"Cannot obtain committed date for {self.path}, returning mtime"
+                " instead."
             )
             return self.mtime
 

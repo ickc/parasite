@@ -97,7 +97,10 @@ def app_minify(inputs=[], outputs=[]):
     input_paths = [file.filepath for file in inputs]
     output_path = Path(outputs[0].filepath)
     output_path.parent.mkdir(exist_ok=True, parents=True)
-    return f'minify --type {output_path.suffix[1:]} -b -o {output_path} {" ".join(input_paths)}'
+    return (
+        f"minify --type {output_path.suffix[1:]} -b -o"
+        f' {output_path} {" ".join(input_paths)}'
+    )
 
 
 @bash_app
@@ -107,7 +110,10 @@ def app_closure_compiler(inputs=[], outputs=[]):
     input_paths = [file.filepath for file in inputs]
     output_path = Path(outputs[0].filepath)
     output_path.parent.mkdir(exist_ok=True, parents=True)
-    return f'closure-compiler -O SIMPLE --js {" ".join(input_paths)} --js_output_file {output_path} -W QUIET --jscomp_off=checkVars'
+    return (
+        f'closure-compiler -O SIMPLE --js {" ".join(input_paths)} --js_output_file'
+        f" {output_path} -W QUIET --jscomp_off=checkVars"
+    )
 
 
 import os
