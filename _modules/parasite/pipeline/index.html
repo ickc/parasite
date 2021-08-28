@@ -119,12 +119,19 @@
 <span class="kn">from</span> <span class="nn">parsl.config</span> <span class="kn">import</span> <span class="n">Config</span> <span class="k">as</span> <span class="n">ParslConfig</span>
 <span class="kn">from</span> <span class="nn">parsl.data_provider.files</span> <span class="kn">import</span> <span class="n">File</span>
 <span class="kn">from</span> <span class="nn">parsl.executors</span> <span class="kn">import</span> <span class="n">ThreadPoolExecutor</span>
+
 <span class="c1"># from parsl.executors import HighThroughputExecutor</span>
 <span class="c1"># from parsl.providers import LocalProvider</span>
 <span class="kn">from</span> <span class="nn">parsl.utils</span> <span class="kn">import</span> <span class="n">get_all_checkpoints</span>
 <span class="kn">from</span> <span class="nn">urlpath</span> <span class="kn">import</span> <span class="n">URL</span> <span class="k">as</span> <span class="n">Url</span>
 
-<span class="kn">from</span> <span class="nn">.apps_parsl</span> <span class="kn">import</span> <span class="n">app_minify</span><span class="p">,</span> <span class="n">app_post_to_html</span><span class="p">,</span> <span class="n">app_read_md_to_ast</span><span class="p">,</span> <span class="n">app_read_md_to_ast_with_teaser</span><span class="p">,</span> <span class="n">app_rsync</span>
+<span class="kn">from</span> <span class="nn">.apps_parsl</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">app_minify</span><span class="p">,</span>
+    <span class="n">app_post_to_html</span><span class="p">,</span>
+    <span class="n">app_read_md_to_ast</span><span class="p">,</span>
+    <span class="n">app_read_md_to_ast_with_teaser</span><span class="p">,</span>
+    <span class="n">app_rsync</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span> <span class="nn">.config</span> <span class="kn">import</span> <span class="n">Config</span>
 <span class="kn">from</span> <span class="nn">.data</span> <span class="kn">import</span> <span class="n">Pages</span><span class="p">,</span> <span class="n">Posts</span>
 <span class="kn">from</span> <span class="nn">.helpers</span> <span class="kn">import</span> <span class="n">to_feed</span><span class="p">,</span> <span class="n">to_sitemap</span><span class="p">,</span> <span class="n">write_tipuesearch</span>

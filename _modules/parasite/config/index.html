@@ -277,7 +277,10 @@
 
         <span class="k">def</span> <span class="nf">_content_footer</span><span class="p">(</span><span class="n">lang</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ext</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">out_ext</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">ext</span> <span class="o">==</span> <span class="s2">&quot;.md&quot;</span> <span class="ow">and</span> <span class="n">out_ext</span> <span class="o">==</span> <span class="s2">&quot;.html&quot;</span><span class="p">:</span>
-                <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;Contents © 2021–</span><span class="si">{</span><span class="n">THIS_YEAR</span><span class="si">}</span><span class="s1">         &lt;a href=&quot;mailto:</span><span class="si">{</span><span class="n">blog_email</span><span class="si">}</span><span class="s1">&quot;&gt;</span><span class="si">{</span><span class="n">blog_author</span><span class="si">}</span><span class="s1">&lt;/a&gt;&#39;</span>
+                <span class="k">return</span> <span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Contents © 2021–</span><span class="si">{</span><span class="n">THIS_YEAR</span><span class="si">}</span><span class="s2">         &lt;a&quot;</span>
+                    <span class="sa">f</span><span class="s1">&#39; href=&quot;mailto:</span><span class="si">{</span><span class="n">blog_email</span><span class="si">}</span><span class="s1">&quot;&gt;</span><span class="si">{</span><span class="n">blog_author</span><span class="si">}</span><span class="s1">&lt;/a&gt;&#39;</span>
+                <span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="s2">&quot;&quot;</span>
 
