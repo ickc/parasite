@@ -31,7 +31,8 @@ def read_md_to_ast(
 
     with open(path, "r") as f:
         text = f.read()
-    doc = convert_text(text, standalone=True, extra_args=pandoc_options(ext))
+    input_format = "markdown" if ext == ".md" else ext[1:]
+    doc = convert_text(text, input_format=input_format, standalone=True, extra_args=pandoc_options(ext))
 
     fs = panflute_filters(ext)
     if fs:
