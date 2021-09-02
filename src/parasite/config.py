@@ -15,6 +15,8 @@ if TYPE_CHECKING:
 
 THIS_YEAR = time.gmtime().tm_year
 
+MD_OR_IPYNB = {".md", ".ipynb"}
+
 
 @dataclass
 class Config(ConfigLive):
@@ -69,6 +71,7 @@ class Config(ConfigLive):
     def pretty_urls(self) -> Dict[str, Union[bool, Callable[[Path, str], Path]]]:
         return {
             ".md": True,
+            ".ipynb": True,
             ".markdown": pretty_urls_present,
         }
 
@@ -114,12 +117,16 @@ class Config(ConfigLive):
         ],
         ...,
     ]:
-        return (("posts", "", ".md", POST_TEMPLATE),)
+        return (
+            ("posts", "", ".md", POST_TEMPLATE),
+            ("posts", "", ".ipynb", POST_TEMPLATE),
+        )
 
     @property
     def pages(self) -> Tuple[Tuple[str, str, str, Optional[Path]], ...]:
         return (
             ("pages", "", ".md", POST_TEMPLATE),
+            ("pages", "", ".ipynb", POST_TEMPLATE),
             ("posts", "", ".markdown", SLIDE_TEMPLATE),
         )
 
@@ -167,7 +174,7 @@ class Config(ConfigLive):
         blog_author = self.blog_author
 
         def _content_footer(lang: str, ext: str, out_ext: str) -> str:
-            if ext == ".md" and out_ext == ".html":
+            if ext in MD_OR_IPYNB and out_ext == ".html":
                 return (
                     f"Contents © 2021–{THIS_YEAR}         <a"
                     f' href="mailto:{blog_email}">{blog_author}</a>'
@@ -179,7 +186,7 @@ class Config(ConfigLive):
 
     @staticmethod
     def search_form(lang: str, ext: str, out_ext: str) -> str:
-        if ext == ".md" and out_ext == ".html":
+        if ext in MD_OR_IPYNB and out_ext == ".html":
             return """<form class="navbar-form navbar-left" action="{root}/search/" role="search">
     <div class="form-group">
         <input type="text" class="form-control" id="tipue_search_input" name="q" placeholder="Search" autocomplete="off" />
@@ -202,7 +209,7 @@ class Config(ConfigLive):
 
     @staticmethod
     def nav_includes(lang: str, ext: str, out_ext: str) -> str:
-        if lang == "en" and ext == ".md" and out_ext == ".html":
+        if lang == "en" and ext in MD_OR_IPYNB and out_ext == ".html":
             return nav(
                 (
                     ("{root}/index.html", "Home"),
@@ -222,18 +229,17 @@ class Config(ConfigLive):
 
     @staticmethod
     def css(ext: str, out_ext: str) -> List[str]:
-        CSS: Dict[str, List[str]] = {
-            ".md": [
+        if ext in MD_OR_IPYNB and out_ext == ".html":
+            return [
                 "{root}/assets/css/all-nocdn.css",
                 "https://fonts.googleapis.com/css?family=Playfair+Display:700,900",
-            ],
-            ".markdown": [],
-        }
-        return CSS[ext]
+            ]
+        else:
+            return []
 
     @staticmethod
     def js(ext: str, out_ext: str) -> List[str]:
-        if ext == ".md" and out_ext == ".html":
+        if ext in MD_OR_IPYNB and out_ext == ".html":
             return [
                 "https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js",
                 "https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.bundle.min.js",
@@ -247,7 +253,7 @@ class Config(ConfigLive):
 
     @staticmethod
     def script_include_after(ext: str, out_ext: str) -> str:
-        if ext == ".md" and out_ext == ".html":
+        if ext in MD_OR_IPYNB and out_ext == ".html":
             return """tocbot.init({{
   tocSelector: '.js-toc',
   contentSelector: '.entry-content',
