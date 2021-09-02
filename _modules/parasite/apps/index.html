@@ -140,7 +140,8 @@
 
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">text</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-    <span class="n">doc</span> <span class="o">=</span> <span class="n">convert_text</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">standalone</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">extra_args</span><span class="o">=</span><span class="n">pandoc_options</span><span class="p">(</span><span class="n">ext</span><span class="p">))</span>
+    <span class="n">input_format</span> <span class="o">=</span> <span class="s2">&quot;markdown&quot;</span> <span class="k">if</span> <span class="n">ext</span> <span class="o">==</span> <span class="s2">&quot;.md&quot;</span> <span class="k">else</span> <span class="n">ext</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="n">doc</span> <span class="o">=</span> <span class="n">convert_text</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">input_format</span><span class="o">=</span><span class="n">input_format</span><span class="p">,</span> <span class="n">standalone</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">extra_args</span><span class="o">=</span><span class="n">pandoc_options</span><span class="p">(</span><span class="n">ext</span><span class="p">))</span>
 
     <span class="n">fs</span> <span class="o">=</span> <span class="n">panflute_filters</span><span class="p">(</span><span class="n">ext</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">fs</span><span class="p">:</span>
@@ -303,7 +304,7 @@
     </p>
     <p>
         &copy; Copyright 2021, Kolen Cheung.<br/>
-      Last updated on Aug 28, 2021.<br/>
+      Last updated on Sep 02, 2021.<br/>
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.5.4.<br/>
     </p>
   </div>
