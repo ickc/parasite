@@ -314,6 +314,7 @@ class Pages:
         out_path: Path,
         ext: str,
         template: Optional[Path],
+        excludes: list[str] = [],
         timezone: str = r"America/Los_Angeles",
         pretty_urls: Union[bool, Callable[[Path, str], Path]] = True,
         date_format: str = r"%Y-%m-%d",
@@ -335,7 +336,8 @@ class Pages:
                     default_lang=default_lang,
                     options=options,
                 )
-                for path_ in Path(path).glob(f"**/*{ext}")
+                for path_ in path.glob(f"**/*{ext}")
+                if not any(path_.match(exclude) for exclude in excludes)
             ]
         )
 

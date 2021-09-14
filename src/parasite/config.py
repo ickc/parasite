@@ -114,20 +114,32 @@ class Config(ConfigLive):
             str,  # out-dir
             str,  # ext
             Optional[Path],  # template
+            list[str],  # excludes
         ],
         ...,
     ]:
         return (
-            ("posts", "", ".md", POST_TEMPLATE),
-            ("posts", "", ".ipynb", POST_TEMPLATE),
+            ("posts", "", ".md", POST_TEMPLATE, []),
+            ("posts", "", ".ipynb", POST_TEMPLATE, [".ipynb_checkpoints/**"]),
         )
 
     @property
-    def pages(self) -> Tuple[Tuple[str, str, str, Optional[Path]], ...]:
+    def pages(
+        self,
+    ) -> Tuple[
+        Tuple[
+            str,  # in-dir
+            str,  # out-dir
+            str,  # ext
+            Optional[Path],  # template
+            list[str],  # excludes
+        ],
+        ...,
+    ]:
         return (
-            ("pages", "", ".md", POST_TEMPLATE),
-            ("pages", "", ".ipynb", POST_TEMPLATE),
-            ("posts", "", ".markdown", SLIDE_TEMPLATE),
+            ("pages", "", ".md", POST_TEMPLATE, []),
+            ("pages", "", ".ipynb", POST_TEMPLATE, [".ipynb_checkpoints/**"]),
+            ("posts", "", ".markdown", SLIDE_TEMPLATE, []),
         )
 
     # this will be compressed

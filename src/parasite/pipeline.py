@@ -67,6 +67,7 @@ def get_pages(
             str,  # out-dir
             str,  # ext
             Optional[Path],  # template
+            list[str],  # excludes
         ],
         ...,
     ],
@@ -74,7 +75,7 @@ def get_pages(
     timezone: str = r"America/Los_Angeles",
 ) -> list:
     pageses = []
-    for path, out_path, ext, template in PAGES:
+    for path, out_path, ext, template, excludes in PAGES:
         pretty_urls = config.pretty_urls[ext]
         options = {
             "show_previewimage_in_post": config.show_previewimage_in_post,
@@ -100,6 +101,7 @@ def get_pages(
                 out_path,
                 ext,
                 template,
+                excludes=excludes,
                 pretty_urls=pretty_urls,
                 date_format=config.date_format,
                 default_lang=config.default_lang,
