@@ -24,13 +24,13 @@ def _nav(
     res = [f'<ul class="{ul_class}">']
     for datum in data:
         type_ = type(datum[0])
-        if type_ == str:
+        if type_ is str:
             url, title = datum
             res.append(
                 f'<li class="{li_class}"><a href="{url}"'
                 f' class="{a_class}">{title}</a></li>'
             )
-        elif type_ == tuple:
+        elif type_ is tuple:
             inner_data, title = datum
             res.append(
                 f'<li class="{dropdown_li_class}"><a href="#"'

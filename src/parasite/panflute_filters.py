@@ -26,7 +26,7 @@ def meta_append(meta: MetaMap, key: str, value: str):
     raw_block = MetaBlocks(RawBlock(value))
     if key in meta:
         temp = meta[key]
-        if type(temp) == MetaList:
+        if isinstance(temp, MetaList):
             temp.append(raw_block)
         else:
             meta[key] = MetaList(temp, raw_block)
@@ -43,7 +43,7 @@ def extract_image(
 
     This filter does nothing to the elem/doc.
     """
-    if type(elem) == Image:
+    if isinstance(elem, Image):
         outputs.append(elem)
 
 
@@ -58,7 +58,7 @@ thumbnail: true,
 $("#{identifier}").justifiedGallery();""",
 ) -> Optional[ListContainer[Block]]:
     """Transform contents of Div with class lightgallery to that lightgallery needs."""
-    if type(elem) == Div and cls in elem.classes:
+    if isinstance(elem, Div) and cls in elem.classes:
         images: List[Image] = []
         elem.walk(partial(extract_image, outputs=images))
         res = [Link(image, url=image.url) for image in images]
@@ -102,7 +102,7 @@ thumbnail: true,
 $("#{identifier}").justifiedGallery();""",
 ) -> Optional[ListContainer[Block]]:
     """Create lightgallery Div from directory."""
-    if type(elem) == Div and attribute in elem.attributes:
+    if isinstance(elem, Div) and attribute in elem.attributes:
         root = doc.get_metadata("root", "/")
         res = [
             Link(Image(url=(url := str(root / Url(path)))), url=url)

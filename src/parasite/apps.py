@@ -46,7 +46,7 @@ def read_md_to_ast(
 def get_teaser(content: pf.containers.ListContainer) -> pf.containers.ListContainer:
     found = False
     for i, item in enumerate(content):
-        if (type(item) == pf.RawBlock) and (item.text == "<!-- more -->"):
+        if isinstance(item, pf.RawBlock) and (item.text == "<!-- more -->"):
             found = True
             break
     if found:
