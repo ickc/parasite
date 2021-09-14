@@ -153,15 +153,48 @@
 
 
 <div class="viewcode-block" id="get_teaser"><a class="viewcode-back" href="../../../api/parasite.apps/#parasite.apps.get_teaser">[docs]</a><span class="k">def</span> <span class="nf">get_teaser</span><span class="p">(</span><span class="n">content</span><span class="p">:</span> <span class="n">pf</span><span class="o">.</span><span class="n">containers</span><span class="o">.</span><span class="n">ListContainer</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pf</span><span class="o">.</span><span class="n">containers</span><span class="o">.</span><span class="n">ListContainer</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Get the teaser from a panflute AST container.</span>
+
+<span class="sd">    A teaser is defined as the document before ``&lt;!-- more --&gt;``,</span>
+<span class="sd">    where it can either be at top level,</span>
+<span class="sd">    or inside a div (e.g. from ipynb source.)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># assume top level first</span>
     <span class="n">found</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">content</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">pf</span><span class="o">.</span><span class="n">RawBlock</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;&lt;!-- more --&gt;&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">pf</span><span class="o">.</span><span class="n">RawBlock</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="n">item</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s2">&quot;html&quot;</span>
+            <span class="ow">and</span> <span class="n">item</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;&lt;!-- more --&gt;&quot;</span>
+        <span class="p">):</span>
             <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="k">break</span>
     <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">content</span><span class="p">[:</span><span class="n">i</span><span class="p">]</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">content</span></div>
+
+    <span class="c1"># assume inside a top level Div</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">elem</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">content</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="n">pf</span><span class="o">.</span><span class="n">Div</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">elem</span><span class="o">.</span><span class="n">content</span><span class="p">):</span>
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">pf</span><span class="o">.</span><span class="n">RawBlock</span><span class="p">)</span>
+                    <span class="ow">and</span> <span class="n">item</span><span class="o">.</span><span class="n">format</span> <span class="o">==</span> <span class="s2">&quot;html&quot;</span>
+                    <span class="ow">and</span> <span class="n">item</span><span class="o">.</span><span class="n">text</span> <span class="o">==</span> <span class="s2">&quot;&lt;!-- more --&gt;&quot;</span>
+                <span class="p">):</span>
+                    <span class="n">found</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">break</span>
+        <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
+            <span class="k">break</span>
+    <span class="k">if</span> <span class="n">found</span><span class="p">:</span>
+        <span class="n">div</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">div_new</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">Div</span><span class="p">(</span>
+            <span class="o">*</span><span class="n">div</span><span class="o">.</span><span class="n">content</span><span class="p">[:</span><span class="n">j</span><span class="p">],</span> <span class="n">classes</span><span class="o">=</span><span class="n">div</span><span class="o">.</span><span class="n">classes</span><span class="p">,</span> <span class="n">attributes</span><span class="o">=</span><span class="n">div</span><span class="o">.</span><span class="n">attributes</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">pf</span><span class="o">.</span><span class="n">ListContainer</span><span class="p">(</span>
+            <span class="o">*</span><span class="n">content</span><span class="p">[:</span><span class="n">i</span><span class="p">],</span> <span class="n">div_new</span><span class="p">,</span> <span class="n">oktypes</span><span class="o">=</span><span class="n">content</span><span class="o">.</span><span class="n">oktypes</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="n">content</span><span class="o">.</span><span class="n">parent</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">content</span></div>
 
 
 <div class="viewcode-block" id="read_md_to_ast_with_teaser"><a class="viewcode-back" href="../../../api/parasite.apps/#parasite.apps.read_md_to_ast_with_teaser">[docs]</a><span class="k">def</span> <span class="nf">read_md_to_ast_with_teaser</span><span class="p">(</span>

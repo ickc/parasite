@@ -126,7 +126,11 @@
 <dl class="py function">
 <dt id="parasite.apps.get_teaser">
 <code class="sig-prename descclassname"><span class="pre">parasite.apps.</span></code><code class="sig-name descname"><span class="pre">get_teaser</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">content</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">panflute.containers.ListContainer</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">panflute.containers.ListContainer</span><a class="reference internal" href="../../_modules/parasite/apps/#get_teaser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#parasite.apps.get_teaser" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Get the teaser from a panflute AST container.</p>
+<p>A teaser is defined as the document before <code class="docutils literal notranslate"><span class="pre">&lt;!--</span> <span class="pre">more</span> <span class="pre">--&gt;</span></code>,
+where it can either be at top level,
+or inside a div (e.g. from ipynb source.)</p>
+</dd></dl>
 
 <dl class="py function">
 <dt id="parasite.apps.post_to_html">
