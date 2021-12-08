@@ -96,10 +96,7 @@ def code(path: Path):
     ]
     logger.info("Running %s", " ".join(cmd))
     subprocess.run(
-        [
-            "code",
-            str(path),
-        ],
+        cmd,
         check=True,
     )
 
