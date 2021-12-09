@@ -23,7 +23,7 @@ def posts_to_index_ast(
     index_include_jumbotron: bool = True,
     lang: str = "en",
 ) -> pf.elements.Doc:
-    def post_to_dict(post: Post) -> dict:
+    def post_to_dict(post: Post) -> dict[str, Any]:
         res = {
             "url": str(post.url),
             "teaser": pf.MetaBlocks(*post.teaser),
@@ -126,7 +126,7 @@ def posts_to_tag_ast(
                         pf.Plain(
                             pf.Link(
                                 pf.Str(f"{post.date} — {post.title}"),
-                                url=f"{root / post.url}",
+                                url=str(root / post.url),
                             )
                         )
                     )
@@ -173,7 +173,7 @@ def posts_to_archive_ast(
                         pf.Plain(
                             pf.Link(
                                 pf.Str(f"{date} — {title}"),
-                                url=f"{root / url}",
+                                url=str(root / url),
                             )
                         )
                     )

@@ -17,7 +17,7 @@ from urlpath import URL as Url
 from .apps import get_teaser
 
 if TYPE_CHECKING:
-    from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union
+    from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
     import pandas as pd
 
@@ -34,9 +34,9 @@ class Page:
     pretty_urls: Union[bool, Callable[[Path, str], Path]] = True
     date_format: str = r"%Y-%m-%d"
     default_lang: str = "en"
-    options: dict = field(default_factory=dict)
+    options: dict[str, Any] = field(default_factory=dict)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         # special casing 404
         if self.pretty_urls is True and str(self.out_path) == "404/index.html":
             logger.debug(f"Forcing non-pretty URL for {self.path}.")
@@ -44,7 +44,7 @@ class Page:
             del self.out_path
 
     @property
-    def _dict(self) -> dict:
+    def _dict(self) -> dict[str, Any]:
         """A dict representation of self including all attributes and properties
 
         Primarily for dataframe
@@ -65,7 +65,7 @@ class Page:
         }
 
     @property
-    def dict_ast(self) -> dict:
+    def dict_ast(self) -> dict[str, Any]:
         """A dict representation of self including the AST derived attributes
 
         Primarily for dataframe
@@ -101,10 +101,14 @@ class Page:
     @cached_property
     def url(self) -> Url:
         out_path = self.out_path
-        if self.pretty_urls is True:
-            return Url(str(out_path.parent) + "/")
-        else:
-            return Url(str(out_path))
+        # pass to Url to normalize
+        # to str to force adding a trailing /
+        # back to Url again
+        return (
+            Url(str(Url(out_path.parent)) + "/")
+            if self.pretty_urls is True
+            else Url(out_path)
+        )
 
     @cached_property
     def categories(self) -> str:
@@ -116,11 +120,10 @@ class Page:
 
     @cached_property
     def root(self) -> str:
-        level = self.level
-        if level == 0:
-            return "."
-        else:
-            return "/".join([".."] * level)
+        """Relative path to root directory.
+
+        Note: this cannot return `Url`. As `Url(".")` would be normalized to `Url("")`."""
+        return "." if (level := self.level) == 0 else "/".join([".."] * level)
 
     @cached_property
     def mtime(self) -> datetime:
@@ -166,11 +169,11 @@ class Page:
             )
 
     @ast.setter
-    def ast(self, doc: pf.elements.Doc):
+    def ast(self, doc: pf.elements.Doc) -> None:
         self._ast = doc
 
     @ast.deleter
-    def ast(self):
+    def ast(self) -> None:
         del self._ast
 
     @cached_property
@@ -215,9 +218,7 @@ class Page:
     @property
     def previewimage(self) -> Optional[Url]:
         res = self.ast.get_metadata("previewimage")
-        if res is not None:
-            return Url(res)
-        return None
+        return None if res is None else Url(res)
 
     @property
     def status(self) -> str:
@@ -228,18 +229,18 @@ class Page:
         return self.status == "draft"
 
     @property
-    def prev(self):
+    def prev(self) -> Optional[Tuple[Url, Optional[str]]]:
         return None
 
     @property
-    def next(self):
+    def next(self) -> Optional[Tuple[Url, Optional[str]]]:
         return None
 
 
 @dataclass
 class Post(Page):
     @property
-    def dict_ast(self) -> dict:
+    def dict_ast(self) -> dict[str, Any]:
         dict_ast = super().dict_ast
         dict_ast["time"] = self.time
         dict_ast["teaser"] = self.teaser
@@ -247,7 +248,7 @@ class Post(Page):
 
     # AST's derivatives
 
-    def get_teaser(self):
+    def get_teaser(self) -> None:
         self._ast = get_teaser(self.ast)
 
     @property
@@ -257,11 +258,11 @@ class Post(Page):
         return self._teaser
 
     @teaser.setter
-    def teaser(self, doc: pf.containers.ListContainer):
+    def teaser(self, doc: pf.containers.ListContainer) -> None:
         self._teaser = doc
 
     @teaser.deleter
-    def teaser(self):
+    def teaser(self) -> None:
         del self._teaser
 
     @property
@@ -282,11 +283,11 @@ class Post(Page):
         return getattr(self, "_prev", None)
 
     @prev.setter
-    def prev(self, data: Tuple[Url, Optional[str]]):
+    def prev(self, data: Tuple[Url, Optional[str]]) -> None:
         self._prev = data
 
     @prev.deleter
-    def prev(self):
+    def prev(self) -> None:
         del self._prev
 
     @property
@@ -294,11 +295,11 @@ class Post(Page):
         return getattr(self, "_next", None)
 
     @next.setter
-    def next(self, data: Tuple[Url, Optional[str]]):
+    def next(self, data: Tuple[Url, Optional[str]]) -> None:
         self._next = data
 
     @next.deleter
-    def next(self):
+    def next(self) -> None:
         del self._next
 
 
@@ -319,8 +320,8 @@ class Pages:
         pretty_urls: Union[bool, Callable[[Path, str], Path]] = True,
         date_format: str = r"%Y-%m-%d",
         default_lang: str = "en",
-        options: dict = {},
-    ):
+        options: dict[str, Any] = {},
+    ) -> Pages:
         path = Path(path)
         out_path = Path(out_path)
         return cls(
@@ -342,11 +343,11 @@ class Pages:
         )
 
     @property
-    def _dict(self) -> List[dict]:
+    def _dict(self) -> List[dict[str, Any]]:
         return [page._dict for page in self.pages]
 
     @property
-    def dict_ast(self) -> List[dict]:
+    def dict_ast(self) -> List[dict[str, Any]]:
         return [page.dict_ast for page in self.pages]
 
     @cached_property
@@ -369,7 +370,7 @@ class Posts(Pages):
 
     # AST's derivatives
 
-    def sort(self):
+    def sort(self) -> None:
         self.pages = sorted(self.pages, key=lambda page: page.time, reverse=True)
 
     @cached_property
@@ -387,7 +388,7 @@ class Posts(Pages):
             res[page.categories].append(page)
         return res
 
-    def get_neighbor_urls(self):
+    def get_neighbor_urls(self) -> None:
         pages = self.pages
 
         next_page = pages[0]
