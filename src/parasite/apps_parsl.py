@@ -12,9 +12,8 @@ from typing import TYPE_CHECKING
 from parsl import bash_app, python_app
 
 if TYPE_CHECKING:
-    from typing import Callable, Dict, List, Optional, Tuple, Union
+    from typing import Callable, Dict, List, Optional, Tuple
 
-    from panflute import Doc, Element
     from parsl.data_provider.files import File
     from urlpath import URL as Url
 
