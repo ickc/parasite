@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from functools import partial
+from functools import cached_property, partial
 from importlib import import_module, reload
 from itertools import chain
 from pathlib import Path
@@ -27,6 +27,7 @@ from .util import TimeElapse
 
 if TYPE_CHECKING:
     from threading import Thread
+    from types import ModuleType
     from typing import Sequence
 
     from .data import Page
@@ -82,6 +83,10 @@ def code(path: Path) -> None:
     )
 
 
+def path_to_page(pages: list[Page]) -> dict[str, Page]:
+    return {str(page.path.absolute()): page for page in pages}
+
+
 @dataclass
 class Config(StaticConfig):
     """Configure live serving parameters.
@@ -105,6 +110,13 @@ class Config(StaticConfig):
     serve_host: str = "localhost"
     serve_port: int = 5500
     serve_open: Optional[Url] = None
+
+    @cached_property
+    def modules_to_be_watched(self) -> dict[str, ModuleType]:
+        return {
+            (module := import_module(name)).__file__: module
+            for name in self.watch_module
+        }
 
     def serving(self) -> Thread:
         return serving(
@@ -149,28 +161,39 @@ class Config(StaticConfig):
             def __init__(
                 self,
                 config: Config,
-                pages: List[Page],
+                pages: dict[str, Page],
+                modules: dict[str, ModuleType],
             ):
                 self.config = config
                 self.pages = pages
-                self.modules = [import_module(m) for m in config.watch_module]
+                self.modules = modules
 
             def on_modified(self, event: FileSystemEvent) -> None:
+                modules = self.modules
+                pages = self.pages
                 path = event.src_path
                 logger.info("%s %s. Updating...", path, event.event_type)
-                for module in self.modules:
+                if path in pages:
+                    page = pages[path]
+                    self.config.make_page(page)
+                elif path in modules:
+                    module = modules[path]
                     logger.info("Reloading module %s", module)
                     reload(module)
-                for page in self.pages:
-                    if str(page.path.absolute()) == path:
-                        self.config.make_page(page)
+                else:
+                    logger.warning("Don't know how to update %s", path)
 
-        event_handler = PageEventHandler(self, pages)
+        event_handler = PageEventHandler(
+            self, path_to_page(pages), self.modules_to_be_watched
+        )
         observer = Observer()
         for page in pages:
             path = page.path
             observer.schedule(event_handler, path, recursive=True)
-            logger.info("Watching %s", path)
+            logger.info("Watching page %s", path)
+        for module_path in self.modules_to_be_watched:
+            observer.schedule(event_handler, module_path, recursive=True)
+            logger.info("Watching module %s", module_path)
         logger.info("Observing using watchdog without serving...")
         try:
             observer.start()
