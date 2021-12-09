@@ -17,9 +17,23 @@ from urlpath import URL as Url
 from .apps import get_teaser
 
 if TYPE_CHECKING:
-    from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
+    from typing import (
+        Any,
+        Callable,
+        Dict,
+        List,
+        Optional,
+        Sequence,
+        Tuple,
+        TypeVar,
+        Union,
+    )
 
     import pandas as pd
+
+    from .config import Config
+
+    PagesLike = TypeVar("PagesLike", bound="Pages")
 
 logger = getLogger(__name__)
 
@@ -310,7 +324,7 @@ class Pages:
 
     @classmethod
     def from_file_system(
-        cls,
+        cls: type[PagesLike],
         path: Path,
         out_path: Path,
         ext: str,
@@ -321,7 +335,7 @@ class Pages:
         date_format: str = r"%Y-%m-%d",
         default_lang: str = "en",
         options: dict[str, Any] = {},
-    ) -> Pages:
+    ) -> PagesLike:
         path = Path(path)
         out_path = Path(out_path)
         return cls(
@@ -341,6 +355,47 @@ class Pages:
                 if not any(path_.match(exclude) for exclude in excludes)
             ]
         )
+
+    @classmethod
+    def from_config(
+        cls: type[PagesLike],
+        config: Config,
+    ) -> PagesLike:
+        pageses: list[Page] = []
+        for path, out_path, ext, template, excludes in (
+            config.pages if cls is Pages else config.posts
+        ):
+            options = {
+                "show_previewimage_in_post": config.show_previewimage_in_post,
+                "header_includes": config.header_includes,
+                "include_before": config.include_before,
+                "include_after": config.include_after,
+                "script_include_after": config.script_include_after,
+                "mathjax_config": config.mathjax_config,
+                "search_form": config.search_form,
+                "content_footer": config.content_footer,
+                "blog_title": config.blog_title,
+                "nav": config.nav_includes,
+                "pandoc_options": config.pandoc_output_options,
+                "css": config.css,
+                "js": config.js,
+                "logo_url": Url(config.logo_url) if config.logo_url else None,
+                "panflute_filters": config.panflute_output_filters,
+                "html_filters": config.html_filters,
+            }
+            pageses += cls.from_file_system(
+                Path(path),
+                Path(out_path),
+                ext,
+                template,
+                excludes=excludes,
+                timezone=config.timezone,
+                pretty_urls=config.pretty_urls[ext],
+                date_format=config.date_format,
+                default_lang=config.default_lang,
+                options=options,
+            ).pages
+        return cls(pageses)
 
     @property
     def _dict(self) -> List[dict[str, Any]]:

@@ -61,59 +61,6 @@ setup_logging()
 logger = getLogger(__name__)
 
 
-def get_pages(
-    page_class: type[PagesOrPosts],
-    PAGES: Tuple[
-        Tuple[
-            str,  # in-dir
-            str,  # out-dir
-            str,  # ext
-            Optional[Path],  # template
-            list[str],  # excludes
-        ],
-        ...,
-    ],
-    config: Config,
-    timezone: str = r"America/Los_Angeles",
-) -> list[PagesOrPosts]:
-    pageses = []
-    for path, out_path, ext, template, excludes in PAGES:
-        pretty_urls = config.pretty_urls[ext]
-        options = {
-            "show_previewimage_in_post": config.show_previewimage_in_post,
-            "header_includes": config.header_includes,
-            "include_before": config.include_before,
-            "include_after": config.include_after,
-            "script_include_after": config.script_include_after,
-            "mathjax_config": config.mathjax_config,
-            "search_form": config.search_form,
-            "content_footer": config.content_footer,
-            "blog_title": config.blog_title,
-            "nav": config.nav_includes,
-            "pandoc_options": config.pandoc_output_options,
-            "css": config.css,
-            "js": config.js,
-            "logo_url": Url(config.logo_url) if config.logo_url else None,
-            "panflute_filters": config.panflute_output_filters,
-            "html_filters": config.html_filters,
-        }
-        pageses.append(
-            page_class.from_file_system(
-                Path(path),
-                Path(out_path),
-                ext,
-                template,
-                excludes=excludes,
-                pretty_urls=pretty_urls,
-                date_format=config.date_format,
-                default_lang=config.default_lang,
-                timezone=timezone,
-                options=options,
-            )
-        )
-    return pageses  # type: ignore[return-value] # type limitation. It means list[page_class] here
-
-
 def main(config: Config) -> None:
     """Parasite static site generator."""
     time_elapse = TimeElapse(logger)
@@ -135,34 +82,8 @@ def main(config: Config) -> None:
         ]
     time_elapse.report("staging for minifies and rsync.")
 
-    pages = Pages(
-        sum(
-            (
-                pages_.pages
-                for pages_ in get_pages(
-                    Pages,
-                    config.pages,
-                    config,
-                    timezone=config.timezone,
-                )
-            ),
-            [],
-        )
-    )
-    posts = Posts(
-        sum(
-            (
-                pages_.pages
-                for pages_ in get_pages(
-                    Posts,
-                    config.posts,
-                    config,
-                    timezone=config.timezone,
-                )
-            ),
-            [],
-        )
-    )
+    pages = Pages.from_config(config)
+    posts = Posts.from_config(config)
     time_elapse.report("glob pages/posts from file system.")
 
     pages_ast_futures = [
