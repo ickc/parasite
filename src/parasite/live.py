@@ -25,6 +25,7 @@ from .config import Config as StaticConfig
 from .util import TimeElapse
 
 if TYPE_CHECKING:
+    from threading import Thread
     from typing import Sequence
 
     from .data import Page
@@ -32,12 +33,12 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def serve(
+def serving(
     host: str,
     port: int,
     directory: Path,
     url: Optional[Url] = None,
-) -> None:
+) -> Thread:
     from http.server import HTTPServer, SimpleHTTPRequestHandler
     from threading import Thread
 
@@ -45,11 +46,13 @@ def serve(
         (host, port),
         partial(SimpleHTTPRequestHandler, directory=directory),
     )
-    Thread(target=httpd.serve_forever).start()
-    logger.info("Serving at port %s.", port)
+    thread = Thread(target=httpd.serve_forever)
+    thread.start()
+    logger.info("Serving simple server at port %s.", port)
     # always open with serve
     if url is not None:
         open_browser(host, port, url)
+    return thread
 
 
 def open_browser(
@@ -99,6 +102,14 @@ class Config(StaticConfig):
     serve_host: str = "localhost"
     serve_port: int = 5500
     serve_open: Optional[Url] = None
+
+    def serving(self) -> Thread:
+        return serving(
+            self.serve_host,
+            self.serve_port,
+            self.output_dir,
+            url=self.serve_open,
+        )
 
     def make_page(self, page: Page) -> None:
         time_elapse = TimeElapse(logger)
@@ -153,6 +164,7 @@ class Config(StaticConfig):
             path = page.path
             observer.schedule(event_handler, path, recursive=True)
             logger.info("Watching %s", path)
+        logger.info("Observing using watchdog without serving...")
         try:
             observer.start()
         except KeyboardInterrupt:
@@ -176,13 +188,14 @@ class Config(StaticConfig):
             host = self.serve_host
             for page in pages:
                 open_browser(host, port, page.url)
+        logger.info("Observing and serving using livereload...")
         server.serve(root=str(self.output_dir), port=port)
 
     def watch_pages(
         self,
         all_pages: Sequence[Page],
     ) -> None:
-        """Watch and re-render single page."""
+        """Watch and re-render pages."""
         globs = self.watch
         time_elapse = TimeElapse(logger)
 
@@ -219,12 +232,7 @@ class Config(StaticConfig):
         """Go live."""
         # only serve ourselves if not watching
         if self.serve and not self.watch:
-            serve(
-                self.serve_host,
-                self.serve_port,
-                self.output_dir,
-                url=self.serve_open,
-            )
+            self.serving()
         # let watch_pages handle serve cases
         if self.watch:
             self.watch_pages(all_pages)
