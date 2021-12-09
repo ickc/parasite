@@ -25,8 +25,8 @@ from .apps_parsl import (
 )
 from .data import Pages, Posts
 from .helpers import to_feed, to_sitemap, write_tipuesearch
-from .live import live
 from .live import Config as LiveConfig
+from .live import live
 from .to_ast import posts_to_archive_ast, posts_to_index_ast, posts_to_tag_ast
 from .util import TimeElapse, setup_logging
 
@@ -62,47 +62,47 @@ logger = getLogger(__name__)
 
 @dataclass
 class Config(LiveConfig):
-    def exec(config) -> None:
+    def exec(self) -> None:
         """Parasite static site generator."""
         time_elapse = TimeElapse(logger)
 
-        if config.compress_js:
+        if self.compress_js:
             minifies_js = [
                 app_minify(
                     inputs=[File(path) for path in paths], outputs=[File(out_path)]
                 )
-                for out_path, paths in config.compress_js.items()
+                for out_path, paths in self.compress_js.items()
             ]
-        if config.compress_css:
+        if self.compress_css:
             minifies = [
                 app_minify(
                     inputs=[File(path) for path in paths], outputs=[File(out_path)]
                 )
-                for out_path, paths in config.compress_css.items()
+                for out_path, paths in self.compress_css.items()
             ]
-        if config.files_folders:
+        if self.files_folders:
             rsyncs = [
-                app_rsync(in_dir, config.output_dir, out_sub_dir)
-                for in_dir, out_sub_dir in config.files_folders.items()
+                app_rsync(in_dir, self.output_dir, out_sub_dir)
+                for in_dir, out_sub_dir in self.files_folders.items()
             ]
         time_elapse.report("staging for minifies and rsync.")
 
-        pages = Pages.from_config(config)
-        posts = Posts.from_config(config)
+        pages = Pages.from_config(self)
+        posts = Posts.from_config(self)
         time_elapse.report("glob pages/posts from file system.")
 
         pages_ast_futures = [
             app_read_md_to_ast(
-                config.pandoc_input_options,
-                config.panflute_input_filters,
+                self.pandoc_input_options,
+                self.panflute_input_filters,
                 inputs=[File(str((page.path)))],
             )
             for page in pages.pages
         ]
         posts_ast_futures = [
             app_read_md_to_ast_with_teaser(
-                config.pandoc_input_options,
-                config.panflute_input_filters,
+                self.pandoc_input_options,
+                self.panflute_input_filters,
                 inputs=[File(str((page.path)))],
             )
             for page in posts.pages
@@ -114,7 +114,7 @@ class Config(LiveConfig):
             page.ast, page.teaser = future.result()
         time_elapse.report("got all ASTs.")
 
-        if not config.include_draft:
+        if not self.include_draft:
             pages = Pages([page for page in pages.pages if not page.is_draft])
             posts = Posts([page for page in posts.pages if not page.is_draft])
             time_elapse.report("filter out drafts.")
@@ -134,7 +134,7 @@ class Config(LiveConfig):
                 page.lang,
                 page.ext,
                 inputs=[] if page.template is None else [File(str((page.template)))],
-                outputs=[File(str((config.output_dir / page.out_path)))],
+                outputs=[File(str((self.output_dir / page.out_path)))],
                 **page.options,
             )
             for page in all_pages
@@ -151,10 +151,10 @@ class Config(LiveConfig):
                 index_ast = posts_to_index_ast(
                     cat_posts,
                     name,
-                    n_jumbotron=config.n_jumbotron,
-                    n_grid=config.n_grid,
-                    index_include_jumbotron=config.index_include_jumbotron,
-                    lang=config.default_lang,
+                    n_jumbotron=self.n_jumbotron,
+                    n_grid=self.n_grid,
+                    index_include_jumbotron=self.index_include_jumbotron,
+                    lang=self.default_lang,
                 )
                 output_futures.append(
                     app_post_to_html(
@@ -162,15 +162,15 @@ class Config(LiveConfig):
                         "../..",
                         None,
                         None,
-                        config.default_lang,
+                        self.default_lang,
                         ".md",
                         inputs=[]
-                        if config.index_template is None
-                        else [File(str((config.index_template)))],
+                        if self.index_template is None
+                        else [File(str((self.index_template)))],
                         outputs=[
                             File(
                                 str(
-                                    config.output_dir
+                                    self.output_dir
                                     / "categories"
                                     / (name if case == "tags" else f"cat_{name}")
                                     / "index.html"
@@ -187,10 +187,10 @@ class Config(LiveConfig):
         tag_ast = posts_to_tag_ast(
             posts.categories,
             posts.tags,
-            font_size_min=config.tag_cloud_font_size_min,
-            font_size_max=config.tag_cloud_font_size_max,
+            font_size_min=self.tag_cloud_font_size_min,
+            font_size_max=self.tag_cloud_font_size_max,
             root="..",
-            lang=config.default_lang,
+            lang=self.default_lang,
         )
         output_futures.append(
             app_post_to_html(
@@ -198,10 +198,10 @@ class Config(LiveConfig):
                 "..",
                 None,
                 None,
-                config.default_lang,
+                self.default_lang,
                 ".md",
                 inputs=inputs,
-                outputs=[File(str((config.output_dir / "categories" / "index.html")))],
+                outputs=[File(str((self.output_dir / "categories" / "index.html")))],
                 **options,
             )
         )
@@ -210,7 +210,7 @@ class Config(LiveConfig):
         archive_ast = posts_to_archive_ast(
             posts.pages,
             root="..",
-            lang=config.default_lang,
+            lang=self.default_lang,
         )
         output_futures.append(
             app_post_to_html(
@@ -218,10 +218,10 @@ class Config(LiveConfig):
                 "..",
                 None,
                 None,
-                config.default_lang,
+                self.default_lang,
                 ".md",
                 inputs=inputs,
-                outputs=[File(str((config.output_dir / "archive" / "index.html")))],
+                outputs=[File(str((self.output_dir / "archive" / "index.html")))],
                 **options,
             )
         )
@@ -229,11 +229,11 @@ class Config(LiveConfig):
         # index
         index_ast = posts_to_index_ast(
             posts.pages,
-            config.blog_title[config.default_lang],
-            n_jumbotron=config.n_jumbotron,
-            n_grid=config.n_grid,
-            index_include_jumbotron=config.index_include_jumbotron,
-            lang=config.default_lang,
+            self.blog_title[self.default_lang],
+            n_jumbotron=self.n_jumbotron,
+            n_grid=self.n_grid,
+            index_include_jumbotron=self.index_include_jumbotron,
+            lang=self.default_lang,
         )
         output_futures.append(
             app_post_to_html(
@@ -241,65 +241,65 @@ class Config(LiveConfig):
                 ".",
                 None,
                 None,
-                config.default_lang,
+                self.default_lang,
                 ".md",
                 inputs=[]
-                if config.index_template is None
-                else [File(str((config.index_template)))],
-                outputs=[File(str((config.output_dir / "index.html")))],
+                if self.index_template is None
+                else [File(str((self.index_template)))],
+                outputs=[File(str((self.output_dir / "index.html")))],
                 **options,
             )
         )
         time_elapse.report("staging index.")
-        if config.write_tipuesearch_json:
+        if self.write_tipuesearch_json:
             # search: we're not using parsl here, as
             # it needs to be re-generated even if only one page is changed,
             # and the time taken is very small for now.
             # as site gets bigger, may need to cache the Page.text e.g. in app_read_md_to_ast*?
             write_tipuesearch(
-                config.output_dir / "assets/js/tipuesearch_content.js",
+                self.output_dir / "assets/js/tipuesearch_content.js",
                 all_pages,
-                root=config.root_relative_to_search_form,
+                root=self.root_relative_to_search_form,
             )
             time_elapse.report("wrote tipuesearch.")
 
-        if config.write_atom or config.write_rss:
+        if self.write_atom or self.write_rss:
             to_feed(
                 posts.pages,
-                config.blog_title[config.default_lang],
-                config.blog_description[config.default_lang],
-                config.blog_author[config.default_lang],
-                config.blog_email,
-                config.site_url,
-                config.logo_url,
-                config.default_lang,
-                config.copyright,
-                config.timezone,
-                output_dir=config.output_dir,
-                write_atom=config.write_atom,
-                write_rss=config.write_rss,
+                self.blog_title[self.default_lang],
+                self.blog_description[self.default_lang],
+                self.blog_author[self.default_lang],
+                self.blog_email,
+                self.site_url,
+                self.logo_url,
+                self.default_lang,
+                self.copyright,
+                self.timezone,
+                output_dir=self.output_dir,
+                write_atom=self.write_atom,
+                write_rss=self.write_rss,
             )
             time_elapse.report("wrote rss and/or atom feed.")
-        if config.write_sitemap:
+        if self.write_sitemap:
             to_sitemap(
-                config.site_url,
+                self.site_url,
                 all_pages,
-                output_dir=config.output_dir,
+                output_dir=self.output_dir,
             )
 
         for future in output_futures:
             future.result()
-        if config.files_folders:
+        if self.files_folders:
             for rsync in rsyncs:
                 rsync.result()
-        if config.compress_css:
+        if self.compress_css:
             for minify in minifies:
                 minify.result()
-        if config.compress_js:
+        if self.compress_js:
             for minify in minifies_js:
                 minify.result()
         time_elapse.report("collecting all futures.")
-        live(all_pages, config)
+        live(all_pages, self)
 
 
 def cli(Config: type[Config] = Config) -> None:
