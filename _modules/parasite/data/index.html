@@ -126,9 +126,23 @@
 <span class="kn">from</span> <span class="nn">.apps</span> <span class="kn">import</span> <span class="n">get_teaser</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+    <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+        <span class="n">Any</span><span class="p">,</span>
+        <span class="n">Callable</span><span class="p">,</span>
+        <span class="n">Dict</span><span class="p">,</span>
+        <span class="n">List</span><span class="p">,</span>
+        <span class="n">Optional</span><span class="p">,</span>
+        <span class="n">Sequence</span><span class="p">,</span>
+        <span class="n">Tuple</span><span class="p">,</span>
+        <span class="n">TypeVar</span><span class="p">,</span>
+        <span class="n">Union</span><span class="p">,</span>
+    <span class="p">)</span>
 
     <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+    <span class="kn">from</span> <span class="nn">.config</span> <span class="kn">import</span> <span class="n">Config</span>
+
+    <span class="n">PagesLike</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;PagesLike&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="s2">&quot;Pages&quot;</span><span class="p">)</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -419,7 +433,7 @@
 
 <div class="viewcode-block" id="Pages.from_file_system"><a class="viewcode-back" href="../../../api/parasite.data/#parasite.data.Pages.from_file_system">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">from_file_system</span><span class="p">(</span>
-        <span class="bp">cls</span><span class="p">,</span>
+        <span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">PagesLike</span><span class="p">],</span>
         <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
         <span class="n">out_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
         <span class="n">ext</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -430,7 +444,7 @@
         <span class="n">date_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span>
         <span class="n">default_lang</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;en&quot;</span><span class="p">,</span>
         <span class="n">options</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{},</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Pages</span><span class="p">:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PagesLike</span><span class="p">:</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="n">out_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">out_path</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
@@ -450,6 +464,47 @@
                 <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">path_</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">exclude</span><span class="p">)</span> <span class="k">for</span> <span class="n">exclude</span> <span class="ow">in</span> <span class="n">excludes</span><span class="p">)</span>
             <span class="p">]</span>
         <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Pages.from_config"><a class="viewcode-back" href="../../../api/parasite.data/#parasite.data.Pages.from_config">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_config</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">PagesLike</span><span class="p">],</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">Config</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PagesLike</span><span class="p">:</span>
+        <span class="n">pageses</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Page</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">path</span><span class="p">,</span> <span class="n">out_path</span><span class="p">,</span> <span class="n">ext</span><span class="p">,</span> <span class="n">template</span><span class="p">,</span> <span class="n">excludes</span> <span class="ow">in</span> <span class="p">(</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">pages</span> <span class="k">if</span> <span class="bp">cls</span> <span class="ow">is</span> <span class="n">Pages</span> <span class="k">else</span> <span class="n">config</span><span class="o">.</span><span class="n">posts</span>
+        <span class="p">):</span>
+            <span class="n">options</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;show_previewimage_in_post&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">show_previewimage_in_post</span><span class="p">,</span>
+                <span class="s2">&quot;header_includes&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">header_includes</span><span class="p">,</span>
+                <span class="s2">&quot;include_before&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">include_before</span><span class="p">,</span>
+                <span class="s2">&quot;include_after&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">include_after</span><span class="p">,</span>
+                <span class="s2">&quot;script_include_after&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">script_include_after</span><span class="p">,</span>
+                <span class="s2">&quot;mathjax_config&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">mathjax_config</span><span class="p">,</span>
+                <span class="s2">&quot;search_form&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">search_form</span><span class="p">,</span>
+                <span class="s2">&quot;content_footer&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">content_footer</span><span class="p">,</span>
+                <span class="s2">&quot;blog_title&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">blog_title</span><span class="p">,</span>
+                <span class="s2">&quot;nav&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">nav_includes</span><span class="p">,</span>
+                <span class="s2">&quot;pandoc_options&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">pandoc_output_options</span><span class="p">,</span>
+                <span class="s2">&quot;css&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">css</span><span class="p">,</span>
+                <span class="s2">&quot;js&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">js</span><span class="p">,</span>
+                <span class="s2">&quot;logo_url&quot;</span><span class="p">:</span> <span class="n">Url</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">logo_url</span><span class="p">)</span> <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">logo_url</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="s2">&quot;panflute_filters&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">panflute_output_filters</span><span class="p">,</span>
+                <span class="s2">&quot;html_filters&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">html_filters</span><span class="p">,</span>
+            <span class="p">}</span>
+            <span class="n">pageses</span> <span class="o">+=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_file_system</span><span class="p">(</span>
+                <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">),</span>
+                <span class="n">Path</span><span class="p">(</span><span class="n">out_path</span><span class="p">),</span>
+                <span class="n">ext</span><span class="p">,</span>
+                <span class="n">template</span><span class="p">,</span>
+                <span class="n">excludes</span><span class="o">=</span><span class="n">excludes</span><span class="p">,</span>
+                <span class="n">timezone</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">timezone</span><span class="p">,</span>
+                <span class="n">pretty_urls</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">pretty_urls</span><span class="p">[</span><span class="n">ext</span><span class="p">],</span>
+                <span class="n">date_format</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">date_format</span><span class="p">,</span>
+                <span class="n">default_lang</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">default_lang</span><span class="p">,</span>
+                <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">pages</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">pageses</span><span class="p">)</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>

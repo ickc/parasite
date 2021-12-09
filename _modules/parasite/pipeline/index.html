@@ -170,59 +170,6 @@
 <span class="n">logger</span> <span class="o">=</span> <span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="get_pages"><a class="viewcode-back" href="../../../api/parasite.pipeline/#parasite.pipeline.get_pages">[docs]</a><span class="k">def</span> <span class="nf">get_pages</span><span class="p">(</span>
-    <span class="n">page_class</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">PagesOrPosts</span><span class="p">],</span>
-    <span class="n">PAGES</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span>
-        <span class="n">Tuple</span><span class="p">[</span>
-            <span class="nb">str</span><span class="p">,</span>  <span class="c1"># in-dir</span>
-            <span class="nb">str</span><span class="p">,</span>  <span class="c1"># out-dir</span>
-            <span class="nb">str</span><span class="p">,</span>  <span class="c1"># ext</span>
-            <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">],</span>  <span class="c1"># template</span>
-            <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>  <span class="c1"># excludes</span>
-        <span class="p">],</span>
-        <span class="o">...</span><span class="p">,</span>
-    <span class="p">],</span>
-    <span class="n">config</span><span class="p">:</span> <span class="n">Config</span><span class="p">,</span>
-    <span class="n">timezone</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;America/Los_Angeles&quot;</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">PagesOrPosts</span><span class="p">]:</span>
-    <span class="n">pageses</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">path</span><span class="p">,</span> <span class="n">out_path</span><span class="p">,</span> <span class="n">ext</span><span class="p">,</span> <span class="n">template</span><span class="p">,</span> <span class="n">excludes</span> <span class="ow">in</span> <span class="n">PAGES</span><span class="p">:</span>
-        <span class="n">pretty_urls</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">pretty_urls</span><span class="p">[</span><span class="n">ext</span><span class="p">]</span>
-        <span class="n">options</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;show_previewimage_in_post&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">show_previewimage_in_post</span><span class="p">,</span>
-            <span class="s2">&quot;header_includes&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">header_includes</span><span class="p">,</span>
-            <span class="s2">&quot;include_before&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">include_before</span><span class="p">,</span>
-            <span class="s2">&quot;include_after&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">include_after</span><span class="p">,</span>
-            <span class="s2">&quot;script_include_after&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">script_include_after</span><span class="p">,</span>
-            <span class="s2">&quot;mathjax_config&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">mathjax_config</span><span class="p">,</span>
-            <span class="s2">&quot;search_form&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">search_form</span><span class="p">,</span>
-            <span class="s2">&quot;content_footer&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">content_footer</span><span class="p">,</span>
-            <span class="s2">&quot;blog_title&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">blog_title</span><span class="p">,</span>
-            <span class="s2">&quot;nav&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">nav_includes</span><span class="p">,</span>
-            <span class="s2">&quot;pandoc_options&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">pandoc_output_options</span><span class="p">,</span>
-            <span class="s2">&quot;css&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">css</span><span class="p">,</span>
-            <span class="s2">&quot;js&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">js</span><span class="p">,</span>
-            <span class="s2">&quot;logo_url&quot;</span><span class="p">:</span> <span class="n">Url</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">logo_url</span><span class="p">)</span> <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">logo_url</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="s2">&quot;panflute_filters&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">panflute_output_filters</span><span class="p">,</span>
-            <span class="s2">&quot;html_filters&quot;</span><span class="p">:</span> <span class="n">config</span><span class="o">.</span><span class="n">html_filters</span><span class="p">,</span>
-        <span class="p">}</span>
-        <span class="n">pageses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-            <span class="n">page_class</span><span class="o">.</span><span class="n">from_file_system</span><span class="p">(</span>
-                <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">),</span>
-                <span class="n">Path</span><span class="p">(</span><span class="n">out_path</span><span class="p">),</span>
-                <span class="n">ext</span><span class="p">,</span>
-                <span class="n">template</span><span class="p">,</span>
-                <span class="n">excludes</span><span class="o">=</span><span class="n">excludes</span><span class="p">,</span>
-                <span class="n">pretty_urls</span><span class="o">=</span><span class="n">pretty_urls</span><span class="p">,</span>
-                <span class="n">date_format</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">date_format</span><span class="p">,</span>
-                <span class="n">default_lang</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">default_lang</span><span class="p">,</span>
-                <span class="n">timezone</span><span class="o">=</span><span class="n">timezone</span><span class="p">,</span>
-                <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
-            <span class="p">)</span>
-        <span class="p">)</span>
-    <span class="k">return</span> <span class="n">pageses</span>  <span class="c1"># type: ignore[return-value] # type limitation. It means list[page_class] here</span></div>
-
-
 <div class="viewcode-block" id="main"><a class="viewcode-back" href="../../../api/parasite.pipeline/#parasite.pipeline.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">Config</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Parasite static site generator.&quot;&quot;&quot;</span>
     <span class="n">time_elapse</span> <span class="o">=</span> <span class="n">TimeElapse</span><span class="p">(</span><span class="n">logger</span><span class="p">)</span>
@@ -244,34 +191,8 @@
         <span class="p">]</span>
     <span class="n">time_elapse</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="s2">&quot;staging for minifies and rsync.&quot;</span><span class="p">)</span>
 
-    <span class="n">pages</span> <span class="o">=</span> <span class="n">Pages</span><span class="p">(</span>
-        <span class="nb">sum</span><span class="p">(</span>
-            <span class="p">(</span>
-                <span class="n">pages_</span><span class="o">.</span><span class="n">pages</span>
-                <span class="k">for</span> <span class="n">pages_</span> <span class="ow">in</span> <span class="n">get_pages</span><span class="p">(</span>
-                    <span class="n">Pages</span><span class="p">,</span>
-                    <span class="n">config</span><span class="o">.</span><span class="n">pages</span><span class="p">,</span>
-                    <span class="n">config</span><span class="p">,</span>
-                    <span class="n">timezone</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">timezone</span><span class="p">,</span>
-                <span class="p">)</span>
-            <span class="p">),</span>
-            <span class="p">[],</span>
-        <span class="p">)</span>
-    <span class="p">)</span>
-    <span class="n">posts</span> <span class="o">=</span> <span class="n">Posts</span><span class="p">(</span>
-        <span class="nb">sum</span><span class="p">(</span>
-            <span class="p">(</span>
-                <span class="n">pages_</span><span class="o">.</span><span class="n">pages</span>
-                <span class="k">for</span> <span class="n">pages_</span> <span class="ow">in</span> <span class="n">get_pages</span><span class="p">(</span>
-                    <span class="n">Posts</span><span class="p">,</span>
-                    <span class="n">config</span><span class="o">.</span><span class="n">posts</span><span class="p">,</span>
-                    <span class="n">config</span><span class="p">,</span>
-                    <span class="n">timezone</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">timezone</span><span class="p">,</span>
-                <span class="p">)</span>
-            <span class="p">),</span>
-            <span class="p">[],</span>
-        <span class="p">)</span>
-    <span class="p">)</span>
+    <span class="n">pages</span> <span class="o">=</span> <span class="n">Pages</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+    <span class="n">posts</span> <span class="o">=</span> <span class="n">Posts</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
     <span class="n">time_elapse</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="s2">&quot;glob pages/posts from file system.&quot;</span><span class="p">)</span>
 
     <span class="n">pages_ast_futures</span> <span class="o">=</span> <span class="p">[</span>
