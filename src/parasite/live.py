@@ -14,6 +14,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 from functools import partial
+from importlib import import_module, reload
 from itertools import chain
 from pathlib import Path
 from typing import TYPE_CHECKING, List, Optional
@@ -89,6 +90,7 @@ class Config(StaticConfig):
         watch: glob patterns of source files to be watched (relative to current directory)
         watch_open: if specified, open all pages that are currently watching.
         watch_code: if specified, open all sources that are currently watching in VSCode.
+        watch_module: if specified, watch & reload this module.
         serve: if specified, open a server and serve indefinitely.
         serve_host: the host to serve.
         serve_port: the port to serve.
@@ -98,6 +100,7 @@ class Config(StaticConfig):
     watch: List[str] = field(default_factory=list)
     watch_open: bool = False
     watch_code: bool = False
+    watch_module: list[str] = field(default_factory=list)
     serve: bool = False
     serve_host: str = "localhost"
     serve_port: int = 5500
@@ -150,10 +153,14 @@ class Config(StaticConfig):
             ):
                 self.config = config
                 self.pages = pages
+                self.modules = [import_module(m) for m in config.watch_module]
 
             def on_modified(self, event: FileSystemEvent) -> None:
                 path = event.src_path
                 logger.info("%s %s. Updating...", path, event.event_type)
+                for module in self.modules:
+                    logger.info("Reloading module %s", module)
+                    reload(module)
                 for page in self.pages:
                     if str(page.path.absolute()) == path:
                         self.config.make_page(page)
