@@ -100,11 +100,11 @@ class Config(StaticConfig):
     serve_port: int = 5500
     serve_open: Optional[Url] = None
 
-    def make_page(config, page: Page) -> None:
+    def make_page(self, page: Page) -> None:
         time_elapse = TimeElapse(logger)
         page.ast = read_md_to_ast(
-            config.pandoc_input_options,
-            config.panflute_input_filters,
+            self.pandoc_input_options,
+            self.panflute_input_filters,
             inputs=[page.path],
         )
         post_to_html(
@@ -115,13 +115,13 @@ class Config(StaticConfig):
             page.lang,
             page.ext,
             inputs=[] if page.template is None else [page.template],
-            outputs=[config.output_dir / page.out_path],
+            outputs=[self.output_dir / page.out_path],
             **page.options,
         )
         time_elapse.report(f"{page.path} redone.")
 
     def observe_pages_without_serve(
-        config,
+        self,
         pages: List[Page],
     ) -> None:
         from watchdog.events import FileSystemEventHandler
@@ -146,7 +146,7 @@ class Config(StaticConfig):
                     if str(page.path.absolute()) == path:
                         self.config.make_page(page)
 
-        event_handler = PageEventHandler(config, pages)
+        event_handler = PageEventHandler(self, pages)
         observer = Observer()
         for page in pages:
             path = page.path
@@ -160,28 +160,28 @@ class Config(StaticConfig):
             observer.join()
 
     def observe_pages_with_serve(
-        config,
+        self,
         pages: List[Page],
     ) -> None:
         from livereload import Server
 
         server = Server()
         for page in pages:
-            server.watch(str(page.path), partial(config.make_page, page))
+            server.watch(str(page.path), partial(self.make_page, page))
         # always open with serve
-        port = config.serve_port
-        if config.watch_open:
-            host = config.serve_host
+        port = self.serve_port
+        if self.watch_open:
+            host = self.serve_host
             for page in pages:
                 open_browser(host, port, page.url)
-        server.serve(root=str(config.output_dir), port=port)
+        server.serve(root=str(self.output_dir), port=port)
 
     def watch_pages(
-        config,
+        self,
         all_pages: Sequence[Page],
     ) -> None:
         """Watch and re-render single page."""
-        globs = config.watch
+        globs = self.watch
         time_elapse = TimeElapse(logger)
 
         cur_dir = Path(".")
@@ -202,27 +202,27 @@ class Config(StaticConfig):
             else:
                 pages.append(page)
         time_elapse.report(f"Found {len(pages)} pages.")
-        if config.watch_code:
+        if self.watch_code:
             for page in pages:
-                code(config.output_dir / page.out_path)
-        if config.serve:
-            config.observe_pages_with_serve(pages)
+                code(self.output_dir / page.out_path)
+        if self.serve:
+            self.observe_pages_with_serve(pages)
         else:
-            config.observe_pages_without_serve(pages)
+            self.observe_pages_without_serve(pages)
 
     def live(
-        config,
+        self,
         all_pages: Sequence[Page],
     ) -> None:
         """Go live."""
         # only serve ourselves if not watching
-        if config.serve and not config.watch:
+        if self.serve and not self.watch:
             serve(
-                config.serve_host,
-                config.serve_port,
-                config.output_dir,
-                url=config.serve_open,
+                self.serve_host,
+                self.serve_port,
+                self.output_dir,
+                url=self.serve_open,
             )
         # let watch_pages handle serve cases
-        if config.watch:
-            config.watch_pages(all_pages)
+        if self.watch:
+            self.watch_pages(all_pages)
