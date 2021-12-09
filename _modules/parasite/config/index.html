@@ -122,6 +122,8 @@
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
 
+    <span class="kn">from</span> <span class="nn">.panflute_filters</span> <span class="kn">import</span> <span class="n">PANFLUTE_ACTION</span>
+
 <span class="n">THIS_YEAR</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">gmtime</span><span class="p">()</span><span class="o">.</span><span class="n">tm_year</span>
 
 <span class="n">MD_OR_IPYNB</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;.md&quot;</span><span class="p">,</span> <span class="s2">&quot;.ipynb&quot;</span><span class="p">}</span>
@@ -389,7 +391,7 @@
         <span class="k">return</span> <span class="p">[]</span></div>
 
 <div class="viewcode-block" id="Config.panflute_input_filters"><a class="viewcode-back" href="../../../api/parasite.config/#parasite.config.Config.panflute_input_filters">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">panflute_input_filters</span><span class="p">(</span><span class="n">ext</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">panflute_input_filters</span><span class="p">(</span><span class="n">ext</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">PANFLUTE_ACTION</span><span class="p">]:</span>
         <span class="k">return</span> <span class="p">[</span>
             <span class="n">lightgallery_from_dir</span><span class="p">,</span>
         <span class="p">]</span></div>
@@ -404,7 +406,7 @@
         <span class="k">return</span> <span class="n">res</span></div>
 
 <div class="viewcode-block" id="Config.panflute_output_filters"><a class="viewcode-back" href="../../../api/parasite.config/#parasite.config.Config.panflute_output_filters">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">panflute_output_filters</span><span class="p">(</span><span class="n">ext</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">out_ext</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">panflute_output_filters</span><span class="p">(</span><span class="n">ext</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">out_ext</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">PANFLUTE_ACTION</span><span class="p">]:</span>
         <span class="k">if</span> <span class="n">out_ext</span> <span class="o">==</span> <span class="s2">&quot;.html&quot;</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[</span>
                 <span class="n">lightgallery</span><span class="p">,</span>

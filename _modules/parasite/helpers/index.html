@@ -146,11 +146,11 @@
                 <span class="sa">f</span><span class="s1">&#39; class=&quot;</span><span class="si">{</span><span class="n">dropdown_a_class</span><span class="si">}</span><span class="s1">&quot; </span><span class="si">{</span><span class="n">dropdown_a_attrs</span><span class="si">}</span><span class="s1">&gt;</span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s1">&lt;/a&gt;&#39;</span>
             <span class="p">)</span>
             <span class="n">res</span> <span class="o">+=</span> <span class="n">_nav</span><span class="p">(</span>
-                <span class="n">inner_data</span><span class="p">,</span>
+                <span class="n">inner_data</span><span class="p">,</span>  <span class="c1"># type: ignore[arg-type] # recursive type limitation</span>
                 <span class="n">ul_class</span><span class="o">=</span><span class="n">inner_ul_class</span><span class="p">,</span>
                 <span class="n">li_class</span><span class="o">=</span><span class="n">inner_li_class</span><span class="p">,</span>
                 <span class="n">a_class</span><span class="o">=</span><span class="n">inner_a_class</span><span class="p">,</span>
-            <span class="p">)</span>  <span class="c1"># type: ignore</span>
+            <span class="p">)</span>
             <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&lt;/li&gt;&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Unknown type inside nav data: </span><span class="si">{type_}</span><span class="s2">.&quot;</span><span class="p">)</span>
@@ -172,7 +172,7 @@
 <div class="viewcode-block" id="tipuesearch"><a class="viewcode-back" href="../../../api/parasite.helpers/#parasite.helpers.tipuesearch">[docs]</a><span class="k">def</span> <span class="nf">tipuesearch</span><span class="p">(</span>
     <span class="n">pages</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Page</span><span class="p">],</span>
     <span class="n">root</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;..&quot;</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]]]:</span>
     <span class="k">return</span> <span class="p">{</span>
         <span class="s2">&quot;pages&quot;</span><span class="p">:</span> <span class="p">[</span>
             <span class="p">{</span>
@@ -192,7 +192,7 @@
     <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
     <span class="n">pages</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Page</span><span class="p">],</span>
     <span class="n">root</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;..&quot;</span><span class="p">,</span>
-<span class="p">):</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">ujson</span> <span class="k">as</span> <span class="nn">json</span>
 
     <span class="n">data</span> <span class="o">=</span> <span class="n">tipuesearch</span><span class="p">(</span><span class="n">pages</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="n">root</span><span class="p">)</span>
@@ -202,9 +202,9 @@
 
 
 <div class="viewcode-block" id="minify_html"><a class="viewcode-back" href="../../../api/parasite.helpers/#parasite.helpers.minify_html">[docs]</a><span class="k">def</span> <span class="nf">minify_html</span><span class="p">(</span><span class="n">html</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">subprocess</span>
+    <span class="kn">import</span> <span class="nn">subprocess</span>  <span class="c1"># nosec</span>
 
-    <span class="n">res</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>  <span class="c1"># nosec</span>
         <span class="p">[</span>
             <span class="s2">&quot;minify&quot;</span><span class="p">,</span>
             <span class="s2">&quot;--type=html&quot;</span><span class="p">,</span>
@@ -238,7 +238,7 @@
     <span class="n">output_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;output&quot;</span><span class="p">),</span>
     <span class="n">write_atom</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">write_rss</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-<span class="p">):</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">re</span>
 
     <span class="kn">from</span> <span class="nn">feedgen.feed</span> <span class="kn">import</span> <span class="n">FeedGenerator</span>
@@ -282,8 +282,8 @@
     <span class="n">pages</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Page</span><span class="p">],</span>
     <span class="n">output_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;output&quot;</span><span class="p">),</span>
     <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;sitemapindex.xml&quot;</span><span class="p">,</span>
-<span class="p">):</span>
-    <span class="kn">from</span> <span class="nn">xml.etree.ElementTree</span> <span class="kn">import</span> <span class="n">Element</span><span class="p">,</span> <span class="n">ElementTree</span><span class="p">,</span> <span class="n">SubElement</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">xml.etree.ElementTree</span> <span class="kn">import</span> <span class="n">Element</span><span class="p">,</span> <span class="n">ElementTree</span><span class="p">,</span> <span class="n">SubElement</span>  <span class="c1"># nosec</span>
 
     <span class="n">urlset</span> <span class="o">=</span> <span class="n">Element</span><span class="p">(</span><span class="s2">&quot;urlset&quot;</span><span class="p">,</span> <span class="n">xmlns</span><span class="o">=</span><span class="s2">&quot;http://www.sitemaps.org/schemas/sitemap/0.9&quot;</span><span class="p">)</span>
     <span class="n">tree</span> <span class="o">=</span> <span class="n">ElementTree</span><span class="p">(</span><span class="n">urlset</span><span class="p">)</span>

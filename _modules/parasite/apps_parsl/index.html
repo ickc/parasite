@@ -116,15 +116,26 @@
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
+
 <span class="kn">from</span> <span class="nn">parsl</span> <span class="kn">import</span> <span class="n">bash_app</span><span class="p">,</span> <span class="n">python_app</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+    <span class="kn">from</span> <span class="nn">panflute</span> <span class="kn">import</span> <span class="n">Doc</span><span class="p">,</span> <span class="n">Element</span>
+    <span class="kn">from</span> <span class="nn">parsl.data_provider.files</span> <span class="kn">import</span> <span class="n">File</span>
+    <span class="kn">from</span> <span class="nn">urlpath</span> <span class="kn">import</span> <span class="n">URL</span> <span class="k">as</span> <span class="n">Url</span>
+
+    <span class="kn">from</span> <span class="nn">.panflute_filters</span> <span class="kn">import</span> <span class="n">PANFLUTE_ACTION</span>
 
 
 <span class="nd">@python_app</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">app_read_md_to_ast</span><span class="p">(</span>
-    <span class="n">pandoc_options</span><span class="p">,</span>
-    <span class="n">panflute_filters</span><span class="p">,</span>
-    <span class="n">inputs</span><span class="o">=</span><span class="p">[],</span>
-<span class="p">):</span>
+    <span class="n">pandoc_options</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span>
+    <span class="n">panflute_filters</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">PANFLUTE_ACTION</span><span class="p">]],</span>
+    <span class="n">inputs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">File</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pf</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">Doc</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 
     <span class="kn">from</span> <span class="nn">.apps</span> <span class="kn">import</span> <span class="n">read_md_to_ast</span>
@@ -139,10 +150,10 @@
 
 <span class="nd">@python_app</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">app_read_md_to_ast_with_teaser</span><span class="p">(</span>
-    <span class="n">pandoc_options</span><span class="p">,</span>
-    <span class="n">panflute_filters</span><span class="p">,</span>
-    <span class="n">inputs</span><span class="o">=</span><span class="p">[],</span>
-<span class="p">):</span>
+    <span class="n">pandoc_options</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span>
+    <span class="n">panflute_filters</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">PANFLUTE_ACTION</span><span class="p">]],</span>
+    <span class="n">inputs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">File</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">pf</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">Doc</span><span class="p">,</span> <span class="n">pf</span><span class="o">.</span><span class="n">containers</span><span class="o">.</span><span class="n">ListContainer</span><span class="p">]:</span>
     <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 
     <span class="kn">from</span> <span class="nn">.apps</span> <span class="kn">import</span> <span class="n">read_md_to_ast_with_teaser</span>
@@ -157,16 +168,33 @@
 
 <span class="nd">@python_app</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">app_post_to_html</span><span class="p">(</span>
-    <span class="n">ast</span><span class="p">,</span>
-    <span class="n">root</span><span class="p">,</span>
-    <span class="n">prev</span><span class="p">,</span>
-    <span class="nb">next</span><span class="p">,</span>
-    <span class="n">lang</span><span class="p">,</span>
-    <span class="n">ext</span><span class="p">,</span>
-    <span class="n">inputs</span><span class="o">=</span><span class="p">[],</span>  <span class="c1"># template</span>
-    <span class="n">outputs</span><span class="o">=</span><span class="p">[],</span>  <span class="c1"># out_path</span>
-    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-<span class="p">):</span>
+    <span class="n">ast</span><span class="p">:</span> <span class="n">pf</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">Doc</span><span class="p">,</span>
+    <span class="n">root</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">prev</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Url</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]]],</span>
+    <span class="nb">next</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Url</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]]],</span>
+    <span class="n">lang</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">ext</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">/</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">inputs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">File</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>  <span class="c1"># template</span>
+    <span class="n">outputs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">File</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>  <span class="c1"># out_path</span>
+    <span class="n">show_previewimage_in_post</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">header_includes</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>
+    <span class="n">include_before</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>
+    <span class="n">include_after</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>
+    <span class="n">script_include_after</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span>
+    <span class="n">pandoc_options</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span>
+    <span class="n">panflute_filters</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">PANFLUTE_ACTION</span><span class="p">]],</span>
+    <span class="n">js</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span>
+    <span class="n">css</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span>
+    <span class="n">mathjax_config</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="n">search_form</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">content_footer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">blog_title</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{},</span>
+    <span class="n">nav</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">logo_url</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Url</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">html_filters</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 
     <span class="kn">from</span> <span class="nn">.apps</span> <span class="kn">import</span> <span class="n">post_to_html</span>
@@ -182,7 +210,22 @@
         <span class="n">ext</span><span class="p">,</span>
         <span class="n">inputs</span><span class="o">=</span><span class="n">input_paths</span><span class="p">,</span>
         <span class="n">outputs</span><span class="o">=</span><span class="n">output_paths</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="n">show_previewimage_in_post</span><span class="o">=</span><span class="n">show_previewimage_in_post</span><span class="p">,</span>
+        <span class="n">header_includes</span><span class="o">=</span><span class="n">header_includes</span><span class="p">,</span>
+        <span class="n">include_before</span><span class="o">=</span><span class="n">include_before</span><span class="p">,</span>
+        <span class="n">include_after</span><span class="o">=</span><span class="n">include_after</span><span class="p">,</span>
+        <span class="n">script_include_after</span><span class="o">=</span><span class="n">script_include_after</span><span class="p">,</span>
+        <span class="n">pandoc_options</span><span class="o">=</span><span class="n">pandoc_options</span><span class="p">,</span>
+        <span class="n">panflute_filters</span><span class="o">=</span><span class="n">panflute_filters</span><span class="p">,</span>
+        <span class="n">js</span><span class="o">=</span><span class="n">js</span><span class="p">,</span>
+        <span class="n">css</span><span class="o">=</span><span class="n">css</span><span class="p">,</span>
+        <span class="n">mathjax_config</span><span class="o">=</span><span class="n">mathjax_config</span><span class="p">,</span>
+        <span class="n">search_form</span><span class="o">=</span><span class="n">search_form</span><span class="p">,</span>
+        <span class="n">content_footer</span><span class="o">=</span><span class="n">content_footer</span><span class="p">,</span>
+        <span class="n">blog_title</span><span class="o">=</span><span class="n">blog_title</span><span class="p">,</span>
+        <span class="n">nav</span><span class="o">=</span><span class="n">nav</span><span class="p">,</span>
+        <span class="n">logo_url</span><span class="o">=</span><span class="n">logo_url</span><span class="p">,</span>
+        <span class="n">html_filters</span><span class="o">=</span><span class="n">html_filters</span><span class="p">,</span>
     <span class="p">)</span>
 
 
@@ -196,7 +239,7 @@
 
 
 <span class="nd">@bash_app</span>
-<span class="k">def</span> <span class="nf">app_minify</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="p">[],</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[]):</span>
+<span class="k">def</span> <span class="nf">app_minify</span><span class="p">(</span><span class="n">inputs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">File</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">outputs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">File</span><span class="p">]</span> <span class="o">=</span> <span class="p">[])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;minify using the Go minifier</span>
 
 <span class="sd">    https://github.com/tdewolff/minify/tree/master/cmd/minify</span>
@@ -213,7 +256,7 @@
 
 
 <span class="nd">@bash_app</span>
-<span class="k">def</span> <span class="nf">app_closure_compiler</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="p">[],</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[]):</span>
+<span class="k">def</span> <span class="nf">app_closure_compiler</span><span class="p">(</span><span class="n">inputs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">File</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">outputs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">File</span><span class="p">]</span> <span class="o">=</span> <span class="p">[])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 
     <span class="n">input_paths</span> <span class="o">=</span> <span class="p">[</span><span class="n">file</span><span class="o">.</span><span class="n">filepath</span> <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">]</span>
