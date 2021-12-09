@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 from logging import getLogger
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import defopt
@@ -15,7 +14,6 @@ from parsl.executors import ThreadPoolExecutor
 # from parsl.executors import HighThroughputExecutor
 # from parsl.providers import LocalProvider
 from parsl.utils import get_all_checkpoints
-from urlpath import URL as Url
 
 from .apps_parsl import (
     app_minify,
@@ -32,7 +30,7 @@ from .to_ast import posts_to_archive_ast, posts_to_index_ast, posts_to_tag_ast
 from .util import TimeElapse, setup_logging
 
 if TYPE_CHECKING:
-    from typing import List, Optional, Tuple, TypeVar
+    from typing import List, TypeVar
 
     from .data import Page
 
