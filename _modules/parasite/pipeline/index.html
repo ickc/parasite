@@ -135,7 +135,6 @@
 <span class="kn">from</span> <span class="nn">.data</span> <span class="kn">import</span> <span class="n">Pages</span><span class="p">,</span> <span class="n">Posts</span>
 <span class="kn">from</span> <span class="nn">.helpers</span> <span class="kn">import</span> <span class="n">to_feed</span><span class="p">,</span> <span class="n">to_sitemap</span><span class="p">,</span> <span class="n">write_tipuesearch</span>
 <span class="kn">from</span> <span class="nn">.live</span> <span class="kn">import</span> <span class="n">Config</span> <span class="k">as</span> <span class="n">LiveConfig</span>
-<span class="kn">from</span> <span class="nn">.live</span> <span class="kn">import</span> <span class="n">live</span>
 <span class="kn">from</span> <span class="nn">.to_ast</span> <span class="kn">import</span> <span class="n">posts_to_archive_ast</span><span class="p">,</span> <span class="n">posts_to_index_ast</span><span class="p">,</span> <span class="n">posts_to_tag_ast</span>
 <span class="kn">from</span> <span class="nn">.util</span> <span class="kn">import</span> <span class="n">TimeElapse</span><span class="p">,</span> <span class="n">setup_logging</span>
 
@@ -408,7 +407,7 @@
             <span class="k">for</span> <span class="n">minify</span> <span class="ow">in</span> <span class="n">minifies_js</span><span class="p">:</span>
                 <span class="n">minify</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
         <span class="n">time_elapse</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="s2">&quot;collecting all futures.&quot;</span><span class="p">)</span>
-        <span class="n">live</span><span class="p">(</span><span class="n">all_pages</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">live</span><span class="p">(</span><span class="n">all_pages</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="cli"><a class="viewcode-back" href="../../../api/parasite.pipeline/#parasite.pipeline.cli">[docs]</a><span class="k">def</span> <span class="nf">cli</span><span class="p">(</span><span class="n">Config</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Config</span><span class="p">]</span> <span class="o">=</span> <span class="n">Config</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
