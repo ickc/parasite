@@ -212,6 +212,8 @@ class Config(StaticConfig):
         server = Server()
         for page in pages:
             server.watch(str(page.path), partial(self.make_page, page))
+        for module_path, module in self.modules_to_be_watched.items():
+            server.watch(module_path, partial(reload, module))
         # always open with serve
         port = self.serve_port
         if self.watch_open:
