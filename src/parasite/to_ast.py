@@ -10,8 +10,6 @@ from .translate import translate
 if TYPE_CHECKING:
     from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
-    from urlpath import URL as Url
-
     from .data import Post
 
 
@@ -126,7 +124,7 @@ def posts_to_tag_ast(
                         pf.Plain(
                             pf.Link(
                                 pf.Str(f"{post.date} — {post.title}"),
-                                url=f"{root / post.url}",
+                                url=f"{root}/{post.url}",
                             )
                         )
                     )
@@ -149,7 +147,7 @@ def posts_to_archive_ast(
         "lang": lang,
     }
 
-    res: Dict[int, Dict[str, List[Tuple[str, Optional[str], Url]]]] = defaultdict(
+    res: Dict[int, Dict[str, List[Tuple[str, Optional[str], str]]]] = defaultdict(
         lambda: defaultdict(list)
     )
     for page in posts:
@@ -173,7 +171,7 @@ def posts_to_archive_ast(
                         pf.Plain(
                             pf.Link(
                                 pf.Str(f"{date} — {title}"),
-                                url=f"{root / url}",
+                                url=f"{root}/{url}",
                             )
                         )
                     )

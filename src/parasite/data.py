@@ -12,7 +12,6 @@ from zoneinfo import ZoneInfo
 
 import panflute as pf
 from panflute.tools import convert_text
-from urlpath import URL as Url
 
 from .apps import get_teaser
 
@@ -99,12 +98,12 @@ class Page:
         return out_path
 
     @cached_property
-    def url(self) -> Url:
+    def url(self) -> str:
         out_path = self.out_path
         if self.pretty_urls is True:
-            return Url(str(out_path.parent) + "/")
+            return str(out_path.parent) + "/"
         else:
-            return Url(str(out_path))
+            return str(out_path)
 
     @cached_property
     def categories(self) -> str:
@@ -213,11 +212,8 @@ class Page:
         return tags
 
     @property
-    def previewimage(self) -> Optional[Url]:
-        res = self.ast.get_metadata("previewimage")
-        if res is not None:
-            return Url(res)
-        return None
+    def previewimage(self) -> Optional[str]:
+        return self.ast.get_metadata("previewimage", None)
 
     @property
     def status(self) -> str:
@@ -278,11 +274,11 @@ class Post(Page):
         return time
 
     @property
-    def prev(self) -> Optional[Tuple[Url, Optional[str]]]:
+    def prev(self) -> Optional[Tuple[str, Optional[str]]]:
         return getattr(self, "_prev", None)
 
     @prev.setter
-    def prev(self, data: Tuple[Url, Optional[str]]):
+    def prev(self, data: Tuple[str, Optional[str]]):
         self._prev = data
 
     @prev.deleter
@@ -290,11 +286,11 @@ class Post(Page):
         del self._prev
 
     @property
-    def next(self) -> Optional[Tuple[Url, Optional[str]]]:
+    def next(self) -> Optional[Tuple[str, Optional[str]]]:
         return getattr(self, "_next", None)
 
     @next.setter
-    def next(self, data: Tuple[Url, Optional[str]]):
+    def next(self, data: Tuple[str, Optional[str]]):
         self._next = data
 
     @next.deleter

@@ -9,7 +9,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from panflute.elements import Div, Image, Link, MetaBlocks, MetaList, Plain, RawBlock
-from urlpath import URL as Url
 
 if TYPE_CHECKING:
     from typing import List, Optional, Sequence
@@ -105,7 +104,7 @@ $("#{identifier}").justifiedGallery();""",
     if isinstance(elem, Div) and attribute in elem.attributes:
         root = doc.get_metadata("root", "/")
         res = [
-            Link(Image(url=(url := str(root / Url(path)))), url=url)
+            Link(Image(url=(url := f"{root}/{path}")), url=url)
             for path in sorted(
                 chain(
                     *(

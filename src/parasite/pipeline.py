@@ -14,7 +14,6 @@ from parsl.executors import ThreadPoolExecutor
 # from parsl.executors import HighThroughputExecutor
 # from parsl.providers import LocalProvider
 from parsl.utils import get_all_checkpoints
-from urlpath import URL as Url
 
 from .apps_parsl import (
     app_minify,
@@ -91,7 +90,7 @@ def get_pages(
             "pandoc_options": config.pandoc_output_options,
             "css": config.css,
             "js": config.js,
-            "logo_url": Url(config.logo_url) if config.logo_url else None,
+            "logo_url": config.logo_url if config.logo_url else None,
             "panflute_filters": config.panflute_output_filters,
             "html_filters": config.html_filters,
         }

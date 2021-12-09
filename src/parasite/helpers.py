@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from typing import Dict, List, Sequence, Tuple, Union
+    from typing import Dict, List, Sequence, Tuple, Union, Optional
 
     from .data import Page, Post
 
@@ -37,11 +37,11 @@ def _nav(
                 f' class="{dropdown_a_class}" {dropdown_a_attrs}>{title}</a>'
             )
             res += _nav(
-                inner_data,
+                inner_data,  # type: ignore[arg-type] # recursive type limitation
                 ul_class=inner_ul_class,
                 li_class=inner_li_class,
                 a_class=inner_a_class,
-            )  # type: ignore
+            )
             res.append("</li>")
         else:
             raise TypeError("Unknown type inside nav data: {type_}.")
@@ -63,14 +63,14 @@ def pretty_urls_present(parent: Path, stem: str) -> Path:
 def tipuesearch(
     pages: Sequence[Page],
     root: str = "..",
-) -> Dict[str, List[Dict[str, str]]]:
+) -> Dict[str, List[Dict[str, Optional[str]]]]:
     return {
         "pages": [
             {
                 "title": page.title,
                 "text": page.text,
                 "tags": ",".join(page.tags),
-                "url": str(root / page.url),
+                "url": f"{root}/{page.url}",
                 # doesn't work
                 # 'image': None if page.previewimage is None else str(root / page.previewimage),
             }
@@ -150,7 +150,7 @@ def to_feed(
     fg.language(lang)
     fg.rights(copy_right)
     for post in posts:
-        url = str(site_url / post.url)
+        url = f"{site_url}/{post.url}"
 
         fe = fg.add_entry()
 
@@ -183,7 +183,7 @@ def to_sitemap(
         url = SubElement(urlset, "url")
 
         loc = SubElement(url, "loc")
-        loc.text = str(site_url / page.url)
+        loc.text = f"{site_url}/{page.url}"
 
         lastmod = SubElement(url, "lastmod")
         lastmod.text = page.committed_date_str

@@ -19,7 +19,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, List, Optional
 
 from custom_inherit import DocInheritMeta
-from urlpath import URL as Url
 
 from .apps import post_to_html, read_md_to_ast
 from .util import TimeElapse
@@ -52,14 +51,14 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):
     serve: bool = False
     serve_host: str = "localhost"
     serve_port: int = 5500
-    serve_open: Optional[Url] = None
+    serve_open: Optional[str] = None
 
 
 def serve(
     host: str,
     port: int,
     directory: Path,
-    url: Optional[Url] = None,
+    url: Optional[str] = None,
 ):
     from http.server import HTTPServer, SimpleHTTPRequestHandler
     from threading import Thread
@@ -78,7 +77,7 @@ def serve(
 def open_browser(
     host: str,
     port: int,
-    url: Url = Url(""),
+    url: str = "",
 ):
     import webbrowser
 

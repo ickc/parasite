@@ -16,8 +16,6 @@ from .panflute_filters import meta_append
 if TYPE_CHECKING:
     from typing import Callable, Dict, List, Optional, Tuple
 
-    from urlpath import URL as Url
-
 
 def read_md_to_ast(
     pandoc_options: Callable[[str], List[str]],
@@ -105,8 +103,8 @@ def read_md_to_ast_with_teaser(
 def post_to_html(
     ast: pf.elements.Doc,
     root: str,
-    prev: Optional[Tuple[Url, Optional[str]]],
-    next: Optional[Tuple[Url, Optional[str]]],
+    prev: Optional[Tuple[str, Optional[str]]],
+    next: Optional[Tuple[str, Optional[str]]],
     lang: str,
     ext: str,
     inputs: List[Path] = [],  # template
@@ -126,7 +124,7 @@ def post_to_html(
     content_footer: Optional[Callable[[str, str, str], str]] = None,
     blog_title: Dict[str, str] = {},
     nav: Optional[Callable[[str, str, str], str]] = None,
-    logo_url: Optional[Url] = None,
+    logo_url: Optional[str] = None,
     html_filters: List[Callable[[str], str]] = [],
 ):
     """
@@ -175,18 +173,18 @@ def post_to_html(
     if blog_title:
         ast.metadata["title-prefix"] = pf.RawBlock(blog_title[lang])
     if logo_url:
-        ast.metadata["logo-url"] = str(logo_url)
+        ast.metadata["logo-url"] = logo_url
     if nav:
         ast.metadata["nav"] = pf.RawBlock(nav(lang, ext, ".html").format(root=root))
     if root:
         ast.metadata["root"] = root
     if prev is not None:
-        ast.metadata["prev-url"] = str(root / prev[0])
+        ast.metadata["prev-url"] = f"{root}/{prev[0]}"
         title = prev[1]
         if title is not None:
             ast.metadata["prev-title"] = title
     if next is not None:
-        ast.metadata["next-url"] = str(root / next[0])
+        ast.metadata["next-url"] = f"{root}/{next[0]}"
         title = next[1]
         if title is not None:
             ast.metadata["next-title"] = title

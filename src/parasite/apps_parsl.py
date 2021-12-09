@@ -123,7 +123,6 @@ from pathlib import Path
 import panflute as pf
 from parsl.data_provider.files import File
 from parsl.dataflow.memoization import id_for_memo
-from urlpath import URL as Url
 
 logger = getLogger(__name__)
 
@@ -136,11 +135,6 @@ def id_for_memo_doc(doc: pf.elements.Doc, output_ref: bool = False) -> bytes:
 @id_for_memo.register(Path)
 def id_for_memo_path(path: Path, output_ref: bool = False) -> bytes:
     return id_for_memo(str(path))
-
-
-@id_for_memo.register(Url)
-def id_for_memo_url(url: Url, output_ref: bool = False) -> bytes:
-    return id_for_memo(str(url))
 
 
 @id_for_memo.register(File)
