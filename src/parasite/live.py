@@ -32,29 +32,6 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-@dataclass
-class Config(StaticConfig):
-    """Configure live serving parameters.
-
-    Args:
-        watch: glob patterns of source files to be watched (relative to current directory)
-        watch_open: if specified, open all pages that are currently watching.
-        watch_code: if specified, open all sources that are currently watching in VSCode.
-        serve: if specified, open a server and serve indefinitely.
-        serve_host: the host to serve.
-        serve_port: the port to serve.
-        serve_open: if specified, open this relative url.
-    """
-
-    watch: List[str] = field(default_factory=list)
-    watch_open: bool = False
-    watch_code: bool = False
-    serve: bool = False
-    serve_host: str = "localhost"
-    serve_port: int = 5500
-    serve_open: Optional[Url] = None
-
-
 def serve(
     host: str,
     port: int,
@@ -99,6 +76,29 @@ def code(path: Path) -> None:
         cmd,
         check=True,
     )
+
+
+@dataclass
+class Config(StaticConfig):
+    """Configure live serving parameters.
+
+    Args:
+        watch: glob patterns of source files to be watched (relative to current directory)
+        watch_open: if specified, open all pages that are currently watching.
+        watch_code: if specified, open all sources that are currently watching in VSCode.
+        serve: if specified, open a server and serve indefinitely.
+        serve_host: the host to serve.
+        serve_port: the port to serve.
+        serve_open: if specified, open this relative url.
+    """
+
+    watch: List[str] = field(default_factory=list)
+    watch_open: bool = False
+    watch_code: bool = False
+    serve: bool = False
+    serve_host: str = "localhost"
+    serve_port: int = 5500
+    serve_open: Optional[Url] = None
 
 
 def _make_single_page(page: Page, config: Config) -> None:
