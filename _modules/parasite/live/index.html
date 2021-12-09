@@ -233,6 +233,7 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">pages</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Page</span><span class="p">],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Watch using watchdog which is observer based.&quot;&quot;&quot;</span>
         <span class="kn">from</span> <span class="nn">watchdog.events</span> <span class="kn">import</span> <span class="n">FileSystemEventHandler</span>
         <span class="kn">from</span> <span class="nn">watchdog.observers</span> <span class="kn">import</span> <span class="n">Observer</span>
 
@@ -272,6 +273,7 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">pages</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Page</span><span class="p">],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Watch using livereload which is polling based.&quot;&quot;&quot;</span>
         <span class="kn">from</span> <span class="nn">livereload</span> <span class="kn">import</span> <span class="n">Server</span>
 
         <span class="n">server</span> <span class="o">=</span> <span class="n">Server</span><span class="p">()</span>
