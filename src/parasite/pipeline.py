@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from logging import getLogger
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import defopt
@@ -31,10 +32,11 @@ from .to_ast import posts_to_archive_ast, posts_to_index_ast, posts_to_tag_ast
 from .util import TimeElapse, setup_logging
 
 if TYPE_CHECKING:
-    from pathlib import Path
-    from typing import List, Optional, Tuple
+    from typing import List, Optional, Tuple, TypeVar
 
     from .data import Page
+
+    PagesOrPosts = TypeVar("PagesOrPosts", Pages, Posts)
 
 executor = ThreadPoolExecutor(
     max_threads=psutil.cpu_count(logical=False),
@@ -60,7 +62,7 @@ logger = getLogger(__name__)
 
 
 def get_pages(
-    page_class,
+    page_class: type[PagesOrPosts],
     PAGES: Tuple[
         Tuple[
             str,  # in-dir
@@ -73,7 +75,7 @@ def get_pages(
     ],
     config: Config,
     timezone: str = r"America/Los_Angeles",
-) -> list:
+) -> list[PagesOrPosts]:
     pageses = []
     for path, out_path, ext, template, excludes in PAGES:
         pretty_urls = config.pretty_urls[ext]
@@ -97,8 +99,8 @@ def get_pages(
         }
         pageses.append(
             page_class.from_file_system(
-                path,
-                out_path,
+                Path(path),
+                Path(out_path),
                 ext,
                 template,
                 excludes=excludes,
@@ -109,10 +111,10 @@ def get_pages(
                 options=options,
             )
         )
-    return pageses
+    return pageses  # type: ignore[return-value] # type limitation. It means list[page_class] here
 
 
-def main(config: Config):
+def main(config: Config) -> None:
     """Parasite static site generator."""
     time_elapse = TimeElapse(logger)
 
@@ -374,7 +376,7 @@ def main(config: Config):
     live(all_pages, config)
 
 
-def cli(Config=Config):
+def cli(Config: type[Config] = Config) -> None:
     config = defopt.run(Config, show_types=True, strict_kwonly=False)
     main(config)
 

@@ -15,8 +15,8 @@ def setup_logging(
     level: str = "INFO",
     env_var: str = "PARASITELOGLEVEL",
     fmt: str = "%(name)s %(levelname)s %(message)s",
-    Handler=logging.StreamHandler,
-    Formatter=Formatter,
+    Handler: type[logging.StreamHandler] = logging.StreamHandler,
+    Formatter: type[Formatter] = Formatter,
 ) -> logging.Logger:
     """Setup logging.
 
@@ -44,14 +44,14 @@ def setup_logging(
 
 
 class TimeElapse:
-    def __init__(self, logger=logging.getLogger(__name__)):
+    def __init__(self, logger: logging.Logger = logging.getLogger(__name__)) -> None:
         self.time = timer()
         self.logger = logger
 
-    def update(self):
+    def update(self) -> None:
         self.time = timer()
 
-    def report(self, string):
+    def report(self, string: str) -> None:
         time_original = self.time
         self.update()
         self.logger.info(f"{self.time - time_original:.3f}s spent: {string}")

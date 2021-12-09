@@ -18,10 +18,12 @@ if TYPE_CHECKING:
 
     from urlpath import URL as Url
 
+    from .panflute_filters import PANFLUTE_ACTION
+
 
 def read_md_to_ast(
     pandoc_options: Callable[[str], List[str]],
-    panflute_filters: Callable[[str], List[Callable]],
+    panflute_filters: Callable[[str], List[PANFLUTE_ACTION]],
     inputs: List[Path] = [],
 ) -> pf.elements.Doc:
     """Read from markdown to panflute AST"""
@@ -90,7 +92,7 @@ def get_teaser(content: pf.containers.ListContainer) -> pf.containers.ListContai
 
 def read_md_to_ast_with_teaser(
     pandoc_options: Callable[[str], List[str]],
-    panflute_filters: Callable[[str], List[Callable]],
+    panflute_filters: Callable[[str], List[PANFLUTE_ACTION]],
     inputs: List[Path] = [],
 ) -> Tuple[pf.elements.Doc, pf.containers.ListContainer]:
     ast = read_md_to_ast(
@@ -109,16 +111,17 @@ def post_to_html(
     next: Optional[Tuple[Url, Optional[str]]],
     lang: str,
     ext: str,
+    /,
+    *,
     inputs: List[Path] = [],  # template
     outputs: List[Path] = [],  # out_path
     show_previewimage_in_post: bool = True,
-    *,
     header_includes: Callable[[str, str, str], str],
     include_before: Callable[[str, str, str], str],
     include_after: Callable[[str, str, str], str],
     script_include_after: Callable[[str, str], str],
     pandoc_options: Callable[[str, str], List[str]],
-    panflute_filters: Callable[[str, str], List[Callable]],
+    panflute_filters: Callable[[str, str], List[PANFLUTE_ACTION]],
     js: Callable[[str, str], List[str]],
     css: Callable[[str, str], List[str]],
     mathjax_config: str = "",
@@ -128,7 +131,7 @@ def post_to_html(
     nav: Optional[Callable[[str, str, str], str]] = None,
     logo_url: Optional[Url] = None,
     html_filters: List[Callable[[str], str]] = [],
-):
+) -> None:
     """
     warning: AST is currently mutated
     """

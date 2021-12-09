@@ -7,15 +7,26 @@ as they should be thin wrappers.
 """
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from parsl import bash_app, python_app
+
+if TYPE_CHECKING:
+    from typing import Callable, Dict, List, Optional, Tuple, Union
+
+    from panflute import Doc, Element
+    from parsl.data_provider.files import File
+    from urlpath import URL as Url
+
+    from .panflute_filters import PANFLUTE_ACTION
 
 
 @python_app(cache=True)
 def app_read_md_to_ast(
-    pandoc_options,
-    panflute_filters,
-    inputs=[],
-):
+    pandoc_options: Callable[[str], List[str]],
+    panflute_filters: Callable[[str], List[PANFLUTE_ACTION]],
+    inputs: list[File] = [],
+) -> pf.elements.Doc:
     from pathlib import Path
 
     from .apps import read_md_to_ast
@@ -30,10 +41,10 @@ def app_read_md_to_ast(
 
 @python_app(cache=True)
 def app_read_md_to_ast_with_teaser(
-    pandoc_options,
-    panflute_filters,
-    inputs=[],
-):
+    pandoc_options: Callable[[str], List[str]],
+    panflute_filters: Callable[[str], List[PANFLUTE_ACTION]],
+    inputs: List[File] = [],
+) -> Tuple[pf.elements.Doc, pf.containers.ListContainer]:
     from pathlib import Path
 
     from .apps import read_md_to_ast_with_teaser
@@ -48,16 +59,33 @@ def app_read_md_to_ast_with_teaser(
 
 @python_app(cache=True)
 def app_post_to_html(
-    ast,
-    root,
-    prev,
-    next,
-    lang,
-    ext,
-    inputs=[],  # template
-    outputs=[],  # out_path
-    **kwargs,
-):
+    ast: pf.elements.Doc,
+    root: str,
+    prev: Optional[Tuple[Url, Optional[str]]],
+    next: Optional[Tuple[Url, Optional[str]]],
+    lang: str,
+    ext: str,
+    /,
+    *,
+    inputs: List[File] = [],  # template
+    outputs: List[File] = [],  # out_path
+    show_previewimage_in_post: bool = True,
+    header_includes: Callable[[str, str, str], str],
+    include_before: Callable[[str, str, str], str],
+    include_after: Callable[[str, str, str], str],
+    script_include_after: Callable[[str, str], str],
+    pandoc_options: Callable[[str, str], List[str]],
+    panflute_filters: Callable[[str, str], List[PANFLUTE_ACTION]],
+    js: Callable[[str, str], List[str]],
+    css: Callable[[str, str], List[str]],
+    mathjax_config: str = "",
+    search_form: Optional[Callable[[str, str, str], str]] = None,
+    content_footer: Optional[Callable[[str, str, str], str]] = None,
+    blog_title: Dict[str, str] = {},
+    nav: Optional[Callable[[str, str, str], str]] = None,
+    logo_url: Optional[Url] = None,
+    html_filters: List[Callable[[str], str]] = [],
+) -> None:
     from pathlib import Path
 
     from .apps import post_to_html
@@ -73,7 +101,22 @@ def app_post_to_html(
         ext,
         inputs=input_paths,
         outputs=output_paths,
-        **kwargs,
+        show_previewimage_in_post=show_previewimage_in_post,
+        header_includes=header_includes,
+        include_before=include_before,
+        include_after=include_after,
+        script_include_after=script_include_after,
+        pandoc_options=pandoc_options,
+        panflute_filters=panflute_filters,
+        js=js,
+        css=css,
+        mathjax_config=mathjax_config,
+        search_form=search_form,
+        content_footer=content_footer,
+        blog_title=blog_title,
+        nav=nav,
+        logo_url=logo_url,
+        html_filters=html_filters,
     )
 
 
@@ -87,7 +130,7 @@ def app_rsync(in_dir: str, out_base_dir: str, out_sub_dir: str) -> str:
 
 
 @bash_app
-def app_minify(inputs=[], outputs=[]):
+def app_minify(inputs: list[File] = [], outputs: list[File] = []) -> str:
     """minify using the Go minifier
 
     https://github.com/tdewolff/minify/tree/master/cmd/minify
@@ -104,7 +147,7 @@ def app_minify(inputs=[], outputs=[]):
 
 
 @bash_app
-def app_closure_compiler(inputs=[], outputs=[]):
+def app_closure_compiler(inputs: list[File] = [], outputs: list[File] = []) -> str:
     from pathlib import Path
 
     input_paths = [file.filepath for file in inputs]

@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
-class Config(metaclass=DocInheritMeta(style="google_with_merge")):
+class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: ignore[misc] # mypy limitation
     """Configure live serving parameters.
 
     Args:
@@ -60,7 +60,7 @@ def serve(
     port: int,
     directory: Path,
     url: Optional[Url] = None,
-):
+) -> None:
     from http.server import HTTPServer, SimpleHTTPRequestHandler
     from threading import Thread
 
@@ -79,7 +79,7 @@ def open_browser(
     host: str,
     port: int,
     url: Url = Url(""),
-):
+) -> None:
     import webbrowser
 
     full_url = str(f"http://{host}:{port}/{url}")
@@ -87,21 +87,21 @@ def open_browser(
     webbrowser.open(full_url, new=2)
 
 
-def code(path: Path):
-    import subprocess
+def code(path: Path) -> None:
+    import subprocess  # nosec
 
     cmd = [
         "code",
         str(path),
     ]
     logger.info("Running %s", " ".join(cmd))
-    subprocess.run(
+    subprocess.run(  # nosec
         cmd,
         check=True,
     )
 
 
-def _make_single_page(page: Page, config: Config):
+def _make_single_page(page: Page, config: Config) -> None:
     time_elapse = TimeElapse(logger)
     page.ast = read_md_to_ast(
         config.pandoc_input_options,
@@ -125,16 +125,19 @@ def _make_single_page(page: Page, config: Config):
 def observe_pages_without_serve(
     pages: List[Page],
     config: Config,
-):
+) -> None:
     from watchdog.events import FileSystemEventHandler
     from watchdog.observers import Observer
+
+    if TYPE_CHECKING:
+        from watchdog.events import FileSystemEvent
 
     class PageEventHandler(FileSystemEventHandler):
         def __init__(self, pages: List[Page], config: Config):
             self.pages = pages
             self.config = config
 
-        def on_modified(self, event):
+        def on_modified(self, event: FileSystemEvent) -> None:
             path = event.src_path
             logger.info("%s %s. Updating...", path, event.event_type)
             for page in self.pages:
@@ -158,7 +161,7 @@ def observe_pages_without_serve(
 def observe_pages_with_serve(
     pages: List[Page],
     config: Config,
-):
+) -> None:
     from livereload import Server
 
     server = Server()
@@ -176,7 +179,7 @@ def observe_pages_with_serve(
 def watch_pages(
     all_pages: Sequence[Page],
     config: Config,
-):
+) -> None:
     """Watch and re-render single page."""
     globs = config.watch
     time_elapse = TimeElapse(logger)
@@ -211,7 +214,7 @@ def watch_pages(
 def live(
     all_pages: Sequence[Page],
     config: Config,
-):
+) -> None:
     """Go live."""
     # only serve ourselves if not watching
     if config.serve and not config.watch:

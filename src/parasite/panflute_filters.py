@@ -12,16 +12,18 @@ from panflute.elements import Div, Image, Link, MetaBlocks, MetaList, Plain, Raw
 from urlpath import URL as Url
 
 if TYPE_CHECKING:
-    from typing import List, Optional, Sequence
+    from typing import Callable, List, Optional, Sequence, Union
 
     from panflute.base import Block
     from panflute.containers import ListContainer
-    from panflute.elements import Doc, MetaMap
+    from panflute.elements import Doc, Element, MetaMap
+
+    PANFLUTE_ACTION = Callable[[Element, Doc], Union[None, Element, list[Element]]]
 
 logger = getLogger(__name__)
 
 
-def meta_append(meta: MetaMap, key: str, value: str):
+def meta_append(meta: MetaMap, key: str, value: str) -> None:
     """Append or create key in meta with value in-place."""
     raw_block = MetaBlocks(RawBlock(value))
     if key in meta:
@@ -37,8 +39,8 @@ def meta_append(meta: MetaMap, key: str, value: str):
 def extract_image(
     elem: ListContainer[Block],
     doc: Doc,
-    outputs: list = [],
-):
+    outputs: list[Image] = [],
+) -> None:
     """Append Image to outputs.
 
     This filter does nothing to the elem/doc.

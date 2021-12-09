@@ -13,6 +13,8 @@ from .templates import INDEX_TEMPLATE, POST_TEMPLATE, SLIDE_TEMPLATE
 if TYPE_CHECKING:
     from typing import List, Optional, Tuple
 
+    from .panflute_filters import PANFLUTE_ACTION
+
 THIS_YEAR = time.gmtime().tm_year
 
 MD_OR_IPYNB = {".md", ".ipynb"}
@@ -280,7 +282,7 @@ class Config(ConfigLive):
         return []
 
     @staticmethod
-    def panflute_input_filters(ext: str) -> List[Callable]:
+    def panflute_input_filters(ext: str) -> List[PANFLUTE_ACTION]:
         return [
             lightgallery_from_dir,
         ]
@@ -295,7 +297,7 @@ class Config(ConfigLive):
         return res
 
     @staticmethod
-    def panflute_output_filters(ext: str, out_ext: str) -> List[Callable]:
+    def panflute_output_filters(ext: str, out_ext: str) -> List[PANFLUTE_ACTION]:
         if out_ext == ".html":
             return [
                 lightgallery,

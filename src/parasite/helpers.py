@@ -37,11 +37,11 @@ def _nav(
                 f' class="{dropdown_a_class}" {dropdown_a_attrs}>{title}</a>'
             )
             res += _nav(
-                inner_data,
+                inner_data,  # type: ignore[arg-type] # recursive type limitation
                 ul_class=inner_ul_class,
                 li_class=inner_li_class,
                 a_class=inner_a_class,
-            )  # type: ignore
+            )
             res.append("</li>")
         else:
             raise TypeError("Unknown type inside nav data: {type_}.")
@@ -63,7 +63,7 @@ def pretty_urls_present(parent: Path, stem: str) -> Path:
 def tipuesearch(
     pages: Sequence[Page],
     root: str = "..",
-) -> Dict[str, List[Dict[str, str]]]:
+) -> Dict[str, List[Dict[str, None | str]]]:
     return {
         "pages": [
             {
@@ -83,7 +83,7 @@ def write_tipuesearch(
     path: Path,
     pages: Sequence[Page],
     root: str = "..",
-):
+) -> None:
     import ujson as json
 
     data = tipuesearch(pages, root=root)
@@ -93,9 +93,9 @@ def write_tipuesearch(
 
 
 def minify_html(html: str) -> str:
-    import subprocess
+    import subprocess  # nosec
 
-    res = subprocess.run(
+    res = subprocess.run(  # nosec
         [
             "minify",
             "--type=html",
@@ -129,7 +129,7 @@ def to_feed(
     output_dir: Path = Path("output"),
     write_atom: bool = True,
     write_rss: bool = True,
-):
+) -> None:
     import re
 
     from feedgen.feed import FeedGenerator
@@ -173,8 +173,8 @@ def to_sitemap(
     pages: Sequence[Page],
     output_dir: Path = Path("output"),
     filename: str = "sitemapindex.xml",
-):
-    from xml.etree.ElementTree import Element, ElementTree, SubElement
+) -> None:
+    from xml.etree.ElementTree import Element, ElementTree, SubElement  # nosec
 
     urlset = Element("urlset", xmlns="http://www.sitemaps.org/schemas/sitemap/0.9")
     tree = ElementTree(urlset)
