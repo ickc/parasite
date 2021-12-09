@@ -80,6 +80,11 @@ flake8:
 pylint:
 	pylint parasite
 
+format:
+	autoflake --in-place --recursive --expand-star-imports --remove-all-unused-imports --ignore-init-module-imports --remove-duplicate-keys --remove-unused-variables .
+	black .
+	isort .
+
 print-%:
 	$(info $* = $($*))
 
