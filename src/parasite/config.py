@@ -5,8 +5,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Callable, Dict, Union
 
+from custom_inherit import DocInheritMeta
+
 from .helpers import nav, pretty_urls_present
-from .live import Config as ConfigLive
 from .panflute_filters import lightgallery, lightgallery_from_dir
 from .templates import INDEX_TEMPLATE, POST_TEMPLATE, SLIDE_TEMPLATE
 
@@ -21,7 +22,7 @@ MD_OR_IPYNB = {".md", ".ipynb"}
 
 
 @dataclass
-class Config(ConfigLive):
+class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: ignore[misc] # mypy limitation
     """Configure static site.
 
     Args:

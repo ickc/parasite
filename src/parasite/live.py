@@ -18,10 +18,10 @@ from itertools import chain
 from pathlib import Path
 from typing import TYPE_CHECKING, List, Optional
 
-from custom_inherit import DocInheritMeta
 from urlpath import URL as Url
 
 from .apps import post_to_html, read_md_to_ast
+from .config import Config as StaticConfig
 from .util import TimeElapse
 
 if TYPE_CHECKING:
@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
-class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: ignore[misc] # mypy limitation
+class Config(StaticConfig):
     """Configure live serving parameters.
 
     Args:
