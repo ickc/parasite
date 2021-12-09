@@ -26,7 +26,6 @@ from .apps_parsl import (
 from .data import Pages, Posts
 from .helpers import to_feed, to_sitemap, write_tipuesearch
 from .live import Config as LiveConfig
-from .live import live
 from .to_ast import posts_to_archive_ast, posts_to_index_ast, posts_to_tag_ast
 from .util import TimeElapse, setup_logging
 
@@ -299,7 +298,7 @@ class Config(LiveConfig):
             for minify in minifies_js:
                 minify.result()
         time_elapse.report("collecting all futures.")
-        live(all_pages, self)
+        self.live(all_pages)
 
 
 def cli(Config: type[Config] = Config) -> None:
