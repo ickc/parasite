@@ -124,6 +124,7 @@ class Config(StaticConfig):
         self,
         pages: List[Page],
     ) -> None:
+        """Watch using watchdog which is observer based."""
         from watchdog.events import FileSystemEventHandler
         from watchdog.observers import Observer
 
@@ -163,6 +164,7 @@ class Config(StaticConfig):
         self,
         pages: List[Page],
     ) -> None:
+        """Watch using livereload which is polling based."""
         from livereload import Server
 
         server = Server()
