@@ -357,19 +357,14 @@
         <span class="n">time_elapse</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">paths</span><span class="p">)</span><span class="si">}</span><span class="s2"> paths to watch.&quot;</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Watching the following paths: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">paths</span><span class="p">)</span>
 
-        <span class="c1"># get page with url</span>
-        <span class="n">pages</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Page</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
-            <span class="n">page</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Page</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="k">for</span> <span class="n">cur_page</span> <span class="ow">in</span> <span class="n">all_pages</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">cur_page</span><span class="o">.</span><span class="n">path</span> <span class="o">==</span> <span class="n">path</span><span class="p">:</span>
-                    <span class="n">page</span> <span class="o">=</span> <span class="n">cur_page</span>
-                    <span class="k">break</span>
-            <span class="k">if</span> <span class="n">page</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot find page/post with path </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">pages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
-        <span class="n">time_elapse</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">pages</span><span class="p">)</span><span class="si">}</span><span class="s2"> pages.&quot;</span><span class="p">)</span>
+        <span class="n">lut</span> <span class="o">=</span> <span class="p">{</span><span class="n">page</span><span class="o">.</span><span class="n">path</span><span class="p">:</span> <span class="n">page</span> <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">all_pages</span><span class="p">}</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">pages</span> <span class="o">=</span> <span class="p">[</span><span class="n">lut</span><span class="p">[</span><span class="n">path</span><span class="p">]</span> <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Cannot find page/post with path from the following KeyError: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="n">time_elapse</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found pages to match.&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">pages</span></div>
 
 <div class="viewcode-block" id="Config.live"><a class="viewcode-back" href="../../../api/parasite.live/#parasite.live.Config.live">[docs]</a>    <span class="k">def</span> <span class="nf">live</span><span class="p">(</span>
