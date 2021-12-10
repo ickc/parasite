@@ -125,6 +125,47 @@ class Config(StaticConfig):
         )
         time_elapse.report(f"{page.path} redone.")
 
+    def serve_routine(
+        self,
+        pages: list[Page] = [],
+    ) -> None:
+        """Routines when serving.
+
+        Run this as long as we serve.
+        """
+        if (url := self.serve_open) is not None:
+            self.open_browser(url)
+        if self.watch:
+            if self.watch_open:
+                for page in pages:
+                    self.open_browser(page.url)
+            if self.watch_code:
+                for page in pages:
+                    code(self.output_dir / page.out_path)
+
+    def pages_to_be_watched(
+        self,
+        all_pages: Sequence[Page],
+    ) -> list[Page]:
+        """Watch and re-render pages."""
+        globs = self.watch
+        time_elapse = TimeElapse(logger)
+
+        cur_dir = Path(".")
+        paths = list(chain.from_iterable(cur_dir.glob(glob) for glob in globs))
+        time_elapse.report(f"Found {len(paths)} paths to watch.")
+        logger.debug("Watching the following paths: %s", paths)
+
+        lut = {page.path: page for page in all_pages}
+        try:
+            pages = [lut[path] for path in paths]
+        except KeyError as e:
+            raise ValueError(
+                f"Cannot find page/post with path from the following KeyError: {e}"
+            )
+        time_elapse.report(f"Found pages to match.")
+        return pages
+
     def observe_pages_with_watchdog(
         self,
         pages: List[Page],
@@ -216,47 +257,6 @@ class Config(StaticConfig):
         self.serve_routine(pages)
         logger.info("Observing using livereload...")
         server.serve(root=str(self.output_dir), port=self.serve_port)
-
-    def serve_routine(
-        self,
-        pages: list[Page] = [],
-    ) -> None:
-        """Routines when serving.
-
-        Run this as long as we serve.
-        """
-        if (url := self.serve_open) is not None:
-            self.open_browser(url)
-        if self.watch:
-            if self.watch_open:
-                for page in pages:
-                    self.open_browser(page.url)
-            if self.watch_code:
-                for page in pages:
-                    code(self.output_dir / page.out_path)
-
-    def pages_to_be_watched(
-        self,
-        all_pages: Sequence[Page],
-    ) -> list[Page]:
-        """Watch and re-render pages."""
-        globs = self.watch
-        time_elapse = TimeElapse(logger)
-
-        cur_dir = Path(".")
-        paths = list(chain.from_iterable(cur_dir.glob(glob) for glob in globs))
-        time_elapse.report(f"Found {len(paths)} paths to watch.")
-        logger.debug("Watching the following paths: %s", paths)
-
-        lut = {page.path: page for page in all_pages}
-        try:
-            pages = [lut[path] for path in paths]
-        except KeyError as e:
-            raise ValueError(
-                f"Cannot find page/post with path from the following KeyError: {e}"
-            )
-        time_elapse.report(f"Found pages to match.")
-        return pages
 
     def live(
         self,
