@@ -183,10 +183,10 @@ class Config(StaticConfig):
         for module_path in self.modules_to_be_watched:
             observer.schedule(event_handler, module_path, recursive=True)
             logger.info("Watching module %s", module_path)
-        logger.info("Observing using watchdog without serving...")
         if self.serve:
             self.serving()
             self.serve_routine(pages)
+        logger.info("Observing using watchdog...")
         try:
             observer.start()
         except KeyboardInterrupt:
@@ -206,12 +206,15 @@ class Config(StaticConfig):
 
         server = Server()
         for page in pages:
-            server.watch(str(page.path), partial(self.make_page, page))
+            path = page.path
+            server.watch(str(path), partial(self.make_page, page))
+            logger.info("Watching page %s", path)
         for module_path, module in self.modules_to_be_watched.items():
             server.watch(module_path, partial(reload, module))
+            logger.info("Watching module %s", module_path)
 
         self.serve_routine(pages)
-        logger.info("Observing and serving using livereload...")
+        logger.info("Observing using livereload...")
         server.serve(root=str(self.output_dir), port=self.serve_port)
 
     def serve_routine(
