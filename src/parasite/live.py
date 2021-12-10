@@ -97,6 +97,7 @@ class Config(StaticConfig):
         watch_code: if specified, open all sources that are currently watching in VSCode.
         watch_module: if specified, watch & reload this module.
         serve: if specified, open a server and serve indefinitely.
+        serve_with: valid choices are livereload, watchdog.
         serve_host: the host to serve.
         serve_port: the port to serve.
         serve_open: if specified, open this relative url.
@@ -107,6 +108,7 @@ class Config(StaticConfig):
     watch_code: bool = False
     watch_module: list[str] = field(default_factory=list)
     serve: bool = False
+    serve_with: str = "livereload"
     serve_host: str = "localhost"
     serve_port: int = 5500
     serve_open: Optional[Url] = None
@@ -125,6 +127,9 @@ class Config(StaticConfig):
             self.output_dir,
             url=self.serve_open,
         )
+
+    def open_browser(self, url: Url) -> None:
+        open_browser(self.serve_host, self.serve_port, url)
 
     def make_page(self, page: Page) -> None:
         time_elapse = TimeElapse(logger)
@@ -146,11 +151,18 @@ class Config(StaticConfig):
         )
         time_elapse.report(f"{page.path} redone.")
 
-    def observe_pages_without_serve(
+    def observe_pages_with_watchdog(
         self,
         pages: List[Page],
     ) -> None:
-        """Watch using watchdog which is observer based."""
+        """Watch using watchdog which is observer based.
+
+        Currently this is almost feature parity with :py:func:`observe_pages_with_livereload`.
+
+        livereload is polling-based (except on Linux with a special call method not implemented here.)
+        Here, the way we reload the page is by calling `open_browser` on the modified page.
+        This has the side-effect of the browser windows popping up from backgrounds.
+        """
         from watchdog.events import FileSystemEventHandler
         from watchdog.observers import Observer
 
@@ -169,13 +181,16 @@ class Config(StaticConfig):
                 self.modules = modules
 
             def on_modified(self, event: FileSystemEvent) -> None:
-                modules = self.modules
+                config = self.config
                 pages = self.pages
+                modules = self.modules
                 path = event.src_path
                 logger.info("%s %s. Updating...", path, event.event_type)
                 if path in pages:
                     page = pages[path]
-                    self.config.make_page(page)
+                    config.make_page(page)
+                    if self.watch_open:
+                        config.open_browser(page.url)
                 elif path in modules:
                     module = modules[path]
                     logger.info("Reloading module %s", module)
@@ -196,13 +211,18 @@ class Config(StaticConfig):
             logger.info("Watching module %s", module_path)
         logger.info("Observing using watchdog without serving...")
         try:
+            if self.serve:
+                self.serving()
+            if self.watch_open:
+                for page in pages:
+                    self.open_browser(page.url)
             observer.start()
         except KeyboardInterrupt:
             observer.stop()
         finally:
             observer.join()
 
-    def observe_pages_with_serve(
+    def observe_pages_with_livereload(
         self,
         pages: List[Page],
     ) -> None:
@@ -215,13 +235,13 @@ class Config(StaticConfig):
         for module_path, module in self.modules_to_be_watched.items():
             server.watch(module_path, partial(reload, module))
         # always open with serve
-        port = self.serve_port
         if self.watch_open:
-            host = self.serve_host
             for page in pages:
-                open_browser(host, port, page.url)
+                self.open_browser(page.url)
         logger.info("Observing and serving using livereload...")
-        server.serve(root=str(self.output_dir), port=port)
+        if not self.serve:
+            logger.warning("livereload must serve.")
+        server.serve(root=str(self.output_dir), port=self.serve_port)
 
     def watch_pages(
         self,
@@ -252,10 +272,12 @@ class Config(StaticConfig):
         if self.watch_code:
             for page in pages:
                 code(self.output_dir / page.out_path)
-        if self.serve:
-            self.observe_pages_with_serve(pages)
+        if self.serve_with == "livereload":
+            self.observe_pages_with_livereload(pages)
+        elif self.serve_with == "watchdog":
+            self.observe_pages_with_watchdog(pages)
         else:
-            self.observe_pages_without_serve(pages)
+            raise ValueError(self.serve_with)
 
     def live(
         self,
