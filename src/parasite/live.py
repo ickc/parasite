@@ -35,40 +35,6 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def serving(
-    host: str,
-    port: int,
-    directory: Path,
-    url: Optional[Url] = None,
-) -> Thread:
-    from http.server import HTTPServer, SimpleHTTPRequestHandler
-    from threading import Thread
-
-    httpd = HTTPServer(
-        (host, port),
-        partial(SimpleHTTPRequestHandler, directory=directory),
-    )
-    thread = Thread(target=httpd.serve_forever)
-    thread.start()
-    logger.info("Serving simple server at port %s.", port)
-    # always open with serve
-    if url is not None:
-        open_browser(host, port, url)
-    return thread
-
-
-def open_browser(
-    host: str,
-    port: int,
-    url: Url = Url(""),
-) -> None:
-    import webbrowser
-
-    full_url = str(f"http://{host}:{port}/{url}")
-    logger.info("Opening %s in browser.", full_url)
-    webbrowser.open(full_url, new=2)
-
-
 def code(path: Path) -> None:
     import subprocess  # nosec
 
@@ -121,15 +87,31 @@ class Config(StaticConfig):
         }
 
     def serving(self) -> Thread:
-        return serving(
-            self.serve_host,
-            self.serve_port,
-            self.output_dir,
-            url=self.serve_open,
+        host = self.serve_host
+        port = self.serve_port
+        directory = self.output_dir
+
+        from http.server import HTTPServer, SimpleHTTPRequestHandler
+        from threading import Thread
+
+        httpd = HTTPServer(
+            (host, port),
+            partial(SimpleHTTPRequestHandler, directory=directory),
         )
+        thread = Thread(target=httpd.serve_forever)
+        thread.start()
+        logger.info("Serving simple server at port %s.", port)
+        return thread
 
     def open_browser(self, url: Url) -> None:
-        open_browser(self.serve_host, self.serve_port, url)
+        host = self.serve_host
+        port = self.serve_port
+
+        import webbrowser
+
+        full_url = str(f"http://{host}:{port}/{url}")
+        logger.info("Opening %s in browser.", full_url)
+        webbrowser.open(full_url, new=2)
 
     def make_page(self, page: Page) -> None:
         time_elapse = TimeElapse(logger)
@@ -189,7 +171,7 @@ class Config(StaticConfig):
                 if path in pages:
                     page = pages[path]
                     config.make_page(page)
-                    if self.watch_open:
+                    if config.serve and config.watch_open:
                         config.open_browser(page.url)
                 elif path in modules:
                     module = modules[path]
@@ -213,9 +195,12 @@ class Config(StaticConfig):
         try:
             if self.serve:
                 self.serving()
-            if self.watch_open:
-                for page in pages:
-                    self.open_browser(page.url)
+                # always open with serve
+                if (url := self.serve_open) is not None:
+                    self.open_browser(url)
+                if self.watch_open:
+                    for page in pages:
+                        self.open_browser(page.url)
             observer.start()
         except KeyboardInterrupt:
             observer.stop()
@@ -234,13 +219,16 @@ class Config(StaticConfig):
             server.watch(str(page.path), partial(self.make_page, page))
         for module_path, module in self.modules_to_be_watched.items():
             server.watch(module_path, partial(reload, module))
+        if not self.serve:
+            logger.warning("livereload must serve.")
+        # always open with serve
+        if (url := self.serve_open) is not None:
+            self.open_browser(url)
         # always open with serve
         if self.watch_open:
             for page in pages:
                 self.open_browser(page.url)
         logger.info("Observing and serving using livereload...")
-        if not self.serve:
-            logger.warning("livereload must serve.")
         server.serve(root=str(self.output_dir), port=self.serve_port)
 
     def watch_pages(
@@ -287,6 +275,8 @@ class Config(StaticConfig):
         # only serve ourselves if not watching
         if self.serve and not self.watch:
             self.serving()
+            if (url := self.serve_open) is not None:
+                self.open_browser(url)
         # let watch_pages handle serve cases
         if self.watch:
             self.watch_pages(all_pages)
