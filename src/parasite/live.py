@@ -248,7 +248,8 @@ class Config(StaticConfig):
             observer.start()
             try:
                 while True:
-                    time.sleep(1)
+                    # just some long running command to be KeyboardInterrupted
+                    time.sleep(86400)
             except KeyboardInterrupt:
                 logger.info("Shutting down Watchdog")
                 observer.stop()
