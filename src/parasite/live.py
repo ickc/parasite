@@ -55,7 +55,7 @@ class Config(StaticConfig):
         watch_code: if specified, open all sources that are currently watching in VSCode.
         watch_module: if specified, watch & reload this module.
         serve: if specified, open a server and serve indefinitely.
-        serve_with: valid choices are livereload, watchdog.
+        watch_with: valid choices are livereload, watchdog. If not specified, default to livereload if serve, else watchdog.
         serve_host: the host to serve.
         serve_port: the port to serve.
         serve_open: if specified, open this relative url.
@@ -66,10 +66,15 @@ class Config(StaticConfig):
     watch_code: bool = False
     watch_module: list[str] = field(default_factory=list)
     serve: bool = False
-    serve_with: str = "livereload"
+    watch_with: str = ""
     serve_host: str = "localhost"
     serve_port: int = 5500
     serve_open: Optional[Url] = None
+
+    def __post_init__(self) -> None:
+        if not self.watch_with:
+            self.watch_with = "livereload" if self.serve else "watchdog"
+            logger.info("Defaulting watch_with as %s", self.watch_with)
 
     @cached_property
     def modules_to_be_watched(self) -> dict[str, ModuleType]:
@@ -266,12 +271,12 @@ class Config(StaticConfig):
         # let watch_pages handle serve cases
         if self.watch:
             pages = self.pages_to_be_watched(all_pages)
-            if (serve_with := self.serve_with) == "livereload":
+            if (watch_with := self.watch_with) == "livereload":
                 self.observe_pages_with_livereload(pages)
-            elif serve_with == "watchdog":
+            elif watch_with == "watchdog":
                 self.observe_pages_with_watchdog(pages)
             else:
-                raise ValueError(serve_with)
+                raise ValueError(watch_with)
         # only serve ourselves if not watching
         elif self.serve:
             self.serving()
