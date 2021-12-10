@@ -1,12 +1,4 @@
-"""This handle the following config specific to live events:
-
-watch
-watch_open
-watch_code
-serve
-serve_host
-serve_port
-serve_open
+"""This handle live events.
 """
 
 from __future__ import annotations
@@ -192,15 +184,10 @@ class Config(StaticConfig):
             observer.schedule(event_handler, module_path, recursive=True)
             logger.info("Watching module %s", module_path)
         logger.info("Observing using watchdog without serving...")
+        if self.serve:
+            self.serving()
+            self.serve_routine(pages)
         try:
-            if self.serve:
-                self.serving()
-                # always open with serve
-                if (url := self.serve_open) is not None:
-                    self.open_browser(url)
-                if self.watch_open:
-                    for page in pages:
-                        self.open_browser(page.url)
             observer.start()
         except KeyboardInterrupt:
             observer.stop()
@@ -214,27 +201,41 @@ class Config(StaticConfig):
         """Watch using livereload which is polling based."""
         from livereload import Server
 
+        if not self.serve:
+            logger.warning("livereload must serve.")
+
         server = Server()
         for page in pages:
             server.watch(str(page.path), partial(self.make_page, page))
         for module_path, module in self.modules_to_be_watched.items():
             server.watch(module_path, partial(reload, module))
-        if not self.serve:
-            logger.warning("livereload must serve.")
-        # always open with serve
-        if (url := self.serve_open) is not None:
-            self.open_browser(url)
-        # always open with serve
-        if self.watch_open:
-            for page in pages:
-                self.open_browser(page.url)
+
+        self.serve_routine(pages)
         logger.info("Observing and serving using livereload...")
         server.serve(root=str(self.output_dir), port=self.serve_port)
 
-    def watch_pages(
+    def serve_routine(
+        self,
+        pages: list[Page] = [],
+    ) -> None:
+        """Routines when serving.
+
+        Run this as long as we serve.
+        """
+        if (url := self.serve_open) is not None:
+            self.open_browser(url)
+        if self.watch:
+            if self.watch_open:
+                for page in pages:
+                    self.open_browser(page.url)
+            if self.watch_code:
+                for page in pages:
+                    code(self.output_dir / page.out_path)
+
+    def pages_to_be_watched(
         self,
         all_pages: Sequence[Page],
-    ) -> None:
+    ) -> list[Page]:
         """Watch and re-render pages."""
         globs = self.watch
         time_elapse = TimeElapse(logger)
@@ -257,26 +258,23 @@ class Config(StaticConfig):
             else:
                 pages.append(page)
         time_elapse.report(f"Found {len(pages)} pages.")
-        if self.watch_code:
-            for page in pages:
-                code(self.output_dir / page.out_path)
-        if self.serve_with == "livereload":
-            self.observe_pages_with_livereload(pages)
-        elif self.serve_with == "watchdog":
-            self.observe_pages_with_watchdog(pages)
-        else:
-            raise ValueError(self.serve_with)
+        return pages
 
     def live(
         self,
         all_pages: Sequence[Page],
     ) -> None:
         """Go live."""
-        # only serve ourselves if not watching
-        if self.serve and not self.watch:
-            self.serving()
-            if (url := self.serve_open) is not None:
-                self.open_browser(url)
         # let watch_pages handle serve cases
         if self.watch:
-            self.watch_pages(all_pages)
+            pages = self.pages_to_be_watched(all_pages)
+            if (serve_with := self.serve_with) == "livereload":
+                self.observe_pages_with_livereload(pages)
+            elif serve_with == "watchdog":
+                self.observe_pages_with_watchdog(pages)
+            else:
+                raise ValueError(serve_with)
+        # only serve ourselves if not watching
+        elif self.serve:
+            self.serving()
+            self.serve_routine()
