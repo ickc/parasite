@@ -248,19 +248,14 @@ class Config(StaticConfig):
         time_elapse.report(f"Found {len(paths)} paths to watch.")
         logger.debug("Watching the following paths: %s", paths)
 
-        # get page with url
-        pages: List[Page] = []
-        for path in paths:
-            page: Optional[Page] = None
-            for cur_page in all_pages:
-                if cur_page.path == path:
-                    page = cur_page
-                    break
-            if page is None:
-                raise ValueError(f"Cannot find page/post with path {path}")
-            else:
-                pages.append(page)
-        time_elapse.report(f"Found {len(pages)} pages.")
+        lut = {page.path: page for page in all_pages}
+        try:
+            pages = [lut[path] for path in paths]
+        except KeyError as e:
+            raise ValueError(
+                f"Cannot find page/post with path from the following KeyError: {e}"
+            )
+        time_elapse.report(f"Found pages to match.")
         return pages
 
     def live(
