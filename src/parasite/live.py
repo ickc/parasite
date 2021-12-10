@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from dataclasses import dataclass, field
 from functools import cached_property, partial
 from importlib import import_module, reload
@@ -18,7 +19,7 @@ from .config import Config as StaticConfig
 from .util import TimeElapse
 
 if TYPE_CHECKING:
-    from threading import Thread
+    from http.server import ThreadingHTTPServer
     from types import ModuleType
     from typing import Sequence
 
@@ -83,22 +84,20 @@ class Config(StaticConfig):
             for name in self.watch_module
         }
 
-    def serving(self) -> Thread:
+    @cached_property
+    def serving(self) -> ThreadingHTTPServer:
         host = self.serve_host
         port = self.serve_port
         directory = self.output_dir
 
-        from http.server import HTTPServer, SimpleHTTPRequestHandler
-        from threading import Thread
+        from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
-        httpd = HTTPServer(
+        httpd = ThreadingHTTPServer(
             (host, port),
             partial(SimpleHTTPRequestHandler, directory=directory),
         )
-        thread = Thread(target=httpd.serve_forever)
-        thread.start()
         logger.info("Serving simple server at port %s.", port)
-        return thread
+        return httpd
 
     def open_browser(self, url: Url) -> None:
         host = self.serve_host
@@ -229,16 +228,35 @@ class Config(StaticConfig):
         for module_path in self.modules_to_be_watched:
             observer.schedule(event_handler, module_path, recursive=True)
             logger.info("Watching module %s", module_path)
-        if self.serve:
-            self.serving()
-            self.serve_routine(pages)
         logger.info("Observing using watchdog...")
-        try:
+        if self.serve:
             observer.start()
-        except KeyboardInterrupt:
-            observer.stop()
-        finally:
-            observer.join()
+            self.serve_routine(pages)
+            httpd = self.serving
+            try:
+                httpd.serve_forever()
+            except KeyboardInterrupt:
+                logger.info("Shutting down Watchdog & ThreadingHTTPServer")
+                observer.stop()
+                httpd.shutdown()
+                logger.info("Shutted down Watchdog & ThreadingHTTPServer")
+            finally:
+                logger.info("Joining observer")
+                observer.join()
+                logger.info("Joint observer")
+        else:
+            observer.start()
+            try:
+                while True:
+                    time.sleep(1)
+            except KeyboardInterrupt:
+                logger.info("Shutting down Watchdog")
+                observer.stop()
+                logger.info("Shutted down Watchdog")
+            finally:
+                logger.info("Joining observer")
+                observer.join()
+                logger.info("Joint observer")
 
     def observe_pages_with_livereload(
         self,
@@ -279,5 +297,12 @@ class Config(StaticConfig):
                 raise ValueError(watch_with)
         # only serve ourselves if not watching
         elif self.serve:
-            self.serving()
             self.serve_routine()
+            httpd = self.serving
+            try:
+                httpd.serve_forever()
+                logger.info("Served.")
+            except KeyboardInterrupt:
+                logger.info("Shutting down ThreadingHTTPServer")
+                httpd.shutdown()
+                logger.info("Shutted down ThreadingHTTPServer")
