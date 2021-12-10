@@ -357,7 +357,8 @@
             <span class="n">observer</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-                    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                    <span class="c1"># just some long running command to be KeyboardInterrupted</span>
+                    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">86400</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Shutting down Watchdog&quot;</span><span class="p">)</span>
                 <span class="n">observer</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
