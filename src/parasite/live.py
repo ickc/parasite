@@ -129,23 +129,20 @@ class Config(StaticConfig):
         )
         time_elapse.report(f"{page.path} redone.")
 
-    def serve_routine(
+    def live_routine(
         self,
         pages: list[Page] = [],
     ) -> None:
-        """Routines when serving.
-
-        Run this as long as we serve.
-        """
-        if (url := self.serve_open) is not None:
-            self.open_browser(url)
-        if self.watch:
-            if self.watch_open:
+        """Routines near the end of going live."""
+        if self.serve:
+            if (url := self.serve_open) is not None:
+                self.open_browser(url)
+            if self.watch and self.watch_open:
                 for page in pages:
                     self.open_browser(page.url)
-            if self.watch_code:
-                for page in pages:
-                    code(self.output_dir / page.out_path)
+        if self.watch and self.watch_code:
+            for page in pages:
+                code(self.output_dir / page.out_path)
 
     def pages_to_be_watched(
         self,
@@ -228,10 +225,11 @@ class Config(StaticConfig):
         for module_path in self.modules_to_be_watched:
             observer.schedule(event_handler, module_path, recursive=True)
             logger.info("Watching module %s", module_path)
+
         logger.info("Observing using watchdog...")
+        observer.start()
+        self.live_routine(pages)
         if self.serve:
-            observer.start()
-            self.serve_routine(pages)
             httpd = self.serving
             try:
                 httpd.serve_forever()
@@ -245,7 +243,6 @@ class Config(StaticConfig):
                 observer.join()
                 logger.info("Joint observer")
         else:
-            observer.start()
             try:
                 while True:
                     # just some long running command to be KeyboardInterrupted
@@ -268,6 +265,7 @@ class Config(StaticConfig):
 
         if not self.serve:
             logger.warning("livereload must serve.")
+            self.serve = True
 
         server = Server()
         for page in pages:
@@ -278,8 +276,8 @@ class Config(StaticConfig):
             server.watch(module_path, partial(reload, module))
             logger.info("Watching module %s", module_path)
 
-        self.serve_routine(pages)
         logger.info("Observing using livereload...")
+        self.live_routine(pages)
         server.serve(root=str(self.output_dir), port=self.serve_port)
 
     def live(
@@ -298,8 +296,8 @@ class Config(StaticConfig):
                 raise ValueError(watch_with)
         # only serve ourselves if not watching
         elif self.serve:
-            self.serve_routine()
             httpd = self.serving
+            self.live_routine()
             try:
                 httpd.serve_forever()
                 logger.info("Served.")
