@@ -210,7 +210,14 @@ class Config(StaticConfig):
                 elif path in modules:
                     module = modules[path]
                     logger.info("Reloading module %s", module)
-                    reload(module)
+                    try:
+                        reload(module)
+                    except Exception as e:
+                        logger.warning(
+                            "Exception encoutnered when reloading module %s: %s",
+                            module,
+                            e,
+                        )
                 else:
                     logger.warning("Don't know how to update %s", path)
 
