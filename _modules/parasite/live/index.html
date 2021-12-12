@@ -238,23 +238,20 @@
         <span class="p">)</span>
         <span class="n">time_elapse</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">page</span><span class="o">.</span><span class="n">path</span><span class="si">}</span><span class="s2"> redone.&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Config.serve_routine"><a class="viewcode-back" href="../../../api/parasite.live/#parasite.live.Config.serve_routine">[docs]</a>    <span class="k">def</span> <span class="nf">serve_routine</span><span class="p">(</span>
+<div class="viewcode-block" id="Config.live_routine"><a class="viewcode-back" href="../../../api/parasite.live/#parasite.live.Config.live_routine">[docs]</a>    <span class="k">def</span> <span class="nf">live_routine</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">pages</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Page</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Routines when serving.</span>
-
-<span class="sd">        Run this as long as we serve.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">url</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">serve_open</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">open_browser</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">watch</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">watch_open</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Routines near the end of going live.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">serve</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">url</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">serve_open</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">open_browser</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">watch</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">watch_open</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">pages</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">open_browser</span><span class="p">(</span><span class="n">page</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">watch_code</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">pages</span><span class="p">:</span>
-                    <span class="n">code</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">/</span> <span class="n">page</span><span class="o">.</span><span class="n">out_path</span><span class="p">)</span></div>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">watch</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">watch_code</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">pages</span><span class="p">:</span>
+                <span class="n">code</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">/</span> <span class="n">page</span><span class="o">.</span><span class="n">out_path</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Config.pages_to_be_watched"><a class="viewcode-back" href="../../../api/parasite.live/#parasite.live.Config.pages_to_be_watched">[docs]</a>    <span class="k">def</span> <span class="nf">pages_to_be_watched</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -337,10 +334,11 @@
         <span class="k">for</span> <span class="n">module_path</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">modules_to_be_watched</span><span class="p">:</span>
             <span class="n">observer</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="n">event_handler</span><span class="p">,</span> <span class="n">module_path</span><span class="p">,</span> <span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Watching module </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">module_path</span><span class="p">)</span>
+
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Observing using watchdog...&quot;</span><span class="p">)</span>
+        <span class="n">observer</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">live_routine</span><span class="p">(</span><span class="n">pages</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">serve</span><span class="p">:</span>
-            <span class="n">observer</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">serve_routine</span><span class="p">(</span><span class="n">pages</span><span class="p">)</span>
             <span class="n">httpd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">serving</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">httpd</span><span class="o">.</span><span class="n">serve_forever</span><span class="p">()</span>
@@ -354,7 +352,6 @@
                 <span class="n">observer</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Joint observer&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">observer</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
                     <span class="c1"># just some long running command to be KeyboardInterrupted</span>
@@ -377,6 +374,7 @@
 
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">serve</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;livereload must serve.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">serve</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="n">server</span> <span class="o">=</span> <span class="n">Server</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">pages</span><span class="p">:</span>
@@ -387,8 +385,8 @@
             <span class="n">server</span><span class="o">.</span><span class="n">watch</span><span class="p">(</span><span class="n">module_path</span><span class="p">,</span> <span class="n">partial</span><span class="p">(</span><span class="n">reload</span><span class="p">,</span> <span class="n">module</span><span class="p">))</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Watching module </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">module_path</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">serve_routine</span><span class="p">(</span><span class="n">pages</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Observing using livereload...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">live_routine</span><span class="p">(</span><span class="n">pages</span><span class="p">)</span>
         <span class="n">server</span><span class="o">.</span><span class="n">serve</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">),</span> <span class="n">port</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">serve_port</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Config.live"><a class="viewcode-back" href="../../../api/parasite.live/#parasite.live.Config.live">[docs]</a>    <span class="k">def</span> <span class="nf">live</span><span class="p">(</span>
@@ -407,8 +405,8 @@
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">watch_with</span><span class="p">)</span>
         <span class="c1"># only serve ourselves if not watching</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">serve</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">serve_routine</span><span class="p">()</span>
             <span class="n">httpd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">serving</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">live_routine</span><span class="p">()</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">httpd</span><span class="o">.</span><span class="n">serve_forever</span><span class="p">()</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Served.&quot;</span><span class="p">)</span>
@@ -430,7 +428,7 @@
     </p>
     <p>
         &copy; Copyright 2021, Kolen Cheung.<br/>
-      Last updated on Dec 10, 2021.<br/>
+      Last updated on Dec 12, 2021.<br/>
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.5.4.<br/>
     </p>
   </div>
