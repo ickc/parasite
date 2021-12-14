@@ -12,9 +12,11 @@ from .panflute_filters import lightgallery, lightgallery_from_dir
 from .templates import INDEX_TEMPLATE, POST_TEMPLATE, SLIDE_TEMPLATE
 
 if TYPE_CHECKING:
-    from typing import List, Optional, Tuple
+    from typing import Callable, List, Optional, Tuple, Union
 
-    from .panflute_filters import PANFLUTE_ACTION
+    from panflute.elements import Doc, Element
+
+    PANFLUTE_ACTION = Callable[[Element, Doc], Union[None, Element, list[Element]]]
 
 THIS_YEAR = time.gmtime().tm_year
 

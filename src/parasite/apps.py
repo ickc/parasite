@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
     from urlpath import URL as Url
 
-    from .panflute_filters import PANFLUTE_ACTION
+    from .config import PANFLUTE_ACTION
 
 
 def read_md_to_ast(

@@ -12,13 +12,11 @@ from panflute.elements import Div, Image, Link, MetaBlocks, MetaList, Plain, Raw
 from urlpath import URL as Url
 
 if TYPE_CHECKING:
-    from typing import Callable, List, Optional, Sequence, Union
+    from typing import List, Optional, Sequence
 
     from panflute.base import Block
     from panflute.containers import ListContainer
-    from panflute.elements import Doc, Element, MetaMap
-
-    PANFLUTE_ACTION = Callable[[Element, Doc], Union[None, Element, list[Element]]]
+    from panflute.elements import Doc, MetaMap
 
 logger = getLogger(__name__)
 
