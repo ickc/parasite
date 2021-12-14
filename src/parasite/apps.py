@@ -5,10 +5,12 @@ all functions should be imported inside functions for parsl
 
 from __future__ import annotations
 
+from logging import getLogger
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 import panflute as pf
+from panflute.io import run_filters
 from panflute.tools import convert_text
 
 from .panflute_filters import meta_append
@@ -16,14 +18,53 @@ from .panflute_filters import meta_append
 if TYPE_CHECKING:
     from typing import Callable, Dict, List, Optional, Tuple
 
+    from panflute.elements import Doc
     from urlpath import URL as Url
 
-    from .config import PANFLUTE_ACTION
+    from .config import (
+        PANFLUTE_ACTION,
+        PANFLUTE_FILTERS,
+        PANFLUTE_FINALIZE,
+        PANFLUTE_PREPARE,
+    )
+
+logger = getLogger(__name__)
+
+
+def _run_filters(filters: PANFLUTE_FILTERS, doc: Doc) -> None:
+    """Run filters.
+
+    See definition of :py:object:`PANFLUTE_FILTER`.
+    """
+    actions: list[PANFLUTE_ACTION] = []
+    for f in filters:
+        # accuminate actions
+        if callable(f):
+            actions.append(f)
+        else:
+            # accuminated actions before current filter
+            if actions:
+                run_filters(actions, doc=doc)
+            # current filter
+            prepare: PANFLUTE_PREPARE
+            finalize: PANFLUTE_FINALIZE
+            try:
+                actions, prepare, finalize = f  # type: ignore[assignment] # type limitation
+            except ValueError as e:
+                logger.critical(
+                    "Filters has wrong type. See PANFLUTE_FILTERS definition."
+                )
+                raise e
+            run_filters(actions, prepare=prepare, finalize=finalize, doc=doc)
+            actions = []
+    # remaining filters
+    if actions:
+        run_filters(actions, doc=doc)
 
 
 def read_md_to_ast(
     pandoc_options: Callable[[str], List[str]],
-    panflute_filters: Callable[[str], List[PANFLUTE_ACTION]],
+    panflute_filters: Callable[[str], PANFLUTE_FILTERS],
     inputs: List[Path] = [],
 ) -> pf.elements.Doc:
     """Read from markdown to panflute AST"""
@@ -40,7 +81,7 @@ def read_md_to_ast(
 
     fs = panflute_filters(ext)
     if fs:
-        pf.io.run_filters(fs, doc=doc)
+        _run_filters(fs, doc)
 
     return doc
 
@@ -92,7 +133,7 @@ def get_teaser(content: pf.containers.ListContainer) -> pf.containers.ListContai
 
 def read_md_to_ast_with_teaser(
     pandoc_options: Callable[[str], List[str]],
-    panflute_filters: Callable[[str], List[PANFLUTE_ACTION]],
+    panflute_filters: Callable[[str], PANFLUTE_FILTERS],
     inputs: List[Path] = [],
 ) -> Tuple[pf.elements.Doc, pf.containers.ListContainer]:
     ast = read_md_to_ast(
@@ -121,7 +162,7 @@ def post_to_html(
     include_after: Callable[[str, str, str], str],
     script_include_after: Callable[[str, str], str],
     pandoc_options: Callable[[str, str], List[str]],
-    panflute_filters: Callable[[str, str], List[PANFLUTE_ACTION]],
+    panflute_filters: Callable[[str, str], PANFLUTE_FILTERS],
     js: Callable[[str, str], List[str]],
     css: Callable[[str, str], List[str]],
     mathjax_config: str = "",
@@ -204,7 +245,7 @@ def post_to_html(
 
     fs = panflute_filters(ext, ".html")
     if fs:
-        pf.io.run_filters(fs, doc=ast)
+        _run_filters(fs, ast)
     if not html_filters:
         extra_args.append(f"--output={out_path}")
     html = convert_text(

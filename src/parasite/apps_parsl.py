@@ -17,13 +17,13 @@ if TYPE_CHECKING:
     from parsl.data_provider.files import File
     from urlpath import URL as Url
 
-    from .config import PANFLUTE_ACTION
+    from .config import PANFLUTE_FILTERS
 
 
 @python_app(cache=True)
 def app_read_md_to_ast(
     pandoc_options: Callable[[str], List[str]],
-    panflute_filters: Callable[[str], List[PANFLUTE_ACTION]],
+    panflute_filters: Callable[[str], PANFLUTE_FILTERS],
     inputs: list[File] = [],
 ) -> pf.elements.Doc:
     from pathlib import Path
@@ -41,7 +41,7 @@ def app_read_md_to_ast(
 @python_app(cache=True)
 def app_read_md_to_ast_with_teaser(
     pandoc_options: Callable[[str], List[str]],
-    panflute_filters: Callable[[str], List[PANFLUTE_ACTION]],
+    panflute_filters: Callable[[str], PANFLUTE_FILTERS],
     inputs: List[File] = [],
 ) -> Tuple[pf.elements.Doc, pf.containers.ListContainer]:
     from pathlib import Path
@@ -74,7 +74,7 @@ def app_post_to_html(
     include_after: Callable[[str, str, str], str],
     script_include_after: Callable[[str, str], str],
     pandoc_options: Callable[[str, str], List[str]],
-    panflute_filters: Callable[[str, str], List[PANFLUTE_ACTION]],
+    panflute_filters: Callable[[str, str], PANFLUTE_FILTERS],
     js: Callable[[str, str], List[str]],
     css: Callable[[str, str], List[str]],
     mathjax_config: str = "",
