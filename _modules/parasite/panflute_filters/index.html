@@ -121,11 +121,21 @@
 <span class="kn">from</span> <span class="nn">urlpath</span> <span class="kn">import</span> <span class="n">URL</span> <span class="k">as</span> <span class="n">Url</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span>
+    <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Union</span>
 
     <span class="kn">from</span> <span class="nn">panflute.base</span> <span class="kn">import</span> <span class="n">Block</span>
     <span class="kn">from</span> <span class="nn">panflute.containers</span> <span class="kn">import</span> <span class="n">ListContainer</span>
-    <span class="kn">from</span> <span class="nn">panflute.elements</span> <span class="kn">import</span> <span class="n">Doc</span><span class="p">,</span> <span class="n">MetaMap</span>
+    <span class="kn">from</span> <span class="nn">panflute.elements</span> <span class="kn">import</span> <span class="n">Doc</span><span class="p">,</span> <span class="n">Element</span><span class="p">,</span> <span class="n">MetaMap</span>
+
+    <span class="c1"># panflute types inferred from `panflute.run_filters`</span>
+    <span class="c1"># panflute actions also accepts **kwargs</span>
+    <span class="n">PanfluteAction</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Element</span><span class="p">,</span> <span class="n">Doc</span><span class="p">],</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">Element</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">Element</span><span class="p">]]]</span>
+    <span class="n">PanflutePrepare</span> <span class="o">=</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">Doc</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span>
+    <span class="n">PanfluteFinalize</span> <span class="o">=</span> <span class="n">PanflutePrepare</span>
+    <span class="c1"># typically, panflute filter is a main function calling `panflute.run_filters`</span>
+    <span class="n">_NoneToNone</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="kc">None</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="n">_DocToDoc</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Doc</span><span class="p">],</span> <span class="n">Doc</span><span class="p">]</span>
+    <span class="n">PanfluteFilter</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;PanfluteFilter&quot;</span><span class="p">,</span> <span class="n">_DocToDoc</span><span class="p">,</span> <span class="n">_NoneToNone</span><span class="p">)</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -156,6 +166,7 @@
         <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">elem</span><span class="p">)</span></div>
 
 
+<span class="c1"># PanfluteAction</span>
 <div class="viewcode-block" id="lightgallery"><a class="viewcode-back" href="../../../api/parasite.panflute_filters/#parasite.panflute_filters.lightgallery">[docs]</a><span class="k">def</span> <span class="nf">lightgallery</span><span class="p">(</span>
     <span class="n">elem</span><span class="p">:</span> <span class="n">ListContainer</span><span class="p">[</span><span class="n">Block</span><span class="p">],</span>
     <span class="n">doc</span><span class="p">:</span> <span class="n">Doc</span><span class="p">,</span>
@@ -199,6 +210,7 @@
         <span class="k">return</span> <span class="kc">None</span></div>
 
 
+<span class="c1"># PanfluteAction</span>
 <div class="viewcode-block" id="lightgallery_from_dir"><a class="viewcode-back" href="../../../api/parasite.panflute_filters/#parasite.panflute_filters.lightgallery_from_dir">[docs]</a><span class="k">def</span> <span class="nf">lightgallery_from_dir</span><span class="p">(</span>
     <span class="n">elem</span><span class="p">:</span> <span class="n">ListContainer</span><span class="p">[</span><span class="n">Block</span><span class="p">],</span>
     <span class="n">doc</span><span class="p">:</span> <span class="n">Doc</span><span class="p">,</span>
@@ -248,6 +260,14 @@
         <span class="k">return</span> <span class="n">div</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="lightgallery_filter"><a class="viewcode-back" href="../../../api/parasite.panflute_filters/#parasite.panflute_filters.lightgallery_filter">[docs]</a><span class="k">def</span> <span class="nf">lightgallery_filter</span><span class="p">(</span><span class="n">doc</span><span class="p">:</span> <span class="n">Doc</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Doc</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">doc</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">lightgallery</span><span class="p">,</span> <span class="n">doc</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="lightgallery_from_dir_filter"><a class="viewcode-back" href="../../../api/parasite.panflute_filters/#parasite.panflute_filters.lightgallery_from_dir_filter">[docs]</a><span class="k">def</span> <span class="nf">lightgallery_from_dir_filter</span><span class="p">(</span><span class="n">doc</span><span class="p">:</span> <span class="n">Doc</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Doc</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">doc</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">lightgallery_from_dir</span><span class="p">,</span> <span class="n">doc</span><span class="p">)</span></div>
 </pre></div>
 
     </div>
@@ -262,7 +282,7 @@
     </p>
     <p>
         &copy; Copyright 2021, Kolen Cheung.<br/>
-      Last updated on Dec 14, 2021.<br/>
+      Last updated on Dec 18, 2021.<br/>
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.5.4.<br/>
     </p>
   </div>
