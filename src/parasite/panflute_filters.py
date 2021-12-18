@@ -12,11 +12,21 @@ from panflute.elements import Div, Image, Link, MetaBlocks, MetaList, Plain, Raw
 from urlpath import URL as Url
 
 if TYPE_CHECKING:
-    from typing import List, Optional, Sequence
+    from typing import Callable, List, Optional, Sequence, TypeVar, Union
 
     from panflute.base import Block
     from panflute.containers import ListContainer
-    from panflute.elements import Doc, MetaMap
+    from panflute.elements import Doc, Element, MetaMap
+
+    # panflute types inferred from `panflute.run_filters`
+    # panflute actions also accepts **kwargs
+    PanfluteAction = Callable[[Element, Doc], Union[None, Element, list[Element]]]
+    PanflutePrepare = Optional[Callable[[Doc], None]]
+    PanfluteFinalize = PanflutePrepare
+    # typically, panflute filter is a main function calling `panflute.run_filters`
+    _NoneToNone = Callable[[None], None]
+    _DocToDoc = Callable[[Doc], Doc]
+    PanfluteFilter = TypeVar("PanfluteFilter", _DocToDoc, _NoneToNone)
 
 logger = getLogger(__name__)
 
@@ -47,6 +57,7 @@ def extract_image(
         outputs.append(elem)
 
 
+# PanfluteAction
 def lightgallery(
     elem: ListContainer[Block],
     doc: Doc,
@@ -90,6 +101,7 @@ $("#{identifier}").justifiedGallery();""",
         return None
 
 
+# PanfluteAction
 def lightgallery_from_dir(
     elem: ListContainer[Block],
     doc: Doc,
@@ -139,3 +151,11 @@ $("#{identifier}").justifiedGallery();""",
         return div
     else:
         return None
+
+
+def lightgallery_filter(doc: Doc) -> Doc:
+    return doc.walk(lightgallery, doc)
+
+
+def lightgallery_from_dir_filter(doc: Doc) -> Doc:
+    return doc.walk(lightgallery_from_dir, doc)

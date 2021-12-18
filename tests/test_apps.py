@@ -9,13 +9,15 @@ from panflute.tools import convert_text
 from parasite import apps
 
 if TYPE_CHECKING:
-    from typing import Callable, List
+    from typing import List
+
+    from parasite.panflute_filters import PanfluteFilter
 
 example_path = Path("docs/README.md")
 
 
-def panflute_filters(ext: str) -> List[Callable]:
-    return [lambda x, y: None]
+def panflute_filters(ext: str) -> List[PanfluteFilter]:
+    return [lambda x: x]
 
 
 def pandoc_options(ext: str) -> List[str]:
@@ -26,7 +28,7 @@ def pandoc_options(ext: str) -> List[str]:
     "panflute_filters",
     [
         panflute_filters,
-        lambda x: None,
+        lambda x: [],
     ],
 )
 def test_read_md_to_ast(panflute_filters):

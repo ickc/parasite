@@ -8,24 +8,13 @@ from typing import TYPE_CHECKING, Callable, Dict, Union
 from custom_inherit import DocInheritMeta
 
 from .helpers import nav, pretty_urls_present
-from .panflute_filters import lightgallery, lightgallery_from_dir
+from .panflute_filters import lightgallery_filter, lightgallery_from_dir_filter
 from .templates import INDEX_TEMPLATE, POST_TEMPLATE, SLIDE_TEMPLATE
 
 if TYPE_CHECKING:
-    from typing import Callable, List, Optional, Sequence, Tuple, Union
+    from typing import Callable, List, Optional, Tuple, Union
 
-    from panflute.elements import Doc, Element
-
-    PANFLUTE_ACTION = Callable[[Element, Doc], Union[None, Element, list[Element]]]
-    PANFLUTE_PREPARE = Optional[Callable[[Doc], None]]
-    PANFLUTE_FINALIZE = PANFLUTE_PREPARE
-    # see https://panflute.readthedocs.io/en/latest/code.html?highlight=run_filters#panflute.io.run_filters
-    # PANFLUTE_FILTER can either be just an action, or a tuple of action, prepare, finalize
-    PANFLUTE_FILTER = Union[
-        PANFLUTE_ACTION,
-        tuple[Sequence[PANFLUTE_ACTION], PANFLUTE_PREPARE, PANFLUTE_FINALIZE],
-    ]
-    PANFLUTE_FILTERS = Sequence[PANFLUTE_FILTER]
+    from .panflute_filters import PanfluteFilter
 
 THIS_YEAR = time.gmtime().tm_year
 
@@ -294,9 +283,9 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
         return []
 
     @staticmethod
-    def panflute_input_filters(ext: str) -> PANFLUTE_FILTERS:
+    def panflute_input_filters(ext: str) -> list[PanfluteFilter]:
         return [
-            lightgallery_from_dir,
+            lightgallery_from_dir_filter,
         ]
 
     @staticmethod
@@ -309,10 +298,10 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
         return res
 
     @staticmethod
-    def panflute_output_filters(ext: str, out_ext: str) -> PANFLUTE_FILTERS:
+    def panflute_output_filters(ext: str, out_ext: str) -> list[PanfluteFilter]:
         if out_ext == ".html":
             return [
-                lightgallery,
+                lightgallery_filter,
             ]
         else:
             return []
