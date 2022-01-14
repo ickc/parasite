@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -84,8 +85,6 @@ def write_tipuesearch(
     pages: Sequence[Page],
     root: str = "..",
 ) -> None:
-    import ujson as json
-
     data = tipuesearch(pages, root=root)
     with open(path, "w") as f:
         print("var tipuesearch=", file=f, end="")

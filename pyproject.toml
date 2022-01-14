@@ -47,7 +47,6 @@ panflute = "^2.1"
 parsl = "^1.1"
 urlpath = "^1.1"
 defopt = "^6"
-ujson = "^4"
 feedgen = "^0.9"
 
 # extras
