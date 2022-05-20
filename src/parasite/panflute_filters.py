@@ -29,6 +29,26 @@ if TYPE_CHECKING:
     PanfluteFilter = TypeVar("PanfluteFilter", _DocToDoc, _NoneToNone)
 
 logger = getLogger(__name__)
+LIGHTGALLERY_NAME: str = "lightgallery"
+SCRIPT_INCLUDE_AFTER: str = """lightGallery(document.getElementById('{identifier}'), {{
+plugins: [lgThumbnail,],
+thumbnail: true,
+}});
+$("#{identifier}").justifiedGallery();"""
+
+
+def _gen_identifier(
+    elem: ListContainer[Block],
+    doc: Doc,
+) -> str:
+    identifier = "".join(
+        random.choices(string.ascii_uppercase + string.digits, k=44)
+    )
+    logger.info(
+        f"Created random identifier {identifier} for lightgallery in"
+        f' {doc.get_metadata("title")}.'
+    )
+    return identifier
 
 
 def meta_append(meta: MetaMap, key: str, value: str) -> None:
@@ -61,12 +81,8 @@ def extract_image(
 def lightgallery(
     elem: ListContainer[Block],
     doc: Doc,
-    cls: str = "lightgallery",
-    script_include_after: str = """lightGallery(document.getElementById('{identifier}'), {{
-plugins: [lgThumbnail,],
-thumbnail: true,
-}});
-$("#{identifier}").justifiedGallery();""",
+    cls: str = LIGHTGALLERY_NAME,
+    script_include_after: str = SCRIPT_INCLUDE_AFTER,
 ) -> Optional[ListContainer[Block]]:
     """Transform contents of Div with class lightgallery to that lightgallery needs."""
     if isinstance(elem, Div) and cls in elem.classes:
@@ -74,15 +90,7 @@ $("#{identifier}").justifiedGallery();""",
         elem.walk(partial(extract_image, outputs=images))
         res = [Link(image, url=image.url) for image in images]
 
-        identifier: str = elem.identifier
-        if not identifier:
-            identifier = "".join(
-                random.choices(string.ascii_uppercase + string.digits, k=44)
-            )
-            logger.info(
-                f"Created random identifier {identifier} for lightgallery in"
-                f' {doc.get_metadata("title")}.'
-            )
+        identifier: str = elem.identifier or _gen_identifier(elem, doc)
 
         meta_append(
             doc.metadata,
@@ -105,13 +113,9 @@ $("#{identifier}").justifiedGallery();""",
 def lightgallery_from_dir(
     elem: ListContainer[Block],
     doc: Doc,
-    attribute: str = "lightgallery",
+    attribute: str = LIGHTGALLERY_NAME,
     suffices: Sequence[str] = [".jpg"],
-    script_include_after: str = """lightGallery(document.getElementById('{identifier}'), {{
-plugins: [lgThumbnail,],
-thumbnail: true,
-}});
-$("#{identifier}").justifiedGallery();""",
+    script_include_after: str = SCRIPT_INCLUDE_AFTER,
 ) -> Optional[ListContainer[Block]]:
     """Create lightgallery Div from directory."""
     if isinstance(elem, Div) and attribute in elem.attributes:
@@ -128,13 +132,7 @@ $("#{identifier}").justifiedGallery();""",
             )
         ]
 
-        identifier = "".join(
-            random.choices(string.ascii_uppercase + string.digits, k=44)
-        )
-        logger.info(
-            f"Created random identifier {identifier} for lightgallery in"
-            f' {doc.get_metadata("title")}.'
-        )
+        identifier = _gen_identifier(elem, doc)
 
         meta_append(
             doc.metadata,
