@@ -203,7 +203,11 @@ class Page:
         TODO: handle AST mutation
         """
         return convert_text(
-            self.ast, input_format="panflute", output_format="html", standalone=False, extra_args=["--wrap=none"],
+            self.ast,
+            input_format="panflute",
+            output_format="html",
+            standalone=False,
+            extra_args=["--wrap=none"],
         )
 
     @property

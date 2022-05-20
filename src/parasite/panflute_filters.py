@@ -41,9 +41,7 @@ def _gen_identifier(
     elem: ListContainer[Block],
     doc: Doc,
 ) -> str:
-    identifier = "".join(
-        random.choices(string.ascii_uppercase + string.digits, k=44)
-    )
+    identifier = "".join(random.choices(string.ascii_uppercase + string.digits, k=44))
     logger.info(
         f"Created random identifier {identifier} for lightgallery in"
         f' {doc.get_metadata("title")}.'
