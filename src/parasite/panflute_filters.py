@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+import hashlib
 import random
-import string
 from functools import partial
 from itertools import chain
 from logging import getLogger
@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from panflute.elements import Div, Image, Link, MetaBlocks, MetaList, Plain, RawBlock
+from panflute.tools import stringify
 from urlpath import URL as Url
 
 if TYPE_CHECKING:
@@ -38,12 +39,16 @@ $("#{identifier}").justifiedGallery();"""
 
 
 def _gen_identifier(
-    elem: ListContainer[Block],
+    links: list[Link],
     doc: Doc,
 ) -> str:
-    identifier = "".join(random.choices(string.ascii_uppercase + string.digits, k=44))
+    h = hashlib.sha1(usedforsecurity=False)
+    for link in links:
+        logger.debug("Hashing %s", link.url)
+        h.update(link.url.encode())
+    identifier = h.hexdigest()
     logger.info(
-        f"Created random identifier {identifier} for lightgallery in"
+        f"Created hash identifier {identifier} for lightgallery in"
         f' {doc.get_metadata("title")}.'
     )
     return identifier
@@ -88,7 +93,7 @@ def lightgallery(
         elem.walk(partial(extract_image, outputs=images))
         res = [Link(image, url=image.url) for image in images]
 
-        identifier: str = elem.identifier or _gen_identifier(elem, doc)
+        identifier: str = elem.identifier or _gen_identifier(res, doc)
 
         meta_append(
             doc.metadata,
@@ -130,7 +135,7 @@ def lightgallery_from_dir(
             )
         ]
 
-        identifier = _gen_identifier(elem, doc)
+        identifier = _gen_identifier(res, doc)
 
         meta_append(
             doc.metadata,

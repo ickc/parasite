@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
+from logging import getLogger
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -8,6 +10,8 @@ if TYPE_CHECKING:
     from typing import Dict, List, Sequence, Tuple, Union
 
     from .data import Page, Post
+
+logger = getLogger(__name__)
 
 
 def _nav(
@@ -148,6 +152,14 @@ def to_feed(
     fg.description(description)
     fg.language(lang)
     fg.rights(copy_right)
+    try:
+        import git
+
+        repo = git.Repo(".")
+        commit = next(repo.iter_commits(max_count=1))
+        fg.updated(datetime.fromtimestamp(commit.committed_date, timezone.utc))
+    except StopIteration:
+        logger.warn("Cannot obtain last committed date.")
     for post in posts:
         url = str(site_url / post.url)
 
@@ -158,6 +170,7 @@ def to_feed(
         fe.link(href=url)
         fe.author(name=post.author)
         fe.published(post.time)
+        fe.updated(post.committed_date)
         # xml don't like invalid characters that somehow pandoc can produce
         fe.content(regex.sub("", post.html), type="CDATA")
 
