@@ -80,7 +80,7 @@ class Config(StaticConfig):
     @cached_property
     def modules_to_be_watched(self) -> dict[str, ModuleType]:
         return {
-            (module := import_module(name)).__file__: module
+            (module := import_module(name)).__file__: module  # type: ignore[misc]
             for name in self.watch_module
         }
 

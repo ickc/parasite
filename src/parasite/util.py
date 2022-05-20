@@ -15,7 +15,7 @@ def setup_logging(
     level: str = "INFO",
     env_var: str = "PARASITELOGLEVEL",
     fmt: str = "%(name)s %(levelname)s %(message)s",
-    Handler: type[logging.StreamHandler] = logging.StreamHandler,
+    Handler: type[logging.StreamHandler] = logging.StreamHandler,  # type: ignore[type-arg]
     Formatter: type[Formatter] = Formatter,
 ) -> logging.Logger:
     """Setup logging.
