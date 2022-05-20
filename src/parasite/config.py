@@ -292,7 +292,7 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
     def pandoc_output_options(ext: str, out_ext: str) -> List[str]:
         res = []
         if out_ext == ".html":
-            res.append("--mathjax")
+            res += ["--mathjax", "--wrap=none"]
         if ext == ".markdown":
             res.append("--to=slidy")
         return res
