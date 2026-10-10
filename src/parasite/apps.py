@@ -42,8 +42,8 @@ def read_md_to_ast(
     """Read from markdown to panflute AST
 
     If ``out_dir``, the output directory of the page, is given, embedded media are
-    written there, and relative URLs to files in ``files_folders`` are rebased from the
-    source to the page, see :mod:`parasite.media`.
+    written there, and relative URLs to local files are made to work from the page,
+    see :mod:`parasite.media`.
     """
     assert len(inputs) == 1
     path = inputs[0]
@@ -66,6 +66,7 @@ def read_md_to_ast(
             output_dir,
             files_folders,
             image_extension=default_image_extension(options),
+            convert_pdf=convert_pdf_media,
         )
 
     for filter_ in panflute_filters(ext):

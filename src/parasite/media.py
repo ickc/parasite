@@ -1,15 +1,18 @@
 """Resolve media and relative URLs of a page against its output location.
 
-A source file refers to media in two ways that need help to work from the output page:
+A source file refers to media in ways that need help to work from the output page:
 
 - relative paths written relative to the source file, e.g. ``../../media/fig.svg``,
   which only work if the page is output at the same depth as its source;
+- relative paths to files outside the folders copied to the output, which are not
+  in the output at all;
 - media embedded in the source (e.g. notebook outputs), which pandoc keeps in its media
   bag and never writes out unless asked to.
 """
 
 from __future__ import annotations
 
+import hashlib
 import os
 import posixpath
 import subprocess  # nosec
@@ -72,6 +75,19 @@ def localize_extracted_media(doc: Doc, out_dir: Path, convert_pdf: bool = True) 
     return doc.walk(action)
 
 
+def copy_media(path: Path, out_dir: Path, convert_pdf: bool = True) -> Path:
+    """Copy a local media file next to the page in ``out_dir``, named by its content hash
+    as pandoc names extracted media, converting PDF to SVG if ``convert_pdf``."""
+    data = path.read_bytes()
+    dest = out_dir / (hashlib.sha1(data, usedforsecurity=False).hexdigest() + path.suffix)
+    if not dest.exists():
+        out_dir.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes(data)
+    if convert_pdf and dest.suffix == ".pdf":
+        dest = pdf_to_svg(dest)
+    return dest
+
+
 def rebase_relative_urls(
     doc: Doc,
     source: Path,
@@ -79,12 +95,19 @@ def rebase_relative_urls(
     output_dir: Path,
     files_folders: Dict[str, str],
     image_extension: str = "",
+    convert_pdf: bool = True,
 ) -> Doc:
-    """Rewrite relative URLs written relative to ``source`` to be relative to ``out_dir``.
+    """Rewrite relative URLs of local files to work from the page in ``out_dir``.
 
-    Only URLs resolving to an existing file inside one of ``files_folders`` (copied to
-    the output as is) are rewritten; anything else, e.g. links to other pages written as
-    output URLs, is left untouched.
+    A relative URL is resolved against the directory of ``source`` first, then against
+    the working directory (pandoc's default resource path, as used when the source is
+    converted by pandoc directly, e.g. to PDF). If it resolves to an existing file:
+
+    - inside one of ``files_folders`` (copied to the output as is): the URL is rewritten
+      relative to ``out_dir``;
+    - elsewhere, for an image: the file is copied next to the page (see :func:`copy_media`).
+
+    Anything else, e.g. links to other pages written as output URLs, is left untouched.
 
     Args:
         source: path of the source file, relative to the site root (the working directory).
@@ -92,28 +115,43 @@ def rebase_relative_urls(
         output_dir: output directory of the site.
         files_folders: input directory -> output sub-directory, see ``Config.files_folders``.
         image_extension: pandoc's ``--default-image-extension`` for images without one.
+        convert_pdf: convert copied PDF images to SVG.
     """
     folders = {Path(in_dir): output_dir / out_sub_dir for in_dir, out_sub_dir in files_folders.items()}
+
+    def resolve(url_path: str, is_image: bool) -> Optional[tuple[Path, Path]]:
+        """Return (path as written, existing file) for the first base the URL resolves in."""
+        for base in (source.parent.as_posix(), "."):
+            path = Path(posixpath.normpath(posixpath.join(base, url_path)))
+            candidates = [path]
+            if is_image and not path.suffix and image_extension:
+                candidates.append(path.with_name(path.name + image_extension))
+            for candidate in candidates:
+                if candidate.is_file():
+                    return path, candidate
+        return None
 
     def rebase(url: str, is_image: bool) -> Optional[str]:
         parts = urlsplit(url)
         if parts.scheme or parts.netloc or not parts.path or parts.path.startswith("/"):
             return None
         url_path = unquote(parts.path)
-        path = Path(posixpath.normpath(posixpath.join(source.parent.as_posix(), url_path)))
-        candidates = [path]
-        if is_image and not path.suffix and image_extension:
-            candidates.append(path.with_name(path.name + image_extension))
-        if not any(candidate.is_file() for candidate in candidates):
+        resolved = resolve(url_path, is_image)
+        if resolved is None:
             return None
+        path, file = resolved
         for in_dir, out_sub_dir in folders.items():
             if path.is_relative_to(in_dir):
                 new = Path(os.path.relpath(out_sub_dir / path.relative_to(in_dir), out_dir)).as_posix()
-                if new == url_path:
-                    return None
-                # keep the quoting style of the original
-                return parts._replace(path=quote(new) if "%" in parts.path else new).geturl()
-        return None
+                break
+        else:
+            if not is_image:
+                return None
+            new = copy_media(file, out_dir, convert_pdf=convert_pdf).name
+        if new == url_path:
+            return None
+        # keep the quoting style of the original
+        return parts._replace(path=quote(new) if "%" in parts.path else new).geturl()
 
     def action(elem: Element, doc: Doc) -> None:
         if isinstance(elem, (Image, Link)):
