@@ -65,6 +65,16 @@ def pretty_urls_present(parent: Path, stem: str) -> Path:
     return parent / stem / "present.html"
 
 
+def set_report_urls(pages: Sequence[Page]) -> None:
+    """Link a page, e.g. slides at ``present.html``, to the page output as ``index.html`` in
+    the same directory, if any, via the ``report-url`` metadata used by the slidy template."""
+    out_paths = {page.out_path for page in pages}
+    for page in pages:
+        report = page.out_path.parent / "index.html"
+        if page.out_path != report and report in out_paths:
+            page.ast.metadata["report-url"] = "index.html"
+
+
 def tipuesearch(
     pages: Sequence[Page],
     root: str = "..",

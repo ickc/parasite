@@ -117,6 +117,8 @@ class Config(StaticConfig):
             inputs=[page.path],
             **self.media_options(page),
         )
+        if page.out_path.name != "index.html" and (self.output_dir / page.out_path.parent / "index.html").exists():
+            page.ast.metadata["report-url"] = "index.html"
         post_to_html(
             page.ast,
             page.root,

@@ -48,7 +48,9 @@ $if(title)$
 <div class="slide titlepage">
   <div class="topnav" style="background-color: #fbfbfb; padding: 14px 16px; overflow: hidden;">
     <a href="$root$/">Home</a>
-    <a href="index.html">Report</a>
+$if(report-url)$
+    <a href="$report-url$">Report</a>
+$endif$
   </div>
   <h1 class="title">$title$</h1>
 $if(subtitle)$

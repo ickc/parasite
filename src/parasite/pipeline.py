@@ -24,7 +24,7 @@ from .apps_parsl import (
     app_rsync,
 )
 from .data import Pages, Posts
-from .helpers import to_feed, to_sitemap, write_tipuesearch
+from .helpers import set_report_urls, to_feed, to_sitemap, write_tipuesearch
 from .live import Config as LiveConfig
 from .to_ast import posts_to_archive_ast, posts_to_index_ast, posts_to_tag_ast
 from .util import TimeElapse, setup_logging
@@ -126,6 +126,7 @@ class Config(LiveConfig):
         time_elapse.report("get neighbor urls.")
 
         all_pages: List[Page] = list(pages.pages) + list(posts.pages)
+        set_report_urls(all_pages)
         output_futures = [
             app_post_to_html(
                 page.ast,
