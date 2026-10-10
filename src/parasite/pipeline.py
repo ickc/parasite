@@ -95,6 +95,7 @@ class Config(LiveConfig):
                 self.pandoc_input_options,
                 self.panflute_input_filters,
                 inputs=[File(str((page.path)))],
+                **self.media_options(page),
             )
             for page in pages.pages
         ]
@@ -103,6 +104,7 @@ class Config(LiveConfig):
                 self.pandoc_input_options,
                 self.panflute_input_filters,
                 inputs=[File(str((page.path)))],
+                **self.media_options(page),
             )
             for page in posts.pages
         ]

@@ -12,10 +12,16 @@ from typing import TYPE_CHECKING
 import panflute as pf
 from panflute.tools import convert_text
 
+from .media import (
+    default_image_extension,
+    extract_media_options,
+    localize_extracted_media,
+    rebase_relative_urls,
+)
 from .panflute_filters import meta_append
 
 if TYPE_CHECKING:
-    from typing import Callable, Dict, List, Optional, Tuple
+    from typing import Any, Callable, Dict, List, Optional, Tuple
 
     from urlpath import URL as Url
 
@@ -28,8 +34,17 @@ def read_md_to_ast(
     pandoc_options: Callable[[str], List[str]],
     panflute_filters: Callable[[str], list[PanfluteFilter]],
     inputs: List[Path] = [],
+    out_dir: Optional[Path] = None,
+    output_dir: Path = Path("output"),
+    files_folders: Dict[str, str] = {},
+    convert_pdf_media: bool = True,
 ) -> pf.elements.Doc:
-    """Read from markdown to panflute AST"""
+    """Read from markdown to panflute AST
+
+    If ``out_dir``, the output directory of the page, is given, embedded media are
+    written there, and relative URLs to files in ``files_folders`` are rebased from the
+    source to the page, see :mod:`parasite.media`.
+    """
     assert len(inputs) == 1
     path = inputs[0]
     ext = path.suffix
@@ -37,9 +52,21 @@ def read_md_to_ast(
     with open(path, "r") as f:
         text = f.read()
     input_format = "markdown" if ext == ".md" else ext[1:]
+    options = pandoc_options(ext)
+    extra_args = options if out_dir is None else options + extract_media_options(ext, out_dir)
     doc = convert_text(
-        text, input_format=input_format, standalone=True, extra_args=pandoc_options(ext)
+        text, input_format=input_format, standalone=True, extra_args=extra_args
     )
+    if out_dir is not None:
+        doc = localize_extracted_media(doc, out_dir, convert_pdf=convert_pdf_media)
+        doc = rebase_relative_urls(
+            doc,
+            path,
+            out_dir,
+            output_dir,
+            files_folders,
+            image_extension=default_image_extension(options),
+        )
 
     for filter_ in panflute_filters(ext):
         doc = filter_(doc)
@@ -95,11 +122,13 @@ def read_md_to_ast_with_teaser(
     pandoc_options: Callable[[str], List[str]],
     panflute_filters: Callable[[str], list[PanfluteFilter]],
     inputs: List[Path] = [],
+    **kwargs: Any,
 ) -> Tuple[pf.elements.Doc, pf.containers.ListContainer]:
     ast = read_md_to_ast(
         pandoc_options=pandoc_options,
         panflute_filters=panflute_filters,
         inputs=inputs,
+        **kwargs,
     )
     teaser = get_teaser(ast.content)
     return ast, teaser

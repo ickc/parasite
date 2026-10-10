@@ -3,7 +3,7 @@ from __future__ import annotations
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, Dict, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Union
 
 from custom_inherit import DocInheritMeta
 
@@ -14,6 +14,7 @@ from .templates import INDEX_TEMPLATE, POST_TEMPLATE, SLIDE_TEMPLATE
 if TYPE_CHECKING:
     from typing import Callable, List, Optional, Tuple, Union
 
+    from .data import Page
     from .panflute_filters import PanfluteFilter
 
 THIS_YEAR = time.gmtime().tm_year
@@ -26,6 +27,7 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
     """Configure static site.
 
     Args:
+        convert_pdf_media: convert PDF media embedded in sources (e.g. notebook outputs) to SVG.
         write_tipuesearch_json: write tipuesearch JSON file.
         write_rss: write RSS feed.
         write_atom: write atom feed.
@@ -59,6 +61,8 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
     default_lang: str = "en"
     root_relative_to_search_form: str = ".."
     timezone: str = r"America/Los_Angeles"
+
+    convert_pdf_media: bool = True
 
     write_tipuesearch_json: bool = True
     write_rss: bool = True
@@ -101,6 +105,15 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
         return {
             "files": "",
             "media": "media",
+        }
+
+    def media_options(self, page: Page) -> Dict[str, Any]:
+        """Options of :func:`parasite.apps.read_md_to_ast` resolving media for ``page``."""
+        return {
+            "out_dir": self.output_dir / page.out_path.parent,
+            "output_dir": self.output_dir,
+            "files_folders": self.files_folders,
+            "convert_pdf_media": self.convert_pdf_media,
         }
 
     @property

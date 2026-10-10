@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 from parsl import bash_app, python_app
 
 if TYPE_CHECKING:
-    from typing import Callable, Dict, List, Optional, Tuple
+    from typing import Any, Callable, Dict, List, Optional, Tuple
 
     from parsl.data_provider.files import File
     from urlpath import URL as Url
@@ -25,6 +25,7 @@ def app_read_md_to_ast(
     pandoc_options: Callable[[str], List[str]],
     panflute_filters: Callable[[str], list[PanfluteFilter]],
     inputs: list[File] = [],
+    **kwargs: Any,
 ) -> pf.elements.Doc:
     from pathlib import Path
 
@@ -35,6 +36,7 @@ def app_read_md_to_ast(
         pandoc_options,
         panflute_filters,
         inputs=input_paths,
+        **kwargs,
     )
 
 
@@ -43,6 +45,7 @@ def app_read_md_to_ast_with_teaser(
     pandoc_options: Callable[[str], List[str]],
     panflute_filters: Callable[[str], list[PanfluteFilter]],
     inputs: List[File] = [],
+    **kwargs: Any,
 ) -> Tuple[pf.elements.Doc, pf.containers.ListContainer]:
     from pathlib import Path
 
@@ -53,6 +56,7 @@ def app_read_md_to_ast_with_teaser(
         pandoc_options,
         panflute_filters,
         inputs=input_paths,
+        **kwargs,
     )
 
 

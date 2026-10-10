@@ -115,6 +115,7 @@ class Config(StaticConfig):
             self.pandoc_input_options,
             self.panflute_input_filters,
             inputs=[page.path],
+            **self.media_options(page),
         )
         post_to_html(
             page.ast,
