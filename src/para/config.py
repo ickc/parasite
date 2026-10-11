@@ -169,6 +169,7 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
         convert_pdf_media: convert PDF media embedded in sources (e.g. notebook outputs) to SVG.
         write_search: write the search index and page (Pagefind).
         search_page: the search page's path: a folder ("search/") or a file.
+        check_links: check the output's links (lychee), failing the build on broken ones.
         write_rss: write RSS feed.
         write_atom: write atom feed.
         write_sitemap: write sitemap.
@@ -202,6 +203,7 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
 
     write_search: bool = True
     search_page: str = "search/"
+    check_links: bool = True
     write_rss: bool = True
     write_atom: bool = True
     write_sitemap: bool = True

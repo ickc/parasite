@@ -89,7 +89,7 @@ class Config(LiveConfig):
 
     def output_repr(self) -> str:
         """The config's fields that change the output, for the site key."""
-        ignore = {"jobs", "prune", "full", "store_path"}
+        ignore = {"jobs", "prune", "full", "store_path", "check_links"}
         return repr([(f.name, getattr(self, f.name)) for f in fields(self) if f.name not in ignore and not f.name.startswith(("watch", "serve"))])
 
     def exec(self) -> None:
@@ -449,6 +449,15 @@ class Config(LiveConfig):
         store.renders = renders
         store.save()
         output.finish(prune=self.prune)
+        if self.check_links:
+            from .check import check_links
+
+            check = self.settings.get("check", {})
+            broken = check_links(self.output_dir, check.get("exclude", []), check.get("exclude-path", []))
+            time_elapse.report("checked the links.")
+            # a build that serves or watches goes on: the links are in its log
+            if broken and not (self.watch or self.serve):
+                raise SystemExit(f"{broken} broken links (see above), or [check] exclude them")
         self.live(all_pages)
 
 

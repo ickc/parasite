@@ -58,7 +58,20 @@ image becomes SVG, which a browser can show.
 With `[search] enabled` and `para[search]` installed, parasite indexes the records with
 [Pagefind](https://pagefind.app/) and makes the search page (`[search] page`). The index
 is sharded: one more page changes a few of its files. The search box in the navigation
-sends `?q=` to it.
+sends `?q=` to it. Tags and categories are its filters, and a page's tags are searched
+as its words.
+
+# Links
+
+With [lychee](https://lychee.cli.rs) installed, parasite checks the output's links when
+the build is done, offline: every link and media reference from the site's files to its
+files must resolve, or the build fails (the output is written either way; a build that
+serves or watches only logs them). This guards the media copied by reference: a
+reference parasite did not see would be a broken link here. lychee reads the HTML, raw
+HTML and `<style>` elements included, but not `style` attributes or CSS files.
+
+Links known to be broken are excluded by `[check] exclude`, regular expressions of
+URLs (a site's file is a `file://` URL); `[check] links = false` turns the check off.
 
 # The post graph
 

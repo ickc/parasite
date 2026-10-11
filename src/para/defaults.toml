@@ -46,6 +46,16 @@ enabled = true
 # the search page, a folder ("search/") or a file ("search.html")
 page = "search/"
 
+# links checked after the build with lychee (https://lychee.cli.rs), offline: every link
+# and media reference from the site's files to its files must resolve, else the build
+# fails (after writing the output). Without lychee installed, a warning
+[check]
+links = true
+# regular expressions of links not to check: a site's file is a file:// URL
+exclude = []
+# regular expressions of the output's files not to read
+exclude-path = []
+
 [graph]
 enabled = false
 uncoloured = []

@@ -67,6 +67,7 @@ def load(path: Path = Path(FILE)) -> type[Config]:
         "convert_pdf_media": s["media"]["convert-pdf"],
         "write_search": s["search"]["enabled"],
         "search_page": s["search"]["page"],
+        "check_links": s["check"]["links"],
         "write_rss": s["feeds"]["rss"],
         "write_atom": s["feeds"]["atom"],
         "write_sitemap": s["sitemap"]["enabled"],
