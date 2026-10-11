@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import io
+import json
 import re
 from logging import getLogger
 from pathlib import Path
@@ -113,13 +115,16 @@ def post_to_html(
     years: str = "",
     graph: bool = False,
 ) -> None:
-    """
-    warning: AST is currently mutated
+    """Write ``ast`` as a standalone HTML page.
+
+    It renders a copy: the same AST is read meanwhile by other threads (listings, the
+    graph, feeds, search) and may be rendered more than once.
     """
     assert len(inputs) <= 1
     assert len(outputs) == 1
     template = inputs[0] if inputs else None
     out_path = outputs[0]
+    ast = pf.load(io.StringIO(json.dumps(ast.to_json())))
 
     meta_append(
         ast.metadata,

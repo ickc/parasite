@@ -242,8 +242,6 @@ class Page:
         """HTML frament.
 
         Primarily for feed.
-
-        TODO: handle AST mutation
         """
         return convert_text(
             self.ast,

@@ -193,19 +193,18 @@ class Config(LiveConfig):
         # tags
         _template = posts.pages[0].template
         inputs = [] if _template is None else [_template]
-        tag_ast = posts_to_tag_ast(
-            posts.categories,
-            posts.tags,
-            font_size_min=self.tag_cloud_font_size_min,
-            font_size_max=self.tag_cloud_font_size_max,
-            root="..",
-            lang=self.default_lang,
-        )
-        # the same overview at /categories/ and /tags/
+        # the same overview at /categories/ and /tags/, an AST each: rendering mutates it
         output_futures += [
             pool.submit(
                 post_to_html,
-                tag_ast,
+                posts_to_tag_ast(
+                    posts.categories,
+                    posts.tags,
+                    font_size_min=self.tag_cloud_font_size_min,
+                    font_size_max=self.tag_cloud_font_size_max,
+                    root="..",
+                    lang=self.default_lang,
+                ),
                 "..",
                 self.default_lang,
                 ".md",
