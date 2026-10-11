@@ -11,7 +11,6 @@ from .util import join_url
 if TYPE_CHECKING:
     from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union
 
-    from .data import Page
     from .output import Output
     from .record import Record
 
@@ -70,14 +69,17 @@ def pretty_urls_present(parent: Path, stem: str) -> Path:
     return parent / stem / "present.html"
 
 
-def set_report_urls(pages: Sequence[Page]) -> None:
-    """Link a page, e.g. slides at ``present.html``, to the page output as ``index.html`` in
-    the same directory, if any, via the ``report-url`` metadata used by the slidy template."""
+def report_urls(pages: Sequence[Record]) -> set[str]:
+    """The output paths of the pages (e.g. slides at ``present.html``) to link to the page
+    output as ``index.html`` in the same directory, via the ``report-url`` metadata used
+    by the slidy template."""
     out_paths = {page.out_path for page in pages}
-    for page in pages:
-        report = page.out_path.parent / "index.html"
-        if page.out_path != report and report in out_paths:
-            page.ast.metadata["report-url"] = "index.html"
+    return {
+        page.out_path
+        for page in pages
+        if (report := posixpath.join(posixpath.dirname(page.out_path), "index.html")) != page.out_path
+        and report in out_paths
+    }
 
 
 def tipuesearch(

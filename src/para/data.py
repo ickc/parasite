@@ -67,6 +67,9 @@ class Page:
     options: dict[str, Any] = field(default_factory=dict)
     # its record, once read (see para.record)
     record: Optional[Record] = field(default=None, init=False, repr=False)
+    # the key it was read under, and the files its read wrote into the output (para.store)
+    read_key: str = field(default="", init=False, repr=False)
+    claims: List[str] = field(default_factory=list, init=False, repr=False)
 
     def __post_init__(self) -> None:
         # special casing 404
