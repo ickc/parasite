@@ -206,3 +206,58 @@ def select_content(doc: Doc, profile: Any) -> Doc:
         return list(elem.content) if shown else []
 
     return doc.walk(action)
+
+
+_DIV_OPEN = re.compile(r"^(:{3,})\s*(\{[^}]*\}|[^\s:{][^\s]*)\s*:*\s*$")
+_DIV_CLOSE = re.compile(r"^:{3,}\s*$")
+_CODE_FENCE = re.compile(r"^\s{0,3}(`{3,}|~{3,})")
+_FORMATS = re.compile(r"\b(when|unless)-format\s*=\s*(?:\"([^\"]*)\"|'([^']*)'|(\S+?))\s*[}\s]")
+
+
+def _shown(attrs: str, profile: Any) -> Optional[bool]:
+    """Whether a fenced div with ``attrs`` shows in ``profile``, or None if it is not
+    content per profile."""
+    visible = ".content-visible" in attrs
+    if not visible and ".content-hidden" not in attrs:
+        return None
+    m = _FORMATS.search(attrs + " ")
+    if m is None:
+        selected = True
+    else:
+        names = (m.group(2) or m.group(3) or m.group(4) or "").split()
+        selected = any(profile.matches(name) for name in names)
+        if m.group(1) == "unless":
+            selected = not selected
+    return selected if visible else not selected
+
+
+def select_text(text: str, profile: Any) -> str:
+    """A Markdown source as ``profile``'s output sees it: its fenced divs of content per
+    profile (as :func:`select_content`) unwrapped or removed, as text, so that pandoc
+    reads only what the output has (heading identifiers, crossref's numbers). Spans
+    and inline content are left for :func:`select_content`."""
+    out: list[str] = []
+    # per open fenced div: None for an ordinary one, else whether it shows
+    stack: list[Optional[bool]] = []
+    code: Optional[str] = None
+    for line in text.splitlines(keepends=True):
+        visible = all(shown is not False for shown in stack)
+        if code is not None:
+            if line.strip().startswith(code) and not line.strip().strip(code[0]):
+                code = None
+            if visible:
+                out.append(line)
+            continue
+        if m := _CODE_FENCE.match(line):
+            code = m.group(1)
+        elif m := _DIV_OPEN.match(line):
+            shown = _shown(m.group(2), profile)
+            stack.append(shown)
+            if shown is not None:
+                continue
+        elif _DIV_CLOSE.match(line) and stack:
+            if stack.pop() is not None:
+                continue
+        if visible:
+            out.append(line)
+    return "".join(out)

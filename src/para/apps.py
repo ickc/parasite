@@ -17,7 +17,7 @@ from .media import (
     rebase_relative_urls,
 )
 from .config import by_lang
-from .panflute_filters import meta_append, select_content
+from .panflute_filters import meta_append, select_content, select_text
 
 if TYPE_CHECKING:
     from .config import Config, Profile
@@ -83,8 +83,9 @@ def read_md_to_ast(
     see :mod:`para.media`; ``claim`` is told each media file written.
 
     With ``select``, the document is read as that profile's output sees it: its content
-    per profile is selected (:func:`para.panflute_filters.select_content`) after
-    parsing and before pandoc's filters (crossref numbers, citeproc's bibliography).
+    per profile is selected before pandoc reads it (:func:`para.panflute_filters.select_text`:
+    heading identifiers, crossref's numbers and citeproc's bibliography are the
+    output's own), or for a notebook after parsing and before pandoc's filters.
     """
     assert len(inputs) == 1
     path = inputs[0]
@@ -97,9 +98,12 @@ def read_md_to_ast(
     # (`<!-- … -- … -->`) would make the page ill-formed
     options = ["--strip-comments"] + pandoc_options(ext)
     extra_args = options if out_dir is None else options + extract_media_options(ext, out_dir)
-    if select is None:
+    if select is not None and ext != ".ipynb":
+        text = select_text(text, select)
+    if select is None or ext != ".ipynb":
         doc = convert_text(text, input_format=input_format, standalone=True, extra_args=extra_args)
     else:
+        # a notebook's cells are JSON: selected on its AST, before pandoc's filters
         reader, filters = split_filter_options(extra_args)
         doc = convert_text(text, input_format=input_format, standalone=True, extra_args=reader)
         doc = select_content(doc, select)

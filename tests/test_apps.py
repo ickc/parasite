@@ -96,3 +96,16 @@ def test_select_content():
     slides = pf.stringify(select_content(pf.convert_text(text, standalone=True), profiles["slides"]))
     assert html.split() == ["a", "page"]
     assert slides.split() == ["a", "slides", "only", "slidy"]
+
+
+def test_select_text():
+    from para.config import Config
+    from para.panflute_filters import select_text
+
+    text = (
+        "# A\n\n::: {.content-visible when-format=\"html\"}\n# B\n\n::: {.columns}\nx\n:::\n:::\n\n"
+        "::: {.content-visible when-format=\"slides\"}\n# B\n\n```\n:::\n```\n:::\n\n# C\n"
+    )
+    profiles = Config().profiles
+    assert select_text(text, profiles["html"]) == "# A\n\n# B\n\n::: {.columns}\nx\n:::\n\n\n# C\n"
+    assert select_text(text, profiles["slides"]) == "# A\n\n\n# B\n\n```\n:::\n```\n\n# C\n"
