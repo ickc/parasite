@@ -36,8 +36,8 @@ def posts_to_index_ast(
         res = {
             "url": str(post.url),
         }
-        if post.description:
-            res["description"] = post.description
+        if post.summary:
+            res["description"] = post.summary
         if post.title is not None:
             res["title"] = post.title
         if post.image is not None:

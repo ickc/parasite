@@ -55,3 +55,9 @@ def test_category_tree():
         "so-uk": ["a.md", "b.md", "d.md"],
         "so-uk/meetings": ["a.md", "d.md"],
     }
+
+
+def test_summary_falls_back_to_the_subtitle():
+    assert make(Post, "a.md", subtitle="S").summary == "S"
+    assert make(Post, "a.md", subtitle="S", description="D").summary == "D"
+    assert make(Post, "a.md").summary is None

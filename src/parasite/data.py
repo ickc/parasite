@@ -283,6 +283,14 @@ class Page:
         return None if meta is None else pf.stringify(meta)
 
     @property
+    def summary(self) -> Optional[str]:
+        """What listings show for the page: its ``description``, else its ``subtitle``."""
+        if (res := self.description) is not None:
+            return res
+        meta = self.ast.metadata.content.get("subtitle")
+        return None if meta is None else pf.stringify(meta)
+
+    @property
     def image(self) -> Optional[Url]:
         """Its thumbnail and og:image: ``image``."""
         res = self.ast.get_metadata("image")

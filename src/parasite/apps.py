@@ -160,6 +160,9 @@ def post_to_html(
 
     if show_image_in_post:
         ast.metadata["show-image-in-post"] = "true"
+    # <meta name="description"> falls back to the subtitle, as listings do
+    if "description" not in ast.metadata.content and "subtitle" in ast.metadata.content:
+        ast.metadata["description-meta"] = pf.MetaString(pf.stringify(ast.metadata.content["subtitle"]))
     if content_footer:
         ast.metadata["content-footer"] = pf.RawBlock(
             content_footer(lang, ext, ".html").format(root=root, years=years)

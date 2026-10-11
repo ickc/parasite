@@ -8,6 +8,7 @@ platforms = ["linux-64", "osx-arm64"]
 python = ">=3.12"
 pandoc = ">=3.1"
 pip = "*"
+hatchling = "*"
 # the dependencies in pyproject.toml, from conda-forge
 custom-inherit = ">=2.4"
 panflute = ">=2.3.1,<2.4"
