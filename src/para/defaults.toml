@@ -1,5 +1,6 @@
 # parasite's defaults. A site's parasite.toml is merged over this: tables key by key,
-# everything else (strings, numbers, lists) replaced whole. In strings, {root} becomes
+# everything else (strings, numbers, lists) replaced whole, and so are [files] and
+# [minify.*], which list the site's own entries. In strings, {root} becomes
 # the relative path from the page to the site's root, and {years} the copyright years.
 
 [site]
