@@ -33,8 +33,10 @@ XML_INVALID = re.compile("[\x00-\x08\x0b\x0c\x0e-\x1f]")
 
 
 def xml_safe(html: str) -> str:
-    """Drop what makes a page not well-formed XML: terminal escapes and C0 controls."""
-    return XML_INVALID.sub("", ANSI_ESCAPE.sub("", html))
+    """Drop what makes a page not well-formed XML: terminal escapes, C0 controls, and
+    pandas' <style scoped> (an obsolete attribute without a value)."""
+    html = XML_INVALID.sub("", ANSI_ESCAPE.sub("", html))
+    return html.replace("<style scoped>", "<style>")
 
 
 def read_md_to_ast(
