@@ -392,6 +392,7 @@ class Pages:
                 "logo_url": Url(config.logo_url) if config.logo_url else None,
                 "panflute_filters": config.panflute_output_filters,
                 "html_filters": config.html_filters,
+                "graph": config.write_graph,
             }
             pageses += cls.from_file_system(
                 Path(path),

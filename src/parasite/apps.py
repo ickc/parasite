@@ -111,6 +111,7 @@ def post_to_html(
     logo_url: Optional[Url] = None,
     html_filters: List[Callable[[str], str]] = [],
     years: str = "",
+    graph: bool = False,
 ) -> None:
     """
     warning: AST is currently mutated
@@ -135,6 +136,20 @@ def post_to_html(
         "include-after",
         include_after(lang, ext, ".html").format(root=root),
     )
+    if graph:
+        # the post graph: the local graph on every page (it does nothing on a page
+        # that is not in the graph), the full one at /graph/
+        meta_append(
+            ast.metadata,
+            "header-includes",
+            f'<link rel="stylesheet" href="{root}/sitegraph.css" />',
+        )
+        meta_append(
+            ast.metadata,
+            "include-after",
+            f'<script src="{root}/sitegraph-local.js" data-src="{root}/graph.json"'
+            f' data-page="{root}/graph/" data-after="article" defer="defer"></script>',
+        )
     for url in js(ext, ".html"):
         meta_append(ast.metadata, "js-include-after", url.format(root=root))
     meta_append(

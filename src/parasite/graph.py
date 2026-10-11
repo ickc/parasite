@@ -94,6 +94,24 @@ def records(pages: Sequence[Page], listed: set[str], site_url: str | None):
     return res
 
 
+def graph_page_ast(lang: str = "en") -> pf.Doc:
+    """/graph/: the whole post graph."""
+    return pf.Doc(
+        pf.RawBlock('<div class="sitegraph" data-src="../graph.json"></div>', format="html"),
+        metadata={
+            "title": "Graph",
+            "lang": lang,
+            "include-after": pf.MetaBlocks(
+                pf.RawBlock(
+                    '<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>\n'
+                    '<script src="../sitegraph.js"></script>',
+                    format="html",
+                )
+            ),
+        },
+    )
+
+
 def write_graph(
     pages: Sequence[Page],
     listed: set[str],

@@ -277,6 +277,22 @@ class Config(LiveConfig):
             )
         )
         time_elapse.report("staging index.")
+        if self.write_graph:
+            from .graph import graph_page_ast
+
+            output_futures.append(
+                pool.submit(
+                    post_to_html,
+                    graph_page_ast(lang=self.default_lang),
+                    "..",
+                    self.default_lang,
+                    ".md",
+                    inputs=inputs,
+                    outputs=[self.output_dir / "graph" / "index.html"],
+                    **options,
+                    years=years_str,
+                )
+            )
         if self.write_tipuesearch_json:
             # search: not in the pool, as
             # it needs to be re-generated even if only one page is changed,
