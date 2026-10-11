@@ -133,7 +133,7 @@ class Config(LiveConfig):
         store = Store(self.store_path, load=not self.full)
         time_elapse.report("site key.")
 
-        def read_ast(page: Page, select: Profile | None, claimed: list[str]) -> pf.Doc:
+        def read_ast(page: Page, select: Profile | None, claimed: list[str], pandoc_filters: bool = True) -> pf.Doc:
             """The page's AST, as ``select``'s output sees it (for a source with content
             per profile)."""
 
@@ -148,6 +148,7 @@ class Config(LiveConfig):
                 **self.media_options(page),
                 claim=claim,
                 select=select,
+                pandoc_filters=pandoc_filters,
             )
 
         def read(page: Page, post: bool) -> Record:
@@ -165,7 +166,7 @@ class Config(LiveConfig):
             page.ast_profile = page.profiles[0] if page.per_profile else None
             # the media every output uses: a source with content per profile is read whole
             # for them (its other outputs are read when rendered)
-            whole = read_ast(page, None, claimed) if page.per_profile else page.ast
+            whole = read_ast(page, None, claimed, pandoc_filters=False) if page.per_profile else page.ast
             media = referenced_media(whole, self.output_dir / page.media_dir, self.output_dir, self.media_folders)
             record = Record.from_page(page, post, media)
             page.claims = claimed

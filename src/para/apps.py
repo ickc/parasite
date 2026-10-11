@@ -75,6 +75,7 @@ def read_md_to_ast(
     convert_pdf_media: bool = True,
     claim: Optional[Callable[[Path], None]] = None,
     select: Optional[Profile] = None,
+    pandoc_filters: bool = True,
 ) -> pf.elements.Doc:
     """Read from markdown to panflute AST
 
@@ -86,6 +87,7 @@ def read_md_to_ast(
     per profile is selected before pandoc reads it (:func:`para.panflute_filters.select_text`:
     heading identifiers, crossref's numbers and citeproc's bibliography are the
     output's own), or for a notebook after parsing and before pandoc's filters.
+    ``pandoc_filters`` False leaves out pandoc's filters (crossref, citeproc, Lua).
     """
     assert len(inputs) == 1
     path = inputs[0]
@@ -97,6 +99,9 @@ def read_md_to_ast(
     # comments in a source are notes, not content: and commented-out drafts
     # (`<!-- … -- … -->`) would make the page ill-formed
     options = ["--strip-comments"] + pandoc_options(ext)
+    if not pandoc_filters:
+        # e.g. to list the media of every output of a source with content per profile
+        options, _ = split_filter_options(options)
     extra_args = options if out_dir is None else options + extract_media_options(ext, out_dir)
     if select is not None and ext != ".ipynb":
         text = select_text(text, select)
