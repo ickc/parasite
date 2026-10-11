@@ -22,7 +22,16 @@ def posts_to_index_ast(
     n_grid: int = 2,
     index_include_jumbotron: bool = True,
     lang: str = "en",
+    length: Optional[int] = None,
+    older_url: Optional[str] = None,
 ) -> pf.elements.Doc:
+    """A listing of ``posts``, newest first: the first ``length`` of them, if given, and
+    a link to ``older_url`` when there are more."""
+    if length is not None and len(posts) > length:
+        posts = posts[:length]
+    else:
+        older_url = None
+
     def post_to_dict(post: Post) -> dict[str, Any]:
         res = {
             "url": str(post.url),
@@ -42,6 +51,8 @@ def posts_to_index_ast(
         "title": title,
         "lang": lang,
     }
+    if older_url is not None:
+        meta["older-url"] = older_url
 
     temp_index = []
     temp = []
@@ -140,13 +151,39 @@ def posts_to_tag_ast(
     )
 
 
+def posts_by_year(posts: Sequence[Post]) -> Dict[int, List[Post]]:
+    """Posts by the year they were published, newest year first."""
+    res: Dict[int, List[Post]] = defaultdict(list)
+    for post in posts:
+        res[post.time.year].append(post)
+    return dict(sorted(res.items(), reverse=True))
+
+
+def posts_to_archive_index_ast(
+    years: Dict[int, List[Post]],
+    lang: str = "en",
+) -> pf.elements.Doc:
+    """The archive's front page: one link per year. A new post changes it only when it
+    starts a year."""
+    items = [
+        pf.ListItem(pf.Plain(pf.Link(pf.Str(f"{year} ({len(posts)})"), url=f"{year}/")))
+        for year, posts in years.items()
+    ]
+    return pf.elements.Doc(
+        pf.BulletList(*items),
+        metadata={"title": translate("Archive", lang), "lang": lang},
+    )
+
+
 def posts_to_archive_ast(
     posts: Sequence[Post],
     root: str = "..",
     lang: str = "en",
+    title: Optional[str] = None,
 ) -> pf.elements.Doc:
+    """The archive of ``posts`` (one year's, in parasite), by month."""
     meta = {
-        "title": translate("Archive", lang),
+        "title": title or translate("Archive", lang),
         "lang": lang,
     }
 
@@ -154,26 +191,25 @@ def posts_to_archive_ast(
         lambda: defaultdict(list)
     )
     for page in posts:
-        title = page.title
+        title_ = page.title
         url = page.url
         date = page.date
         time = page.time
-        res[time.year][time.strftime("%B")].append((date, title, url))
+        res[time.year][time.strftime("%B")].append((date, title_, url))
 
     contents = []
     for year, datas in res.items():
-        contents.append(pf.Header(pf.Str(str(year)), level=1, identifier=str(year)))
         for month, data in datas.items():
             contents.append(
                 pf.Header(pf.Str(month), level=2, identifier=f"{year}-{month}")
             )
             lis = []
-            for (date, title, url) in data:
+            for date, title_, url in data:
                 lis.append(
                     pf.ListItem(
                         pf.Plain(
                             pf.Link(
-                                pf.Str(f"{date} — {title}"),
+                                pf.Str(f"{date} — {title_}"),
                                 url=str(root / url),
                             )
                         )

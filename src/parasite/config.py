@@ -30,6 +30,8 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
         write_atom: write atom feed.
         write_sitemap: write sitemap.
         include_draft: output draft posts as well.
+        index_length: how many posts the front page shows; older ones are in the archive.
+        feed_length: how many of the newest posts the feeds carry.
         write_graph: write the post graph (graph.json and its viewer, needs sitegraph).
         graph_uncoloured: tags never coloured in the graph (they say what form a post takes).
         graph_colours: how many tags the graph colours at first.
@@ -69,6 +71,8 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
     write_atom: bool = True
     write_sitemap: bool = True
     include_draft: bool = False
+    index_length: int = 10
+    feed_length: int = 10
 
     write_graph: bool = False
     graph_uncoloured: list[str] = field(default_factory=list)

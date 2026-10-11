@@ -14,7 +14,13 @@ from .apps import post_to_html, read_md_to_ast
 from .data import Pages, Posts, format_years, site_years
 from .helpers import set_report_urls, to_feed, to_sitemap, write_tipuesearch
 from .live import Config as LiveConfig
-from .to_ast import posts_to_archive_ast, posts_to_index_ast, posts_to_tag_ast
+from .to_ast import (
+    posts_by_year,
+    posts_to_archive_ast,
+    posts_to_archive_index_ast,
+    posts_to_index_ast,
+    posts_to_tag_ast,
+)
 from .util import TimeElapse, setup_logging
 
 if TYPE_CHECKING:
@@ -211,16 +217,31 @@ class Config(LiveConfig):
             for case in ("categories", "tags")
         ]
         time_elapse.report("staging tag page.")
-        # archive
-        archive_ast = posts_to_archive_ast(
-            posts.pages,
-            root="..",
-            lang=self.default_lang,
-        )
+        # archive: a page per year, and one linking them
+        by_year = posts_by_year(posts.pages)
+        for year, year_posts in by_year.items():
+            output_futures.append(
+                pool.submit(
+                    post_to_html,
+                    posts_to_archive_ast(
+                        year_posts,
+                        root="../..",
+                        lang=self.default_lang,
+                        title=str(year),
+                    ),
+                    "../..",
+                    self.default_lang,
+                    ".md",
+                    inputs=inputs,
+                    outputs=[self.output_dir / "archive" / str(year) / "index.html"],
+                    **options,
+                    years=years_str,
+                )
+            )
         output_futures.append(
             pool.submit(
                 post_to_html,
-                archive_ast,
+                posts_to_archive_index_ast(by_year, lang=self.default_lang),
                 "..",
                 self.default_lang,
                 ".md",
@@ -239,6 +260,8 @@ class Config(LiveConfig):
             n_grid=self.n_grid,
             index_include_jumbotron=self.index_include_jumbotron,
             lang=self.default_lang,
+            length=self.index_length,
+            older_url="archive/",
         )
         output_futures.append(
             pool.submit(
@@ -268,7 +291,7 @@ class Config(LiveConfig):
 
         if self.write_atom or self.write_rss:
             to_feed(
-                posts.pages,
+                posts.pages[: self.feed_length],
                 self.blog_title[self.default_lang],
                 self.blog_description[self.default_lang],
                 self.blog_author[self.default_lang],
