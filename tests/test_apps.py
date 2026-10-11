@@ -5,12 +5,12 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from parasite import apps
+from para import apps
 
 if TYPE_CHECKING:
     from typing import List
 
-    from parasite.panflute_filters import PanfluteFilter
+    from para.panflute_filters import PanfluteFilter
 
 example_path = Path("docs/README.md")
 
@@ -51,7 +51,7 @@ def test_xml_safe():
 def test_mathjax_bold_ell():
     import panflute as pf
 
-    from parasite.panflute_filters import mathjax_bold_ell_filter
+    from para.panflute_filters import mathjax_bold_ell_filter
 
     doc = pf.Doc(pf.Para(pf.Math(r"\mathbf{\ell} + \mathbf{\hat{\ell}} + \mathbf{\hat{x}}", format="InlineMath")))
     doc = mathjax_bold_ell_filter(doc)

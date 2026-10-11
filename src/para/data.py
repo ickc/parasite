@@ -222,7 +222,7 @@ class Page:
             return self._ast
         except AttributeError:
             raise AttributeError(
-                "ast not set yet. Consider using parasite.apps.read_md_to_ast"
+                "ast not set yet. Consider using para.apps.read_md_to_ast"
             )
 
     @ast.setter

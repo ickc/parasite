@@ -44,30 +44,30 @@ parasite is a pandoc centric static site generator.
    :target: https://scrutinizer-ci.com/g/ickc/python-parasite/
 .. |CodeClimate Quality Status| image:: https://codeclimate.com/github/ickc/python-parasite/badges/gpa.svg
    :target: https://codeclimate.com/github/ickc/python-parasite
-.. |Supported versions| image:: https://img.shields.io/pypi/pyversions/parasite.svg
-   :target: https://pypi.org/project/parasite
-.. |Supported implementations| image:: https://img.shields.io/pypi/implementation/parasite.svg
-   :target: https://pypi.org/project/parasite
-.. |PyPI Wheel| image:: https://img.shields.io/pypi/wheel/parasite.svg
-   :target: https://pypi.org/project/parasite
-.. |PyPI Package latest release| image:: https://img.shields.io/pypi/v/parasite.svg
-   :target: https://pypi.org/project/parasite
+.. |Supported versions| image:: https://img.shields.io/pypi/pyversions/para.svg
+   :target: https://pypi.org/project/para
+.. |Supported implementations| image:: https://img.shields.io/pypi/implementation/para.svg
+   :target: https://pypi.org/project/para
+.. |PyPI Wheel| image:: https://img.shields.io/pypi/wheel/para.svg
+   :target: https://pypi.org/project/para
+.. |PyPI Package latest release| image:: https://img.shields.io/pypi/v/para.svg
+   :target: https://pypi.org/project/para
 .. |GitHub Releases| image:: https://img.shields.io/github/tag/ickc/python-parasite.svg?label=github+release
    :target: https://github.com/ickc/python-parasite/releases
-.. |Development Status| image:: https://img.shields.io/pypi/status/parasite.svg
-   :target: https://pypi.python.org/pypi/parasite/
-.. |Downloads| image:: https://img.shields.io/pypi/dm/parasite.svg
-   :target: https://pypi.python.org/pypi/parasite/
+.. |Development Status| image:: https://img.shields.io/pypi/status/para.svg
+   :target: https://pypi.org/project/para/
+.. |Downloads| image:: https://img.shields.io/pypi/dm/para.svg
+   :target: https://pypi.org/project/para/
 .. |Commits since latest release| image:: https://img.shields.io/github/commits-since/ickc/python-parasite/v0.1.0.svg
    :target: https://github.com/ickc/python-parasite/compare/v0.1.0...master
-.. |License| image:: https://img.shields.io/pypi/l/parasite.svg
-.. |Conda Recipe| image:: https://img.shields.io/badge/recipe-parasite-green.svg
-   :target: https://anaconda.org/conda-forge/parasite
-.. |Conda Downloads| image:: https://img.shields.io/conda/dn/conda-forge/parasite.svg
-   :target: https://anaconda.org/conda-forge/parasite
-.. |Conda Version| image:: https://img.shields.io/conda/vn/conda-forge/parasite.svg
-   :target: https://anaconda.org/conda-forge/parasite
-.. |Conda Platforms| image:: https://img.shields.io/conda/pn/conda-forge/parasite.svg
-   :target: https://anaconda.org/conda-forge/parasite
+.. |License| image:: https://img.shields.io/pypi/l/para.svg
+.. |Conda Recipe| image:: https://img.shields.io/badge/recipe-para-green.svg
+   :target: https://anaconda.org/conda-forge/para
+.. |Conda Downloads| image:: https://img.shields.io/conda/dn/conda-forge/para.svg
+   :target: https://anaconda.org/conda-forge/para
+.. |Conda Version| image:: https://img.shields.io/conda/vn/conda-forge/para.svg
+   :target: https://anaconda.org/conda-forge/para
+.. |Conda Platforms| image:: https://img.shields.io/conda/pn/conda-forge/para.svg
+   :target: https://anaconda.org/conda-forge/para
 .. |image2| image:: https://github.com/ickc/python-parasite/workflows/GitHub%20Pages/badge.svg
    :target: https://ickc.github.io/python-parasite

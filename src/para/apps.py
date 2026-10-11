@@ -54,7 +54,7 @@ def read_md_to_ast(
 
     If ``out_dir``, the output directory of the page, is given, embedded media are
     written there, and relative URLs to local files are made to work from the page,
-    see :mod:`parasite.media`.
+    see :mod:`para.media`.
     """
     assert len(inputs) == 1
     path = inputs[0]

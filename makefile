@@ -78,7 +78,7 @@ pep8:
 flake8:
 	flake8 . --ignore=E501
 pylint:
-	pylint parasite
+	pylint para
 
 format:
 	autoflake --in-place --recursive --expand-star-imports --remove-all-unused-imports --ignore-init-module-imports --remove-duplicate-keys --remove-unused-variables .
@@ -108,6 +108,3 @@ editable: setup.py
 bump:
 	bump2version $(PART)
 	git push --follow-tags
-
-src/parasite/pipeline_serial.py: src/parasite/pipeline.py
-	sed -e 's/app_//g' -e 's/.result()//g' $< > $@

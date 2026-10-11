@@ -5,7 +5,7 @@ from pathlib import Path
 import panflute as pf
 import pytest
 
-from parasite.data import Page, Post, Posts, format_years, site_years
+from para.data import Page, Post, Posts, format_years, site_years
 
 
 def make(cls: type[Page], path: str, **metadata: str) -> Page:

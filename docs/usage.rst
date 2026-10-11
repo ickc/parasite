@@ -4,4 +4,4 @@ Usage
 
 To use parasite in a project::
 
-	import parasite
+	from para import site

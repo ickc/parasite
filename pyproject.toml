@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "pandoc-parasite"
+name = "para"
 version = "0.1.0"
 description = "parasite—pandoc centric static site generator"
 readme = "README.rst"
@@ -45,14 +45,14 @@ tests = [
 ]
 
 [project.scripts]
-parasite = "parasite.pipeline:cli"
+parasite = "para.site:cli"
 
 [project.urls]
 Homepage = "https://github.com/ickc/parasite"
 Repository = "https://github.com/ickc/parasite"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/parasite"]
+packages = ["src/para"]
 
 [tool.ruff]
 line-length = 88

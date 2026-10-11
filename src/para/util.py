@@ -11,7 +11,7 @@ except ImportError:
 
 
 def setup_logging(
-    name: str = "parasite",
+    name: str = "para",
     level: str = "INFO",
     env_var: str = "PARASITELOGLEVEL",
     fmt: str = "%(name)s %(levelname)s %(message)s",

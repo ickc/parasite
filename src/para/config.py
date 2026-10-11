@@ -121,7 +121,7 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
         }
 
     def media_options(self, page: Page) -> Dict[str, Any]:
-        """Options of :func:`parasite.apps.read_md_to_ast` resolving media for ``page``."""
+        """Options of :func:`para.apps.read_md_to_ast` resolving media for ``page``."""
         return {
             "out_dir": self.output_dir / page.out_path.parent,
             "output_dir": self.output_dir,

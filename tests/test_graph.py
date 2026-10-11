@@ -5,10 +5,10 @@ from pathlib import Path
 import panflute as pf
 import pytest
 
-from parasite.data import Page, Post
+from para.data import Page, Post
 
 pytest.importorskip("sitegraph")
-from parasite.graph import records  # noqa: E402
+from para.graph import records  # noqa: E402
 
 
 def page(cls: type[Page], path: str, ast: pf.Doc) -> Page:
