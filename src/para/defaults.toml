@@ -19,6 +19,9 @@ date-format = "%Y-%m-%d"
 drafts = false
 
 [listing]
+# the listings of posts: the front page, categories, tags, the archive (a site without
+# posts has none; without listings, a page index.md is the front page)
+enabled = true
 # the front page: the newest `index-length` posts, the first `jumbotron` large, the next
 # `grid` in a grid; older posts are in the archive
 index-length = 10

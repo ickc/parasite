@@ -3,6 +3,7 @@ from __future__ import annotations
 import io
 import json
 import os
+import shutil
 import subprocess  # nosec
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, fields
@@ -48,12 +49,14 @@ def rsync(in_dir: str, out_base_dir: Path, out_sub_dir: str) -> None:
 
 
 def minify(inputs: List[str], output: str) -> None:
-    """minify using the Go minifier
-
-    https://github.com/tdewolff/minify/tree/master/cmd/minify
-    """
+    """Bundle ``inputs`` into ``output``, minified with the Go minifier if it is on the
+    PATH (https://github.com/tdewolff/minify), else concatenated."""
     output_path = Path(output)
     output_path.parent.mkdir(exist_ok=True, parents=True)
+    if shutil.which("minify") is None:
+        logger.warning("minify is not on the PATH: %s is concatenated, not minified", output)
+        output_path.write_text("\n".join(Path(path).read_text(encoding="utf-8") for path in inputs), encoding="utf-8")
+        return
     subprocess.run(  # nosec
         [
             "minify",
@@ -259,53 +262,55 @@ class Config(LiveConfig):
                 )
             )
 
-        # categories and tags
-        for case, dict_ in (
-            ("categories", by_category(post_records)),
-            ("tags", by_tag(post_records)),
-        ):
-            for name, cat_posts in dict_.items():
-                # categories/a/b/index.html is 3 levels down
-                root = "/".join([".."] * (1 + len(Path(name).parts)))
-                index_ast = posts_to_index_ast(
-                    cat_posts,
-                    name,
-                    n_jumbotron=self.n_jumbotron,
-                    n_grid=self.n_grid,
-                    index_include_jumbotron=self.index_include_jumbotron,
+        # the listings of posts (none without posts)
+        if self.write_listings and post_records:
+            # categories and tags
+            for case, dict_ in (
+                ("categories", by_category(post_records)),
+                ("tags", by_tag(post_records)),
+            ):
+                for name, cat_posts in dict_.items():
+                    # categories/a/b/index.html is 3 levels down
+                    root = "/".join([".."] * (1 + len(Path(name).parts)))
+                    index_ast = posts_to_index_ast(
+                        cat_posts,
+                        name,
+                        n_jumbotron=self.n_jumbotron,
+                        n_grid=self.n_grid,
+                        index_include_jumbotron=self.index_include_jumbotron,
+                        lang=self.default_lang,
+                    )
+                    derived(index_ast, root, self.output_dir / case / name / "index.html", f"{case} {name}", index_inputs)
+            # the same overview at /categories/ and /tags/, an AST each: rendering mutates it
+            for case in ("categories", "tags"):
+                tag_ast = posts_to_tag_ast(
+                    by_category(post_records),
+                    by_tag(post_records),
+                    font_size_min=self.tag_cloud_font_size_min,
+                    font_size_max=self.tag_cloud_font_size_max,
+                    root="..",
                     lang=self.default_lang,
                 )
-                derived(index_ast, root, self.output_dir / case / name / "index.html", f"{case} {name}", index_inputs)
-        # the same overview at /categories/ and /tags/, an AST each: rendering mutates it
-        for case in ("categories", "tags"):
-            tag_ast = posts_to_tag_ast(
-                by_category(post_records),
-                by_tag(post_records),
-                font_size_min=self.tag_cloud_font_size_min,
-                font_size_max=self.tag_cloud_font_size_max,
-                root="..",
+                derived(tag_ast, "..", self.output_dir / case / "index.html", f"{case} overview", inputs)
+            # archive: a page per year, and one linking them
+            years_posts = by_year(post_records)
+            for year, year_posts in years_posts.items():
+                archive_ast = posts_to_archive_ast(year_posts, root="../..", lang=self.default_lang, title=str(year))
+                derived(archive_ast, "../..", self.output_dir / "archive" / str(year) / "index.html", f"archive {year}", inputs)
+            archive_index = posts_to_archive_index_ast(years_posts, lang=self.default_lang)
+            derived(archive_index, "..", self.output_dir / "archive" / "index.html", "archive", inputs)
+            # the front page
+            index_ast = posts_to_index_ast(
+                post_records,
+                self.blog_title[self.default_lang],
+                n_jumbotron=self.n_jumbotron,
+                n_grid=self.n_grid,
+                index_include_jumbotron=self.index_include_jumbotron,
                 lang=self.default_lang,
+                length=self.index_length,
+                older_url="archive/",
             )
-            derived(tag_ast, "..", self.output_dir / case / "index.html", f"{case} overview", inputs)
-        # archive: a page per year, and one linking them
-        years_posts = by_year(post_records)
-        for year, year_posts in years_posts.items():
-            archive_ast = posts_to_archive_ast(year_posts, root="../..", lang=self.default_lang, title=str(year))
-            derived(archive_ast, "../..", self.output_dir / "archive" / str(year) / "index.html", f"archive {year}", inputs)
-        archive_index = posts_to_archive_index_ast(years_posts, lang=self.default_lang)
-        derived(archive_index, "..", self.output_dir / "archive" / "index.html", "archive", inputs)
-        # the front page
-        index_ast = posts_to_index_ast(
-            post_records,
-            self.blog_title[self.default_lang],
-            n_jumbotron=self.n_jumbotron,
-            n_grid=self.n_grid,
-            index_include_jumbotron=self.index_include_jumbotron,
-            lang=self.default_lang,
-            length=self.index_length,
-            older_url="archive/",
-        )
-        derived(index_ast, ".", self.output_dir / "index.html", "front page", index_inputs)
+            derived(index_ast, ".", self.output_dir / "index.html", "front page", index_inputs)
         if self.write_graph:
             from .graph import graph_page_ast
 

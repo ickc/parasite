@@ -53,3 +53,16 @@ def test_unknown_profile(tmp_path):
     path = write(tmp_path, '[[sources]]\ndir = "posts"\next = [".md"]\nformat = ["nope"]\n')
     with pytest.raises(SettingsError):
         load(path)().collections
+
+
+def test_math_method(monkeypatch):
+    from para import config
+
+    monkeypatch.setattr(config, "pandoc_version", lambda: (3, 12))
+    assert config.math_method(("--mathjax", "--wrap=none", "--katex=https://k/")) == (
+        "--math-method=mathjax",
+        "--wrap=none",
+        "--math-method=katex:https://k/",
+    )
+    monkeypatch.setattr(config, "pandoc_version", lambda: (3, 1, 1))
+    assert config.math_method(("--mathjax",)) == ("--mathjax",)

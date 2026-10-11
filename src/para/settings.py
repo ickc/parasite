@@ -73,6 +73,7 @@ def load(path: Path = Path(FILE)) -> type[Config]:
         "include_draft": site["drafts"],
         "index_length": listing["index-length"],
         "feed_length": s["feeds"]["length"],
+        "write_listings": listing["enabled"],
         "write_graph": s["graph"]["enabled"],
         "graph_colours": s["graph"]["colours"],
     }

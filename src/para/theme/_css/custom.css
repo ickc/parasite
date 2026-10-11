@@ -1,0 +1,183 @@
+/* override those from default CSSs which has a huge margin in wide screen case which kills plotly plots */
+@media (min-width: 1200px) {
+    .container, .container-lg, .container-md, .container-sm, .container-xl {
+        max-width: none !important;
+    }
+}
+
+@media (min-width: 768px) {
+    /* copied from tocbot.css */
+    .toc {
+        overflow-y: auto;
+    }
+
+    .toc > .toc-list {
+        overflow: hidden;
+        position: relative;
+
+        li {
+            list-style: none;
+        }
+    }
+
+    .toc-list {
+        margin: 0;
+        padding-left: 30px;
+    }
+
+    a.toc-link {
+        /* color: currentColor; */
+        height: 100%;
+    }
+      
+    .is-collapsible {
+        max-height: 1000px;
+        overflow: hidden;
+        transition: all 300ms ease-in-out;
+    }
+
+    .is-collapsed {
+        max-height: 0;
+    }
+      
+    .is-position-fixed {
+        position: fixed !important;
+        overflow-x: auto !important;
+        overflow-y: auto !important;
+        /* hardcoded here, from Chrome>Elements>Computed>position's top number */
+        /* This is needed so that the overflow-y auto can scroll to the end */
+        top: 155.5px;
+        bottom: 42px;
+        width: 100%;
+    }
+      
+    .is-active-link {
+        font-weight: 700;
+    }
+}
+
+th {
+    padding: 1px;
+}
+td {
+    padding: 5px;
+}
+
+/* From MultiMarkdown Composer 3 */
+table {
+    border: solid black;
+    border-width: 2px 0px;
+    empty-cells: hide;
+    border-spacing: 0px;
+    padding: 2px;
+    margin: 20px auto;
+}
+table caption {
+    margin: 5px;
+    text-align: center;
+    caption-side: bottom;
+}
+thead th {
+    border: solid gray;
+    border-width: 0 0 2px 0;
+    padding: 5px;
+}
+thead > tr:last-child > th {
+    border-style: none;
+}
+tbody > tr:first-child > td {
+    border: solid gray;
+    border-width: 1px 0 0 0;
+}
+tbody > tr:first-child > th {
+    border: solid gray;
+    border-width: 1px 0 0 0;
+}
+thead + tbody > tr:first-child > td {
+    border: solid black;
+    border-width: 1px 0 0 0;
+}
+thead + tbody > tr:first-child > th {
+    border: solid black;
+    border-width: 1px 0 0 0;
+}
+
+/* copied from generated highlight CSS from pandoc 2.11.2 using kate style */
+code span { color: #1f1c1b; } /* Normal */
+code span.al { color: #bf0303; background-color: #f7e6e6; font-weight: bold; } /* Alert */
+code span.an { color: #ca60ca; } /* Annotation */
+code span.at { color: #0057ae; } /* Attribute */
+code span.bn { color: #b08000; } /* BaseN */
+code span.bu { color: #644a9b; font-weight: bold; } /* BuiltIn */
+code span.cf { color: #1f1c1b; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #924c9d; } /* Char */
+code span.cn { color: #aa5500; } /* Constant */
+code span.co { color: #898887; } /* Comment */
+code span.cv { color: #0095ff; } /* CommentVar */
+code span.do { color: #607880; } /* Documentation */
+code span.dt { color: #0057ae; } /* DataType */
+code span.dv { color: #b08000; } /* DecVal */
+code span.er { color: #bf0303; text-decoration: underline; } /* Error */
+code span.ex { color: #0095ff; font-weight: bold; } /* Extension */
+code span.fl { color: #b08000; } /* Float */
+code span.fu { color: #644a9b; } /* Function */
+code span.im { color: #ff5500; } /* Import */
+code span.in { color: #b08000; } /* Information */
+code span.kw { color: #1f1c1b; font-weight: bold; } /* Keyword */
+code span.op { color: #1f1c1b; } /* Operator */
+code span.ot { color: #006e28; } /* Other */
+code span.pp { color: #006e28; } /* Preprocessor */
+code span.re { color: #0057ae; background-color: #e0e9f8; } /* RegionMarker */
+code span.sc { color: #3daee9; } /* SpecialChar */
+code span.ss { color: #ff5500; } /* SpecialString */
+code span.st { color: #bf0303; } /* String */
+code span.va { color: #0057ae; } /* Variable */
+code span.vs { color: #bf0303; } /* VerbatimString */
+code span.wa { color: #bf0303; } /* Warning */
+
+/* copied from Nikola doc 8.1.2. Header permalinks */
+h1:hover .headerlink, h2:hover .headerlink,
+h3:hover .headerlink, h4:hover .headerlink,
+h5:hover .headerlink, h6:hover .headerlink {
+    display: inline;
+}
+
+.headerlink {
+    display: none;
+    color: #ddd;
+    margin-left: 0.2em;
+    padding: 0 0.2em;
+}
+
+.headerlink:hover {
+    opacity: 1;
+    background: #ddd;
+    color: #000;
+    text-decoration: none;
+}
+
+/* FONT-FACE STUFF HERE */
+
+html{
+    font-family: "Gill Sans", "Gill Sans MT", Calibri, "PingFang HK", "蘋方-港", "PingFang TC", "蘋方-繁", "PingFang SC", "蘋方-簡", "PingFang", "source-han-sans-traditional", "Microsoft YaHei New", "Microsoft Yahei", "微软雅黑", SimSun, 宋体, STXihei, "华文细黑", sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6{
+    font-family: ETBembo, Palatino, "Palatino Linotype", "Palatino LT STD", "Book Antiqua", Georgia, "PingFang HK", "蘋方-港", "PingFang TC", "蘋方-繁", "PingFang SC", "蘋方-簡", "PingFang", "source-han-sans-traditional", "Microsoft YaHei New", "Microsoft Yahei", "微软雅黑", SimSun, 宋体, STXihei, "华文细黑", serif;
+}
+
+code{
+    font-family: Consolas, "Liberation Mono", Menlo, Courier, STFangSong, "华文仿宋", FangSong, "仿宋", monospace;
+}
+
+.nav-link{
+    font-family: "fontin_smallcapsregular", "Gill Sans", "Gill Sans MT", Calibri, "PingFang HK", "蘋方-港", "PingFang TC", "蘋方-繁", "PingFang SC", "蘋方-簡", "PingFang", "source-han-sans-traditional", "Microsoft YaHei New", "Microsoft Yahei", "微软雅黑", SimSun, 宋体, STXihei, "华文细黑", sans-serif;
+}
+
+figcaption::before {
+    content: "Fig: ";
+}
+
+figcaption {
+    text-align: center;
+}

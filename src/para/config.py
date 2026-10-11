@@ -8,9 +8,10 @@
 from __future__ import annotations
 
 import json
+import subprocess  # nosec
 import tomllib
 from dataclasses import dataclass, field
-from functools import cached_property
+from functools import cached_property, lru_cache
 from importlib import import_module, resources
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar
@@ -27,6 +28,8 @@ if TYPE_CHECKING:
     from .panflute_filters import PanfluteFilter
 
 TEMPLATES = {"post": POST_TEMPLATE, "index": INDEX_TEMPLATE, "slides": SLIDE_TEMPLATE}
+# the default theme's files (theme/README.md)
+THEME = Path(__file__).parent / "theme"
 
 
 class SettingsError(ValueError):
@@ -47,6 +50,30 @@ def import_filter(spec: str) -> Any:
     for name in attr.split("."):
         obj = getattr(obj, name)
     return obj
+
+
+@lru_cache(maxsize=None)
+def pandoc_version() -> tuple[int, ...]:
+    out = subprocess.run(["pandoc", "--version"], capture_output=True, text=True, check=True).stdout  # nosec
+    return tuple(int(part) for part in out.split()[1].split(".") if part.isdigit())
+
+
+# pandoc 3.11 replaced these with --math-method=NAME[:URL], and warns about each
+MATH_FLAGS = ("--mathjax", "--mathml", "--katex", "--webtex", "--gladtex")
+
+
+def math_method(options: tuple[str, ...]) -> tuple[str, ...]:
+    """``options`` with the math flags pandoc ≥ 3.11 deprecates in its new form."""
+    if pandoc_version() < (3, 11):
+        return options
+    res = []
+    for option in options:
+        name, eq, url = option.partition("=")
+        if name in MATH_FLAGS:
+            res.append(f"--math-method={name[2:]}" + (f":{url}" if eq else ""))
+        else:
+            res.append(option)
+    return tuple(res)
 
 
 def by_lang(value: Any, lang: str, default_lang: str) -> Any:
@@ -110,6 +137,9 @@ class Profile:
             # 404 is special: a server serves 404.html, not 404/index.html
             if stem == "404" and parent == Path(""):
                 return Path("404.html")
+            # an index source is its folder's page
+            if stem == "index":
+                return parent / "index.html"
             return parent / stem / "index.html"
         return parent / self.url.format(stem=stem)
 
@@ -145,6 +175,7 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
         include_draft: output draft posts as well.
         index_length: how many posts the front page shows; older ones are in the archive.
         feed_length: how many of the newest posts the feeds carry.
+        write_listings: write the listings: the front page, categories, tags, the archive.
         write_graph: write the post graph (graph.json and its viewer, needs sitegraph).
         graph_uncoloured: tags never coloured in the graph (they say what form a post takes).
         graph_colours: how many tags the graph colours at first.
@@ -178,6 +209,7 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
     index_length: int = 10
     feed_length: int = 10
 
+    write_listings: bool = True
     write_graph: bool = False
     graph_uncoloured: list[str] = field(default_factory=list)
     graph_colours: int = 7
@@ -216,7 +248,11 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
 
     @property
     def compress_css(self) -> Dict[str, List[str]]:  # output file, input files
-        return {f"{self.output_dir}/{k}": v for k, v in self.settings["minify"].get("css", {}).items()}
+        """Style sheets to bundle: a site's own file, else the default theme's."""
+        return {
+            f"{self.output_dir}/{k}": [path if Path(path).exists() else str(THEME / path) for path in v]
+            for k, v in self.settings["minify"].get("css", {}).items()
+        }
 
     @property
     def compress_js(self) -> Dict[str, List[str]]:  # output file, input files
@@ -272,7 +308,7 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
                 to=p["to"],
                 template=TEMPLATES[p["template"]] if p["template"] in TEMPLATES else Path(p["template"]),
                 url=p["url"],
-                options=tuple(p["options"]) + (() if p["to"] == "html" else (f"--to={p['to']}",)),
+                options=math_method(tuple(p["options"]) + (() if p["to"] == "html" else (f"--to={p['to']}",))),
                 filters=tuple(import_filter(self.filters[f]["python"]) for f in p["filters"]),
                 show_image=p["show-image"],
                 css=tuple(p["css"]),
