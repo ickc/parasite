@@ -12,12 +12,13 @@ import subprocess  # nosec
 import tomllib
 from dataclasses import dataclass, field
 from functools import cached_property, lru_cache
-from importlib import import_module, resources
+from importlib import resources
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar
 
 from custom_inherit import DocInheritMeta
 
+from .filters import Filter, FilterError
 from .helpers import nav as nav_html
 from .lang import convert_text, lookup, tag
 from .lang import name as lang_name
@@ -27,7 +28,6 @@ if TYPE_CHECKING:
     from typing import Dict, List, Optional
 
     from .data import Page
-    from .panflute_filters import PanfluteFilter
 
 TEMPLATES = {"post": POST_TEMPLATE, "index": INDEX_TEMPLATE, "slides": SLIDE_TEMPLATE}
 # the default theme's files (theme/README.md)
@@ -41,17 +41,6 @@ class SettingsError(ValueError):
 def defaults() -> dict[str, Any]:
     """parasite's defaults (defaults.toml)."""
     return tomllib.loads(resources.files(__package__).joinpath("defaults.toml").read_text(encoding="utf-8"))
-
-
-def import_filter(spec: str) -> Any:
-    """``module:function`` imported."""
-    module, _, attr = spec.partition(":")
-    if not attr:
-        raise SettingsError(f"{spec!r}: a filter is 'module:function'")
-    obj = import_module(module)
-    for name in attr.split("."):
-        obj = getattr(obj, name)
-    return obj
 
 
 @lru_cache(maxsize=None)
@@ -119,7 +108,8 @@ class Profile:
     label: str
     url: str
     options: tuple[str, ...]
-    filters: tuple[Any, ...]
+    # the render filters it names (para.filters)
+    filters: tuple[str, ...]
     show_image: bool
     css: tuple[str, ...]
     js: tuple[str, ...]
@@ -295,11 +285,14 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
         return res
 
     @cached_property
-    def filters(self) -> dict[str, dict[str, Any]]:
-        res = self.settings["filters"]
-        for name, spec in res.items():
-            if "python" not in spec:
-                raise SettingsError(f"[filters.{name}]: only python filters for now")
+    def filters(self) -> dict[str, Filter]:
+        """The site's filters (``[filters.NAME]``, see :mod:`para.filters`), in order."""
+        try:
+            res = {name: Filter.from_spec(name, spec) for name, spec in self.settings["filters"].items()}
+            for f in res.values():
+                f.check()
+        except (FilterError, ImportError, AttributeError) as e:
+            raise SettingsError(str(e)) from e
         return res
 
     @cached_property
@@ -329,6 +322,8 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
             missing = [f for f in p["filters"] if f not in self.filters]
             if missing:
                 raise SettingsError(f"[profiles.{name}]: filters {missing} are not in [filters]")
+            if read := [f for f in p["filters"] if self.filters[f].at != "render"]:
+                raise SettingsError(f"[profiles.{name}]: filters {read} are not at = \"render\"")
             navs = p["nav"] if isinstance(p["nav"], dict) else {self.default_lang: p["nav"]}
             res[name] = Profile(
                 name=name,
@@ -337,7 +332,7 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
                 template=TEMPLATES[p["template"]] if p["template"] in TEMPLATES else Path(p["template"]),
                 url=p["url"],
                 options=math_method(tuple(p["options"]) + (() if p["to"] == "html" else (f"--to={p['to']}",))),
-                filters=tuple(import_filter(self.filters[f]["python"]) for f in p["filters"]),
+                filters=tuple(p["filters"]),
                 show_image=p["show-image"],
                 css=tuple(p["css"]),
                 js=tuple(p["js"]),
@@ -379,15 +374,6 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
     def pandoc_input_options(self, ext: str) -> List[str]:
         read = self.settings["read"]
         return list(read["options"]) + list(read.get(ext.lstrip("."), {}).get("options", []))
-
-    def panflute_input_filters(self, ext: str) -> list[PanfluteFilter]:
-        return [
-            import_filter(spec["python"])
-            for spec in self.filters.values()
-            if spec.get("at", "read") == "read"
-            and spec.get("default", False)
-            and ("inputs" not in spec or ext.lstrip(".") in spec["inputs"])
-        ]
 
     def media_options(self, page: Page) -> Dict[str, Any]:
         """Options of :func:`para.apps.read_md_to_ast` resolving media for ``page``."""

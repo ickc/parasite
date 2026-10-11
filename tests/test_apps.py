@@ -7,16 +7,12 @@ import pytest
 
 from para import apps
 
+from para.filters import Filter
+
 if TYPE_CHECKING:
     from typing import List
 
-    from para.panflute_filters import PanfluteFilter
-
 example_path = Path("docs/pages/index.md")
-
-
-def panflute_filters(ext: str) -> List[PanfluteFilter]:
-    return [lambda x: x]
 
 
 def pandoc_options(ext: str) -> List[str]:
@@ -24,22 +20,18 @@ def pandoc_options(ext: str) -> List[str]:
 
 
 @pytest.mark.parametrize(
-    "panflute_filters",
+    "filters",
     [
-        panflute_filters,
-        lambda x: [],
+        {"x": Filter("x", python="para.panflute_filters:mathjax_bold_ell_filter", default=True)},
+        {},
     ],
 )
-def test_read_md_to_ast(panflute_filters):
+def test_read_md_to_ast(filters):
     """Test app.read_md_to_ast
 
     We only test it runs ok.
     """
-    apps.read_md_to_ast(
-        pandoc_options=pandoc_options,
-        panflute_filters=panflute_filters,
-        inputs=[example_path],
-    )
+    apps.read_md_to_ast(pandoc_options, filters, inputs=[example_path])
 
 
 

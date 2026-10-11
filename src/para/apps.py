@@ -16,16 +16,17 @@ from .media import (
     localize_extracted_media,
     rebase_relative_urls,
 )
+from .filters import chosen, run
 from .lang import convert
 from .panflute_filters import meta_append, select_content, select_text
 
 if TYPE_CHECKING:
     from .config import Config, Profile
     from .output import Output
-    from typing import Callable, Dict, List, Optional, Sequence
+    from typing import Callable, Dict, List, Mapping, Optional, Sequence
 
 
-    from .panflute_filters import PanfluteFilter
+    from .filters import Filter
 
 logger = getLogger(__name__)
 
@@ -67,7 +68,7 @@ def split_filter_options(options: List[str]) -> tuple[List[str], List[str]]:
 
 def read_md_to_ast(
     pandoc_options: Callable[[str], List[str]],
-    panflute_filters: Callable[[str], list[PanfluteFilter]],
+    filters: Mapping[str, Filter],
     inputs: List[Path] = [],
     out_dir: Optional[Path] = None,
     output_dir: Path = Path("output"),
@@ -90,6 +91,8 @@ def read_md_to_ast(
     heading identifiers, crossref's numbers and citeproc's bibliography are the
     output's own), or for a notebook after parsing and before pandoc's filters.
     ``pandoc_filters`` False leaves out pandoc's filters (crossref, citeproc, Lua).
+    ``filters`` is the site's allow-list: the read filters the document chooses run
+    after pandoc's (see :mod:`para.filters`).
     ``extra_options`` are the page's own pandoc options (its language, its primary's
     front matter, see :mod:`para.lang`); ``conversion``, an OpenCC conversion of its
     text, applied last.
@@ -131,8 +134,7 @@ def read_md_to_ast(
             claim=claim,
         )
 
-    for filter_ in panflute_filters(ext):
-        doc = filter_(doc)
+    doc = run(chosen(filters, "read", doc.get_metadata("filters"), str(path), ext=ext), doc)
     if conversion:
         doc = convert(doc, conversion)
     return doc
@@ -230,8 +232,10 @@ def post_to_html(
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
-    for filter_ in profile.filters:
-        ast = filter_(ast)
+    # the render filters: Python here, Lua in the call writing the output (its FORMAT)
+    chain = chosen(config.filters, "render", ast.get_metadata("filters"), str(out_path), profile=profile.filters)
+    ast = run([f for f in chain if not f.lua], ast)
+    extra_args += [f"--lua-filter={f.path}" for f in chain if f.lua]
     html = convert_text(
         ast,
         input_format="panflute",

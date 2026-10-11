@@ -46,7 +46,7 @@ footer = '© {years} <a href="mailto:{email}">{author}</a> function f(){ return 
     assert footer == '© 2020 <a href="mailto:a@b">A</a> function f(){ return 1; }'
     assert config.part(slides, "footer", "en") == ""
     assert slides.options[-1] == "--to=slidy"
-    assert [f.__name__ for f in html.filters] == ["lightgallery_filter", "mathjax_bold_ell_filter"]
+    assert html.filters == ("lightgallery", "mathjax-bold-ell")
     assert read(path)["site"]["lang"] == "en"
 
 

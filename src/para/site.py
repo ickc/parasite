@@ -257,7 +257,7 @@ class Config(LiveConfig):
             with page_options(page) as extra:
                 return read_md_to_ast(
                     self.pandoc_input_options,
-                    self.panflute_input_filters,
+                    self.filters,
                     inputs=[page.path],
                     **self.media_options(page),
                     claim=claim,
@@ -553,7 +553,8 @@ class Config(LiveConfig):
                 fragments[page.record.out_path] = fragment
         logger.info("rendered %s of %s outputs (the rest unchanged)", rendered, sum(len(page.outputs) for page in all_pages))
         time_elapse.report("pages/posts rendered.")
-        if self.write_atom or self.write_rss:
+        # feeds of no posts: none (a site of pages only)
+        if (self.write_atom or self.write_rss) and post_records:
             to_feed(
                 post_records[: self.feed_length],
                 fragments,

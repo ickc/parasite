@@ -121,7 +121,7 @@ class Config(StaticConfig):
         def read(select: Profile | None) -> pf.Doc:
             return read_md_to_ast(
                 self.pandoc_input_options,
-                self.panflute_input_filters,
+                self.filters,
                 inputs=[page.path],
                 **self.media_options(page),
                 select=select,
