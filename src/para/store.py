@@ -112,7 +112,16 @@ def site_key(config_repr: str, sources: Iterable[Path], skip: Iterable[Path], co
     listing = sorted(
         os.path.join(dirpath, name) for folder in copied for dirpath, _, names in os.walk(folder) for name in names
     )
-    return hash_key(SCHEMA, code_stamp(), pandoc_stamp(), config_repr, *other, *listing)
+    parts = {
+        "code": code_stamp(),
+        "pandoc": pandoc_stamp(),
+        "config": hash_key(config_repr),
+        "other files": hash_key(*other),
+        "copied files": hash_key(*listing),
+    }
+    for name, value in parts.items():
+        logger.debug("site key: %s %s", name, value[:12])
+    return hash_key(SCHEMA, *parts.values())
 
 
 def source_hash(path: Path) -> str:
