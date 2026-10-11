@@ -15,11 +15,13 @@ A site's `parasite.toml` is merged over this file (see [parasite.toml](../config
 
 [site]
 url = ""
-# a string, or a table by language: { en = "…", zh_tw = "…" }
+# a string, or a table by language: { en = "…", zh-Hant = "…" }
 title = ""
 description = ""
 author = ""
 email = ""
+# the site's language, a BCP 47 tag: "en", "zh-Hant" (Traditional Chinese), "zh-Hans"
+# (Simplified); a page sets its own with `lang`
 lang = "en"
 timezone = "America/Los_Angeles"
 logo = ""
@@ -27,6 +29,16 @@ copyright = "Contents © {years} {author}"
 output = "output"
 date-format = "%Y-%m-%d"
 drafts = false
+
+# the site's other languages, a table each: [translations.zh-Hans]. A source
+# x.zh-Hans.md is the translation of x.md, written beside it (x/index.zh-hans.html, its
+# front matter falling back to x.md's), or a page in that language if there is no x.md.
+# The versions of a page link to each other; listings and feeds show the primary.
+#   name = "简体中文"   the language's own name (default: known for common languages)
+#   convert = "hk2s"   made from each page in `from` without one: an OpenCC conversion
+#                      (hk2s, t2s, tw2s, s2t, s2hk, s2tw, …; needs para[opencc])
+#   from = "zh-Hant"   the language converted from (default: the site's)
+[translations]
 
 [listing]
 # the listings of posts: the front page, categories, tags, the archive (a site without

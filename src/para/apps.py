@@ -16,7 +16,6 @@ from .media import (
     localize_extracted_media,
     rebase_relative_urls,
 )
-from .config import by_lang
 from .lang import convert
 from .panflute_filters import meta_append, select_content, select_text
 
@@ -218,7 +217,7 @@ def post_to_html(
         ast.metadata["mathjax-config"] = pf.RawBlock(config.mathjax_config)
     ast.metadata["search-form"] = pf.RawBlock(part("search_form"))
     if config.blog_title:
-        ast.metadata["title-prefix"] = pf.RawBlock(by_lang(config.blog_title, lang, config.default_lang))
+        ast.metadata["title-prefix"] = pf.RawBlock(config.localized(config.blog_title, lang))
     if config.logo_url:
         ast.metadata["logo-url"] = config.logo_url
     ast.metadata["nav"] = pf.RawBlock(part("nav"))

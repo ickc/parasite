@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING, Any, ClassVar
 from custom_inherit import DocInheritMeta
 
 from .helpers import nav as nav_html
-from .lang import lookup, tag
+from .lang import convert_text, lookup, tag
 from .lang import name as lang_name
 from .templates import INDEX_TEMPLATE, POST_TEMPLATE, SLIDE_TEMPLATE
 
@@ -356,11 +356,19 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
     def part(self, profile: Profile, name: str, lang: str) -> str:
         """A part of a page (``header_includes``, ``nav``, …) in ``lang``; in the footer,
         ``{email}`` and ``{author}`` are the site's."""
-        res = by_lang(getattr(profile, name), lang, self.default_lang) or ""
+        res = self.localized(getattr(profile, name), lang) or ""
         if name == "footer":
-            res = res.replace("{email}", self.blog_email).replace(
-                "{author}", by_lang(self.blog_author, lang, self.default_lang) or ""
-            )
+            res = res.replace("{email}", self.blog_email).replace("{author}", self.localized(self.blog_author, lang) or "")
+        return res
+
+    def localized(self, value: Any, lang: str) -> Any:
+        """A value, or a table of values by language, in ``lang``. A language made by
+        conversion (``[translations]``) without its own value has its source's,
+        converted."""
+        res = by_lang(value, lang, self.default_lang)
+        spec = self.translations.get(tag(lang))
+        if isinstance(value, dict) and isinstance(res, str) and spec and spec["convert"] and lookup(value, lang) is None:
+            res = convert_text(res, spec["convert"])
         return res
 
     # reading #################################################################

@@ -11,7 +11,7 @@ pytest.importorskip("opencc")
 CONFIG = """
 [site]
 url = "https://example.org/"
-title = { zh-Hant = "祺", en = "KcIc" }
+title = { zh-Hant = "札記", en = "KcIc" }
 lang = "zh-Hant"
 [translations.en]
 [translations.zh-Hans]
@@ -50,6 +50,8 @@ def test_translations(tmp_path, monkeypatch):
         assert 'hreflang="en"' in html and 'hreflang="zh-Hans"' in html and 'hreflang="zh-Hant"' in html
     assert 'href="index.en.html"' in a and 'href="./"' in en and 'href="index.zh-hans.html"' in en
     assert 'href="../b/"' in hans
+    # the site's title, which has no zh-Hans of its own, converted
+    assert "<title>简易食谱 | 札记</title>" in hans and "<title>Simple recipe | KcIc</title>" in en
     # a page in English only is not converted; listings show each page once
     assert not (out / "b/index.zh-hans.html").exists()
     index = (out / "index.html").read_text()

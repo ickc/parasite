@@ -41,6 +41,7 @@ nav = [
         { text = "Front matter", href = "{root}/front-matter/" },
         { text = "Output profiles", href = "{root}/profiles/" },
         { text = "Filters", href = "{root}/filters/" },
+        { text = "Languages", href = "{root}/languages/" },
     ] },
     { text = "How it builds", href = "{root}/builds/" },
     { text = "Migrating", href = "{root}/migrating/" },

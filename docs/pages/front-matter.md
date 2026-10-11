@@ -9,7 +9,8 @@ parasite uses Quarto's name.
 
 | key | meaning |
 |---|---|
-| `title`, `subtitle`, `author`, `abstract`, `lang` | pandoc's |
+| `title`, `subtitle`, `author`, `abstract` | pandoc's |
+| `lang` | the page's language, a BCP 47 tag (see [languages](../languages/)); a translation's comes from its file name |
 | `date` | when it was first published; a post needs one. An ISO 8601 date or date-time, in the site's time zone unless it says otherwise |
 | `date-modified` | when its content last changed, by hand. A post's copyright runs from `date` to `date-modified` |
 | `description` | one or two plain sentences, for listings, `<meta name="description">` and search; shown under the title. Without one, the `subtitle` is used |

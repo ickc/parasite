@@ -91,6 +91,13 @@ def _opencc(conversion: str) -> Any:
     return opencc.OpenCC(conversion if conversion.endswith(".json") else f"{conversion}.json")
 
 
+def convert_text(text: str, conversion: str) -> str:
+    """``text`` converted by OpenCC's ``conversion``."""
+    converter = _opencc(conversion)
+    with _LOCK:
+        return converter.convert(text)
+
+
 def convert(doc: Doc, conversion: str) -> Doc:
     """``doc``'s text, and its metadata's, converted by OpenCC's ``conversion``
     (``hk2s``: Traditional Chinese as in Hong Kong to Simplified). Code, URLs,
