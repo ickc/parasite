@@ -107,9 +107,9 @@ $endfor$
               $if(date)$
               <p class="dateline"><a href="$if(self-href)$$self-href$$else$.$endif$" rel="bookmark"><time class="published dt-published" datetime="$date$" itemprop="datePublished" title="$date$">$date$</time></a></p>
               $endif$
-              $if(translations)$
+$if(translations)$
               <p class="translations">$for(translations)$$if(translations.current)$<span lang="$translations.lang$">$translations.name$</span>$else$<a href="$translations.href$" hreflang="$translations.lang$" lang="$translations.lang$">$translations.name$</a>$endif$$sep$ · $endfor$</p>
-              $endif$
+$endif$
             </div>
           </header>
           <div class="e-content entry-content" itemprop="articleBody text">
