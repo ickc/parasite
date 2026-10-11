@@ -14,8 +14,6 @@ import panflute as pf
 from panflute.tools import convert_text
 from urlpath import URL as Url
 
-from .apps import get_teaser
-
 if TYPE_CHECKING:
     from typing import (
         Any,
@@ -228,6 +226,12 @@ class Page:
         return tags
 
     @property
+    def description(self) -> Optional[str]:
+        """The summary of the page: its ``description``, as plain text."""
+        meta = self.ast.metadata.content.get("description")
+        return None if meta is None else pf.stringify(meta)
+
+    @property
     def previewimage(self) -> Optional[Url]:
         res = self.ast.get_metadata("previewimage")
         return None if res is None else Url(res)
@@ -247,27 +251,7 @@ class Post(Page):
     def dict_ast(self) -> dict[str, Any]:
         dict_ast = super().dict_ast
         dict_ast["time"] = self.time
-        dict_ast["teaser"] = self.teaser
         return dict_ast
-
-    # AST's derivatives
-
-    def get_teaser(self) -> None:
-        self._ast = get_teaser(self.ast)
-
-    @property
-    def teaser(self) -> pf.elements.Doc:
-        if not hasattr(self, "_teaser"):
-            self.get_teaser()
-        return self._teaser
-
-    @teaser.setter
-    def teaser(self, doc: pf.containers.ListContainer) -> None:
-        self._teaser = doc
-
-    @teaser.deleter
-    def teaser(self) -> None:
-        del self._teaser
 
     @property
     def date(self) -> str:

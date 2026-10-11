@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 
 import defopt
 
-from .apps import post_to_html, read_md_to_ast, read_md_to_ast_with_teaser
+from .apps import post_to_html, read_md_to_ast
 from .data import Pages, Posts
 from .helpers import set_report_urls, to_feed, to_sitemap, write_tipuesearch
 from .live import Config as LiveConfig
@@ -106,7 +106,7 @@ class Config(LiveConfig):
         ]
         posts_ast_futures = [
             pool.submit(
-                read_md_to_ast_with_teaser,
+                read_md_to_ast,
                 self.pandoc_input_options,
                 self.panflute_input_filters,
                 inputs=[page.path],
@@ -118,7 +118,7 @@ class Config(LiveConfig):
         for page, future in zip(pages.pages, pages_ast_futures):
             page.ast = future.result()
         for page, future in zip(posts.pages, posts_ast_futures):
-            page.ast, page.teaser = future.result()
+            page.ast = future.result()
         time_elapse.report("got all ASTs.")
 
         if not self.include_draft:
@@ -250,7 +250,7 @@ class Config(LiveConfig):
             # search: not in the pool, as
             # it needs to be re-generated even if only one page is changed,
             # and the time taken is very small for now.
-            # as site gets bigger, may need to cache the Page.text e.g. in read_md_to_ast*?
+            # as site gets bigger, may need to cache the Page.text e.g. in read_md_to_ast?
             write_tipuesearch(
                 self.output_dir / "assets/js/tipuesearch_content.js",
                 all_pages,

@@ -26,8 +26,9 @@ def posts_to_index_ast(
     def post_to_dict(post: Post) -> dict[str, Any]:
         res = {
             "url": str(post.url),
-            "teaser": pf.MetaBlocks(*post.teaser),
         }
+        if post.description:
+            res["description"] = post.description
         if post.title is not None:
             res["title"] = post.title
         if post.previewimage is not None:

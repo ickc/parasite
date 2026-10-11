@@ -71,67 +71,6 @@ def read_md_to_ast(
     return doc
 
 
-def get_teaser(content: pf.containers.ListContainer) -> pf.containers.ListContainer:
-    """Get the teaser from a panflute AST container.
-
-    A teaser is defined as the document before ``<!-- more -->``,
-    where it can either be at top level,
-    or inside a div (e.g. from ipynb source.)
-    """
-    # assume top level first
-    found = False
-    for i, item in enumerate(content):
-        if (
-            isinstance(item, pf.RawBlock)
-            and item.format == "html"
-            and item.text == "<!-- more -->"
-        ):
-            found = True
-            break
-    if found:
-        return content[:i]
-
-    # assume inside a top level Div
-    for i, elem in enumerate(content):
-        if isinstance(elem, pf.Div):
-            for j, item in enumerate(elem.content):
-                if (
-                    isinstance(item, pf.RawBlock)
-                    and item.format == "html"
-                    and item.text == "<!-- more -->"
-                ):
-                    found = True
-                    break
-        if found:
-            break
-    if found:
-        div = content[i]
-        div_new = pf.Div(
-            *div.content[:j], classes=div.classes, attributes=div.attributes
-        )
-        return pf.ListContainer(
-            *content[:i], div_new, oktypes=content.oktypes, parent=content.parent
-        )
-
-    return content
-
-
-def read_md_to_ast_with_teaser(
-    pandoc_options: Callable[[str], List[str]],
-    panflute_filters: Callable[[str], list[PanfluteFilter]],
-    inputs: List[Path] = [],
-    **kwargs: Any,
-) -> Tuple[pf.elements.Doc, pf.containers.ListContainer]:
-    ast = read_md_to_ast(
-        pandoc_options=pandoc_options,
-        panflute_filters=panflute_filters,
-        inputs=inputs,
-        **kwargs,
-    )
-    teaser = get_teaser(ast.content)
-    return ast, teaser
-
-
 def post_to_html(
     ast: pf.elements.Doc,
     root: str,

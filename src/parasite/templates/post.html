@@ -94,6 +94,9 @@ $endfor$
             $if(subtitle)$
             <p class="subtitle">$subtitle$</p>
             $endif$
+            $if(description)$
+            <p class="description p-summary">$description$</p>
+            $endif$
             <div class="metadata">
               $for(author)$
               <p class="byline author vcard p-author h-card"><span class="byline-name fn p-name" itemprop="author">$author$</span></p>

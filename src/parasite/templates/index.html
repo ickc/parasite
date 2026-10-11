@@ -90,7 +90,7 @@ $endfor$
             <a class="text-white" href="$root$/$index_jumbotron.url$">$index_jumbotron.title$</a>
           </h1>
           <div class="lead my-3 mb-0">
-            $index_jumbotron.teaser$
+            $if(index_jumbotron.description)$<p>$index_jumbotron.description$</p>$endif$
             <p class="more"><a href="$root$/$index_jumbotron.url$">Read more…</a></p>
           </div>
         </div>
@@ -113,7 +113,7 @@ $endfor$
             <a class="text-dark" href="$root$/$index_grid.url$">$index_grid.title$</a>
           </h3>
           <div class="card-text mb-auto bootblog4-featured-text">
-            $index_grid.teaser$
+            $if(index_grid.description)$<p>$index_grid.description$</p>$endif$
             <p class="more"><a href="$root$/$index_grid.url$">Read more…</a></p>
           </div>
         </div>
@@ -163,7 +163,7 @@ $endfor$
               </div>
             </header>
             <div class="p-summary entry-summary">
-              $index.teaser$
+              $if(index.description)$<p>$index.description$</p>$endif$
               <p class="more"><a href="$root$/$index.url$">Read more…</a></p>
             </div>
           </article>
