@@ -1,28 +1,16 @@
 from __future__ import annotations
 
 import os
+import subprocess  # nosec
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from logging import getLogger
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import defopt
-import parsl
-import psutil
-from parsl.config import Config as ParslConfig
-from parsl.data_provider.files import File
-from parsl.executors import ThreadPoolExecutor
 
-# from parsl.executors import HighThroughputExecutor
-# from parsl.providers import LocalProvider
-from parsl.utils import get_all_checkpoints
-
-from .apps_parsl import (
-    app_minify,
-    app_post_to_html,
-    app_read_md_to_ast,
-    app_read_md_to_ast_with_teaser,
-    app_rsync,
-)
+from .apps import post_to_html, read_md_to_ast, read_md_to_ast_with_teaser
 from .data import Pages, Posts
 from .helpers import set_report_urls, to_feed, to_sitemap, write_tipuesearch
 from .live import Config as LiveConfig
@@ -36,52 +24,68 @@ if TYPE_CHECKING:
 
     PagesOrPosts = TypeVar("PagesOrPosts", Pages, Posts)
 
-executor = ThreadPoolExecutor(
-    max_threads=psutil.cpu_count(logical=False),
-    working_dir=os.getcwd(),
-)
-# executor = HighThroughputExecutor(
-#     provider=LocalProvider(
-#         worker_init=f". {os.path.expanduser('~/.mambaforge/envs/all39-defaults/bin/activate')}",
-#     ),
-#     cores_per_worker=1,
-# )
-parsl.load(
-    ParslConfig(
-        executors=[executor],
-        checkpoint_mode="task_exit",
-        checkpoint_files=get_all_checkpoints(),
-    )
-)
-
-# parsl.set_stream_logger()
 setup_logging()
 logger = getLogger(__name__)
 
 
+def rsync(in_dir: str, out_base_dir: Path, out_sub_dir: str) -> None:
+    out_dir = Path(out_base_dir) / out_sub_dir
+    out_dir.mkdir(exist_ok=True, parents=True)
+    subprocess.run(["rsync", "-a", f"{in_dir}/", f"{out_dir}/"], check=True)  # nosec
+
+
+def minify(inputs: List[str], output: str) -> None:
+    """minify using the Go minifier
+
+    https://github.com/tdewolff/minify/tree/master/cmd/minify
+    """
+    output_path = Path(output)
+    output_path.parent.mkdir(exist_ok=True, parents=True)
+    subprocess.run(  # nosec
+        [
+            "minify",
+            "--type",
+            output_path.suffix[1:],
+            "-b",
+            "-o",
+            str(output_path),
+            *inputs,
+        ],
+        check=True,
+    )
+
+
 @dataclass
 class Config(LiveConfig):
+    """Configure static site.
+
+    Args:
+        jobs: number of pages processed at once (default: the number of CPUs).
+    """
+
+    jobs: int = 0
+
     def exec(self) -> None:
         """Parasite static site generator."""
+        with ThreadPoolExecutor(max_workers=self.jobs or os.cpu_count()) as pool:
+            self._exec(pool)
+
+    def _exec(self, pool: ThreadPoolExecutor) -> None:
         time_elapse = TimeElapse(logger)
 
         if self.compress_js:
             minifies_js = [
-                app_minify(
-                    inputs=[File(path) for path in paths], outputs=[File(out_path)]
-                )
+                pool.submit(minify, paths, out_path)
                 for out_path, paths in self.compress_js.items()
             ]
         if self.compress_css:
             minifies = [
-                app_minify(
-                    inputs=[File(path) for path in paths], outputs=[File(out_path)]
-                )
+                pool.submit(minify, paths, out_path)
                 for out_path, paths in self.compress_css.items()
             ]
         if self.files_folders:
             rsyncs = [
-                app_rsync(in_dir, self.output_dir, out_sub_dir)
+                pool.submit(rsync, in_dir, self.output_dir, out_sub_dir)
                 for in_dir, out_sub_dir in self.files_folders.items()
             ]
         time_elapse.report("staging for minifies and rsync.")
@@ -91,19 +95,21 @@ class Config(LiveConfig):
         time_elapse.report("glob pages/posts from file system.")
 
         pages_ast_futures = [
-            app_read_md_to_ast(
+            pool.submit(
+                read_md_to_ast,
                 self.pandoc_input_options,
                 self.panflute_input_filters,
-                inputs=[File(str((page.path)))],
+                inputs=[page.path],
                 **self.media_options(page),
             )
             for page in pages.pages
         ]
         posts_ast_futures = [
-            app_read_md_to_ast_with_teaser(
+            pool.submit(
+                read_md_to_ast_with_teaser,
                 self.pandoc_input_options,
                 self.panflute_input_filters,
-                inputs=[File(str((page.path)))],
+                inputs=[page.path],
                 **self.media_options(page),
             )
             for page in posts.pages
@@ -128,15 +134,16 @@ class Config(LiveConfig):
         all_pages: List[Page] = list(pages.pages) + list(posts.pages)
         set_report_urls(all_pages)
         output_futures = [
-            app_post_to_html(
+            pool.submit(
+                post_to_html,
                 page.ast,
                 page.root,
                 page.prev,
                 page.next,
                 page.lang,
                 page.ext,
-                inputs=[] if page.template is None else [File(str((page.template)))],
-                outputs=[File(str((self.output_dir / page.out_path)))],
+                inputs=[] if page.template is None else [page.template],
+                outputs=[self.output_dir / page.out_path],
                 **page.options,
             )
             for page in all_pages
@@ -159,7 +166,8 @@ class Config(LiveConfig):
                     lang=self.default_lang,
                 )
                 output_futures.append(
-                    app_post_to_html(
+                    pool.submit(
+                        post_to_html,
                         index_ast,
                         "../..",
                         None,
@@ -168,16 +176,12 @@ class Config(LiveConfig):
                         ".md",
                         inputs=[]
                         if self.index_template is None
-                        else [File(str((self.index_template)))],
+                        else [self.index_template],
                         outputs=[
-                            File(
-                                str(
-                                    self.output_dir
-                                    / "categories"
-                                    / (name if case == "tags" else f"cat_{name}")
-                                    / "index.html"
-                                )
-                            )
+                            self.output_dir
+                            / "categories"
+                            / (name if case == "tags" else f"cat_{name}")
+                            / "index.html"
                         ],
                         **options,
                     )
@@ -185,7 +189,7 @@ class Config(LiveConfig):
         time_elapse.report("staging cat-index.")
         # tags
         _template = posts.pages[0].template
-        inputs = [] if _template is None else [File(str((_template)))]
+        inputs = [] if _template is None else [_template]
         tag_ast = posts_to_tag_ast(
             posts.categories,
             posts.tags,
@@ -195,7 +199,8 @@ class Config(LiveConfig):
             lang=self.default_lang,
         )
         output_futures.append(
-            app_post_to_html(
+            pool.submit(
+                post_to_html,
                 tag_ast,
                 "..",
                 None,
@@ -203,7 +208,7 @@ class Config(LiveConfig):
                 self.default_lang,
                 ".md",
                 inputs=inputs,
-                outputs=[File(str((self.output_dir / "categories" / "index.html")))],
+                outputs=[self.output_dir / "categories" / "index.html"],
                 **options,
             )
         )
@@ -215,7 +220,8 @@ class Config(LiveConfig):
             lang=self.default_lang,
         )
         output_futures.append(
-            app_post_to_html(
+            pool.submit(
+                post_to_html,
                 archive_ast,
                 "..",
                 None,
@@ -223,7 +229,7 @@ class Config(LiveConfig):
                 self.default_lang,
                 ".md",
                 inputs=inputs,
-                outputs=[File(str((self.output_dir / "archive" / "index.html")))],
+                outputs=[self.output_dir / "archive" / "index.html"],
                 **options,
             )
         )
@@ -238,26 +244,25 @@ class Config(LiveConfig):
             lang=self.default_lang,
         )
         output_futures.append(
-            app_post_to_html(
+            pool.submit(
+                post_to_html,
                 index_ast,
                 ".",
                 None,
                 None,
                 self.default_lang,
                 ".md",
-                inputs=[]
-                if self.index_template is None
-                else [File(str((self.index_template)))],
-                outputs=[File(str((self.output_dir / "index.html")))],
+                inputs=[] if self.index_template is None else [self.index_template],
+                outputs=[self.output_dir / "index.html"],
                 **options,
             )
         )
         time_elapse.report("staging index.")
         if self.write_tipuesearch_json:
-            # search: we're not using parsl here, as
+            # search: not in the pool, as
             # it needs to be re-generated even if only one page is changed,
             # and the time taken is very small for now.
-            # as site gets bigger, may need to cache the Page.text e.g. in app_read_md_to_ast*?
+            # as site gets bigger, may need to cache the Page.text e.g. in read_md_to_ast*?
             write_tipuesearch(
                 self.output_dir / "assets/js/tipuesearch_content.js",
                 all_pages,

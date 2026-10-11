@@ -1,7 +1,4 @@
-"""Some functions for pipelines
-
-all functions should be imported inside functions for parsl
-"""
+"""Reading sources and writing pages: the work the pipeline does per page."""
 
 from __future__ import annotations
 
