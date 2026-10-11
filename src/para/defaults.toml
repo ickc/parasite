@@ -98,7 +98,8 @@ format = ["slides"]
 [read]
 options = []
 
-# The filters a site may use, in the order they run. `python` is an importable
+# The filters a site may use, in the order they run (a site's [filters] table sets the
+# order: its filters first, in its order, then the defaults it does not mention). `python` is an importable
 # "module:function" taking and returning a panflute Doc; `at` is "read" (after reading,
 # for every output) or "render" (named by a profile, for its output only); `inputs`
 # limits a read filter to some input formats; `default` runs it on every document.

@@ -35,6 +35,8 @@ class SettingsError(ValueError):
 
 # tables that list a site's own entries: a site's replaces the default whole
 WHOLE = {("files",), ("minify", "css"), ("minify", "js")}
+# tables whose order matters: a site's keys come first, in its order
+ORDERED = {("filters",)}
 
 
 def merge(base: dict[str, Any], over: dict[str, Any], at: tuple[str, ...] = ()) -> dict[str, Any]:
@@ -47,6 +49,8 @@ def merge(base: dict[str, Any], over: dict[str, Any], at: tuple[str, ...] = ()) 
             res[key] = merge(res[key], value, here)
         else:
             res[key] = value
+    if at in ORDERED:
+        res = {**{key: res[key] for key in over}, **{key: v for key, v in res.items() if key not in over}}
     return res
 
 
