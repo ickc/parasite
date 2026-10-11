@@ -35,6 +35,19 @@ if TYPE_CHECKING:
 logger = getLogger(__name__)
 
 
+# front-matter keys of parasite ≤ 0.1 (and Nikola before it), and what replaces each
+RETIRED_KEYS = {
+    "status": "draft: true for a draft, nothing otherwise",
+    "previewimage": "image",
+    "slug": "the source's path (output-file for an exception)",
+    "pretty_url": "the source's path (output-file for an exception)",
+    "url_type": "the source's path (output-file for an exception)",
+    "type": "nothing",
+    "sidebar_toc": "toc",
+    "temp": "nothing: pandoc includes MathJax for raw TeX math environments",
+}
+
+
 def format_years(years: Optional[Tuple[int, int]]) -> str:
     """``2016``, ``2016–2026``, or empty when unknown."""
     if years is None:
@@ -270,17 +283,25 @@ class Page:
         return None if meta is None else pf.stringify(meta)
 
     @property
-    def previewimage(self) -> Optional[Url]:
-        res = self.ast.get_metadata("previewimage")
+    def image(self) -> Optional[Url]:
+        """Its thumbnail and og:image: ``image``."""
+        res = self.ast.get_metadata("image")
         return None if res is None else Url(res)
 
-    @property
-    def status(self) -> str:
-        return self.ast.get_metadata("status", "")
+    def check_metadata(self) -> None:
+        """Warn about front matter from parasite ≤ 0.1, which is ignored now."""
+        for key, replacement in RETIRED_KEYS.items():
+            if key in self.ast.metadata.content:
+                logger.warning("%s: %s is retired, use %s", self.path, key, replacement)
+        for elem in self.ast.content:
+            if isinstance(elem, pf.RawBlock) and elem.format == "html" and "<!-- more -->" in elem.text:
+                logger.warning("%s: <!-- more --> is retired, use description", self.path)
+                break
 
     @property
     def is_draft(self) -> bool:
-        return self.status == "draft"
+        """``draft: true``: built only with include_draft, never listed."""
+        return bool(self.ast.get_metadata("draft", False))
 
 
 @dataclass
@@ -355,7 +376,7 @@ class Pages:
             config.pages if cls is Pages else config.posts
         ):
             options = {
-                "show_previewimage_in_post": config.show_previewimage_in_post,
+                "show_image_in_post": config.show_image_in_post,
                 "header_includes": config.header_includes,
                 "include_before": config.include_before,
                 "include_after": config.include_after,

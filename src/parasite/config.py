@@ -51,7 +51,7 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
     tag_cloud_font_size_min: int = 70
     tag_cloud_font_size_max: int = 280
     logo_url: str = ""
-    show_previewimage_in_post: bool = True
+    show_image_in_post: bool = True
     output_dir: Path = Path("output")
     date_format: str = r"%Y-%m-%d"
     mathjax_config: str = ""

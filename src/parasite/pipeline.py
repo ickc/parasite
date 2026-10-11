@@ -119,6 +119,8 @@ class Config(LiveConfig):
             page.ast = future.result()
         for page, future in zip(posts.pages, posts_ast_futures):
             page.ast = future.result()
+        for page in list(pages.pages) + list(posts.pages):
+            page.check_metadata()
         time_elapse.report("got all ASTs.")
 
         if not self.include_draft:

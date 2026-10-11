@@ -80,7 +80,7 @@ def post_to_html(
     *,
     inputs: List[Path] = [],  # template
     outputs: List[Path] = [],  # out_path
-    show_previewimage_in_post: bool = True,
+    show_image_in_post: bool = True,
     header_includes: Callable[[str, str, str], str],
     include_before: Callable[[str, str, str], str],
     include_after: Callable[[str, str, str], str],
@@ -129,8 +129,8 @@ def post_to_html(
         script_include_after(ext, ".html").format(root=root),
     )
 
-    if show_previewimage_in_post:
-        ast.metadata["show-previewimage-in-post"] = "true"
+    if show_image_in_post:
+        ast.metadata["show-image-in-post"] = "true"
     if content_footer:
         ast.metadata["content-footer"] = pf.RawBlock(
             content_footer(lang, ext, ".html").format(root=root, years=years)

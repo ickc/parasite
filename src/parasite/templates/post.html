@@ -107,9 +107,9 @@ $endfor$
             </div>
           </header>
           <div class="e-content entry-content" itemprop="articleBody text">
-            $if(show-previewimage-in-post)$
-            $if(previewimage)$
-            <img src="$root$/$previewimage$" />
+            $if(show-image-in-post)$
+            $if(image)$
+            <img src="$root$/$image$" alt="$if(image-alt)$$image-alt$$else$$title$$endif$" />
             $endif$
             $endif$
             $if(toc)$
