@@ -110,6 +110,9 @@ $endfor$
 $if(translations)$
               <p class="translations">$for(translations)$$if(translations.current)$<span lang="$translations.lang$">$translations.name$</span>$else$<a href="$translations.href$" hreflang="$translations.lang$" lang="$translations.lang$">$translations.name$</a>$endif$$sep$ · $endfor$</p>
 $endif$
+$if(output-links)$
+              <p class="output-links">$for(output-links)$<a href="$output-links.href$">$output-links.label$</a>$sep$ · $endfor$</p>
+$endif$
             </div>
           </header>
           <div class="e-content entry-content" itemprop="articleBody text">

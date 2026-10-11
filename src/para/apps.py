@@ -147,9 +147,9 @@ def profile_metadata(ast: pf.elements.Doc, name: str) -> None:
     over = fmt.content.get(name)
     if not isinstance(over, pf.MetaMap):
         return
-    unknown = sorted(set(over.content) - {"metadata"})
+    unknown = sorted(set(over.content) - {"metadata", "output-file"})
     if unknown:
-        logger.warning("format: %s: only metadata is supported, not %s", name, ", ".join(unknown))
+        logger.warning("format: %s: only metadata and output-file are supported, not %s", name, ", ".join(unknown))
     metadata = over.content.get("metadata")
     if isinstance(metadata, pf.MetaMap):
         for key, value in list(metadata.content.items()):

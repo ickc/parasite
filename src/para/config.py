@@ -115,6 +115,8 @@ class Profile:
     name: str
     to: str
     template: Path
+    # what links from its other outputs call it (``format-links``)
+    label: str
     url: str
     options: tuple[str, ...]
     filters: tuple[Any, ...]
@@ -331,6 +333,7 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
             res[name] = Profile(
                 name=name,
                 to=p["to"],
+                label=p.get("label") or name.title(),
                 template=TEMPLATES[p["template"]] if p["template"] in TEMPLATES else Path(p["template"]),
                 url=p["url"],
                 options=math_method(tuple(p["options"]) + (() if p["to"] == "html" else (f"--to={p['to']}",))),

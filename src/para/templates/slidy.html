@@ -51,6 +51,9 @@ $if(title)$
 $if(report-url)$
     <a href="$report-url$">Report</a>
 $endif$
+$for(output-links)$
+    <a href="$output-links.href$">$output-links.label$</a>
+$endfor$
   </div>
   <h1 class="title">$title$</h1>
 $if(subtitle)$

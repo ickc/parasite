@@ -17,11 +17,10 @@ parasite uses Quarto's name.
 | `category` | one per post, a path (`so-uk/meetings`). It defaults to the source's folder, so it is rarely written; a category lists its subcategories' posts too |
 | `tags` | a list; each tag has a page |
 | `draft: true` | built only with `--include-draft`, and never listed |
-| `image` | its thumbnail in listings, from the site's root |
+| `image`, `image-alt` | its thumbnail in listings, from the site's root, and the thumbnail's text (else the title) |
 | `format` | its output profiles (see [output profiles](../profiles/)) |
-
-Planned, not yet read: `image-alt`, `format-links` (which other outputs a page links to)
-and `output-file` (one output's name, as an exception to the URL rules).
+| `format-links` | which of its other outputs an output links to, by each profile's `label`: `true` all, `false` none, or a list of profile names. Without it, slides link to the page beside them (Report) |
+| `output-file` | an output's file name, in its folder, as an exception to the URL rules: at the top level the first output's, under `format: NAME:` that output's |
 
 # Keys from parasite ≤ 0.1
 

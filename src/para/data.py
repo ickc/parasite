@@ -101,6 +101,8 @@ class Page:
     convert: str = ""
     # its language from its file name (``x.zh-Hans.md``), over its front matter's
     file_lang: str = ""
+    # ``output-file``: an output's own file name, in its folder, by profile
+    output_files: dict[str, str] = field(default_factory=dict, init=False, repr=False)
 
     def __post_init__(self) -> None:
         self.profiles = [self.site_profiles[name] for name in self.collection.format]
@@ -151,6 +153,8 @@ class Page:
     def _out_path(self, profile: Profile) -> Path:
         rel = self.out_base_path / (self.primary or self.path).relative_to(self.base_path)
         res = profile.out_path(rel.parent, rel.stem)
+        if name := self.output_files.get(profile.name):
+            res = res.with_name(name)
         if self.translation:
             # beside the primary's: the same folder, so relative links and media work
             res = res.with_name(f"{res.stem}.{self.translation.lower()}{res.suffix}")
@@ -174,15 +178,26 @@ class Page:
 
     def set_profiles(self) -> None:
         """Its profiles from its ``format``: a list of profile names, or a table keyed by
-        them (Quarto's form), else its collection's."""
+        them (Quarto's form), else its collection's; and their ``output-file``s: the first
+        output's at the top level, any output's under ``format: NAME:``."""
         value = self.ast.get_metadata("format")
-        if value is None:
-            return
-        names = list(value) if isinstance(value, (list, dict)) else [str(value)]
-        unknown = [name for name in names if name not in self.site_profiles]
-        if unknown:
-            raise ValueError(f"{self.path}: format {unknown} not in the site's [profiles]")
-        self.profiles = [self.site_profiles[name] for name in names]
+        if value is not None:
+            names = list(value) if isinstance(value, (list, dict)) else [str(value)]
+            unknown = [name for name in names if name not in self.site_profiles]
+            if unknown:
+                raise ValueError(f"{self.path}: format {unknown} not in the site's [profiles]")
+            self.profiles = [self.site_profiles[name] for name in names]
+        files = {}
+        if (top := self.ast.get_metadata("output-file")) is not None:
+            files[self.profiles[0].name] = top
+        if isinstance(value, dict):
+            for name, options in value.items():
+                if isinstance(options, dict) and "output-file" in options:
+                    files[name] = options["output-file"]
+        for name, file in files.items():
+            if not isinstance(file, str) or not file or "/" in file or "\\" in file or file.startswith("."):
+                raise ValueError(f"{self.path}: output-file {file!r}: a file name, in the output's folder")
+        self.output_files = {name: str(file) for name, file in files.items()}
         elsewhere = [str(path) for _, path in self.outputs if path.parent != self.media_dir]
         if elsewhere:
             raise ValueError(f"{self.path}: outputs {elsewhere} are not in {self.media_dir}, where its media are")
@@ -346,6 +361,12 @@ class Page:
     def image(self) -> Optional[str]:
         """Its thumbnail and og:image: ``image``."""
         res = self.ast.get_metadata("image")
+        return None if res is None else str(res)
+
+    @property
+    def image_alt(self) -> Optional[str]:
+        """Its image's text: ``image-alt``."""
+        res = self.ast.get_metadata("image-alt")
         return None if res is None else str(res)
 
     def check_metadata(self) -> None:

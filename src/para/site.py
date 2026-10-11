@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING
 import defopt
 import panflute as pf
 
-from .apps import post_to_html, read_md_to_ast
+from .apps import post_to_html, profile_metadata, read_md_to_ast
 from .data import Pages, Posts, format_years, front_matter, root_of
 from .helpers import report_urls, to_feed, to_sitemap
 from .lang import lookup, matches
@@ -166,6 +166,40 @@ class Config(LiveConfig):
         if record.translation:
             ast.metadata["self-href"] = pf.MetaString(out_path.name)
 
+    @staticmethod
+    def output_links(ast: pf.Doc, profile: Profile, outputs: list[tuple[Profile, Path]], out_path: Path, report: bool) -> None:
+        """Link the output ``out_path`` (in ``profile``) to the page's other outputs, as its
+        ``format-links`` says (Quarto's key): ``true`` all of them, ``false`` none, or a
+        list of profile names; ``output-links`` for the templates, each with its
+        profile's ``label``. Without it, as before: slides link to the page beside them
+        (``report``, slidy's Report)."""
+        profile_metadata(ast, profile.name)
+        value = ast.get_metadata("format-links")
+        if value is None:
+            if report:
+                ast.metadata["report-url"] = "index.html"
+            return
+        others = [(other, path) for other, path in outputs if other is not profile]
+        if value is True:
+            names = [other.name for other, _ in others]
+        elif value is False or value in ("false", "no"):
+            names = []
+        else:
+            names = [str(name) for name in (value if isinstance(value, list) else [value])]
+            known = {other.name for other, _ in outputs}
+            if unknown := [name for name in names if name not in known]:
+                logger.warning("%s: format-links %s are not its outputs", out_path, unknown)
+        items = []
+        for other, path in others:
+            if other.name not in names:
+                continue
+            href = Path(os.path.relpath(path, out_path.parent)).as_posix()
+            if path.name == "index.html":
+                href = href.removesuffix("index.html") or "./"
+            items.append(pf.MetaMap(label=pf.MetaString(other.label), href=pf.MetaString(href)))
+        if items:
+            ast.metadata["output-links"] = pf.MetaList(*items)
+
     def exec(self) -> None:
         """Parasite static site generator."""
         with ThreadPoolExecutor(max_workers=self.jobs or os.cpu_count()) as pool:
@@ -267,6 +301,7 @@ class Config(LiveConfig):
                 output.claim(self.output_dir / claim, MEDIA)
             page.claims = claims
             page.profiles = [self.profiles[name] for name in record.outputs]
+            page.output_files = dict(record.output_files)
             return record
 
         def read_all(batch: list[tuple[Page, bool]]) -> int:
@@ -461,8 +496,7 @@ class Config(LiveConfig):
                 else:
                     # rendering changes the AST: a copy for all but the last output
                     ast = pf.load(io.StringIO(json.dumps(page.ast.to_json())))
-                if report:
-                    ast.metadata["report-url"] = "index.html"
+                self.output_links(ast, profile, page.outputs, out_path, report)
                 if links:
                     self.version_links(ast, links, profile.name, out_path, record)
                 post_to_html(

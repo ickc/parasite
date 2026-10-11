@@ -77,6 +77,9 @@ class Record:
     group: str = ""
     translation: str = ""
     converted: bool = False
+    # ``output-file``, by profile; ``image-alt``
+    output_files: dict[str, str] = field(default_factory=dict)
+    image_alt: Optional[str] = None
 
     @classmethod
     def from_page(cls, page: Page, post: bool, media: Sequence[str] = ()) -> Record:
@@ -109,6 +112,8 @@ class Record:
             group=page.group,
             translation=page.translation,
             converted=bool(page.convert),
+            output_files=dict(page.output_files),
+            image_alt=page.image_alt,
         )
 
     @property

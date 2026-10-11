@@ -160,6 +160,8 @@ at = "render"
 # {stem}/index.html), pandoc's options, the render filters, and the page's parts.
 [profiles.html]
 to = "html"
+# what links from a page's other outputs to this one say (format-links)
+label = "Report"
 template = "post"
 url = "{stem}/"
 options = ["--mathjax", "--wrap=none"]
@@ -204,6 +206,7 @@ search-form = """<form class="navbar-form navbar-left" action="{root}/search/" r
 
 [profiles.slides]
 to = "slidy"
+label = "Slides"
 template = "slides"
 url = "{stem}/present.html"
 options = ["--mathjax", "--wrap=none"]

@@ -19,6 +19,9 @@ css = ["https://example.org/slides.css"]
 `url` is where a source's output goes, from its path: `{stem}/` is `{stem}/index.html`,
 so `posts/a/b.md` is `a/b/` (the `posts` folder is the collection's). A source named
 `index` is its folder's page, and `404` is `404.html`.
+A document's `output-file` names one output's file instead, in the same folder. `label`
+is what links from a page's other outputs to this one say (`format-links`, see
+[front matter](../front-matter/)).
 
 # Which profiles a source has
 

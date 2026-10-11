@@ -96,7 +96,7 @@ $endfor$
         </div>
         $if(index_jumbotron.image)$
         <div class="col-md-6 p-0 h-md-250 text-right">
-          <img class="bootblog4-featured-large-image" src="$root$/$index_jumbotron.image$" alt="$index_jumbotron.title$" />
+          <img class="bootblog4-featured-large-image" src="$root$/$index_jumbotron.image$" alt="$if(index_jumbotron.image-alt)$$index_jumbotron.image-alt$$else$$index_jumbotron.title$$endif$" />
         </div>
         $endif$
       </div>
@@ -118,7 +118,7 @@ $endfor$
           </div>
         </div>
         $if(index_grid.image)$
-        <img class="card-img-right flex-auto d-none d-lg-block" src="$root$/$index_grid.image$" alt="$index_grid.title$" />
+        <img class="card-img-right flex-auto d-none d-lg-block" src="$root$/$index_grid.image$" alt="$if(index_grid.image-alt)$$index_grid.image-alt$$else$$index_grid.title$$endif$" />
         $endif$
       </div>
     </div>
