@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+import json
+import os
 import re
+import subprocess  # nosec
+import tempfile
 from logging import getLogger
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -149,13 +153,70 @@ def profile_metadata(ast: pf.elements.Doc, name: str) -> None:
     over = fmt.content.get(name)
     if not isinstance(over, pf.MetaMap):
         return
-    unknown = sorted(set(over.content) - {"metadata", "output-file"})
+    unknown = sorted(set(over.content) - {"metadata", "output-file", "variables"})
     if unknown:
-        logger.warning("format: %s: only metadata and output-file are supported, not %s", name, ", ".join(unknown))
+        logger.warning("format: %s: only metadata, variables and output-file are supported, not %s", name, ", ".join(unknown))
     metadata = over.content.get("metadata")
     if isinstance(metadata, pf.MetaMap):
         for key, value in list(metadata.content.items()):
             ast.metadata[key] = value
+
+
+def variables(ast: pf.elements.Doc, name: str) -> List[str]:
+    """pandoc's ``--variable`` options from ``format``'s ``NAME: {variables: …}`` (a list
+    is the variable given once per item)."""
+    fmt = ast.metadata.content.get("format")
+    over = fmt.content.get(name) if isinstance(fmt, pf.MetaMap) else None
+    table = over.content.get("variables") if isinstance(over, pf.MetaMap) else None
+    if not isinstance(table, pf.MetaMap):
+        return []
+    res = []
+    for key, value in table.content.items():
+        items = value.content if isinstance(value, pf.MetaList) else [value]
+        for item in items:
+            text = str(item.boolean).lower() if isinstance(item, pf.MetaBool) else pf.stringify(item)
+            res.append(f"--variable={key}:{text}")
+    return res
+
+
+def post_to_pdf(
+    ast: pf.elements.Doc,
+    profile: Profile,
+    out_path: Path,
+    config: Config,
+    /,
+    *,
+    epoch: int = 0,
+    output: Optional[Output] = None,
+    owner: str = "",
+) -> None:
+    """Write ``ast`` as a PDF in profile ``profile`` (its engine, its template or pandoc's).
+    Its images are found from its folder in the output (``out_path``'s), where they are
+    copied, and it is dated ``epoch`` (``SOURCE_DATE_EPOCH``), its page's date, so that
+    the same page gives the same bytes. It changes ``ast`` (the render filters)."""
+    profile_metadata(ast, profile.name)
+    chain = chosen(config.filters, "render", ast.get_metadata("filters"), str(out_path), profile=profile.filters)
+    ast = run([f for f in chain if not f.lua], ast)
+    args = list(profile.options) + variables(ast, profile.name) + [f"--lua-filter={f.path}" for f in chain if f.lua]
+    if profile.template is not None:
+        args.append(f"--template={profile.template}")
+    with tempfile.TemporaryDirectory() as tmp:
+        pdf = Path(tmp) / "out.pdf"
+        res = subprocess.run(  # nosec
+            ["pandoc", "--from=json", f"--output={pdf}", f"--resource-path={out_path.parent}", *args],
+            input=json.dumps(ast.to_json()),
+            text=True,
+            capture_output=True,
+            env={**os.environ, "SOURCE_DATE_EPOCH": str(epoch)},
+        )
+        if res.returncode != 0:
+            raise RuntimeError(f"{out_path}: pandoc failed to write the PDF:\n{res.stderr}")
+        data = pdf.read_bytes()
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    if output is None:
+        out_path.write_bytes(data)
+    else:
+        output.write(out_path, data, owner)
 
 
 def post_to_html(
@@ -227,6 +288,7 @@ def post_to_html(
         ast.metadata["root"] = root
 
     extra_args = list(profile.options) + [f"--css={c.replace('{root}', root)}" for c in profile.css]
+    extra_args += variables(ast, profile.name)
     if template is not None:
         extra_args.append(f"--template={template}")
 

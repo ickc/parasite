@@ -67,6 +67,14 @@ def math_method(options: tuple[str, ...]) -> tuple[str, ...]:
     return tuple(res)
 
 
+def writer_options(p: dict[str, Any]) -> tuple[str, ...]:
+    """pandoc's options for a profile's writer: a PDF's by its engine (the file's
+    extension says PDF), any other by name (HTML is pandoc's default here)."""
+    if p["to"] == "pdf":
+        return (f"--pdf-engine={p.get('engine', 'typst')}",)
+    return () if p["to"] == "html" else (f"--to={p['to']}",)
+
+
 def by_lang(value: Any, lang: str, default_lang: str) -> Any:
     """A value, or a table of values by language (see :func:`para.lang.lookup`)."""
     if isinstance(value, dict):
@@ -103,13 +111,16 @@ class Profile:
 
     name: str
     to: str
-    template: Path
+    # None: pandoc's own (a PDF's)
+    template: Optional[Path]
     # what links from its other outputs call it (``format-links``)
     label: str
     url: str
     options: tuple[str, ...]
     # the render filters it names (para.filters)
     filters: tuple[str, ...]
+    # a PDF's engine (pandoc's --pdf-engine)
+    engine: str
     show_image: bool
     css: tuple[str, ...]
     js: tuple[str, ...]
@@ -329,10 +340,11 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
                 name=name,
                 to=p["to"],
                 label=p.get("label") or name.title(),
-                template=TEMPLATES[p["template"]] if p["template"] in TEMPLATES else Path(p["template"]),
+                template=TEMPLATES.get(p["template"]) or (Path(p["template"]) if p["template"] else None),
                 url=p["url"],
-                options=math_method(tuple(p["options"]) + (() if p["to"] == "html" else (f"--to={p['to']}",))),
+                options=math_method(tuple(p["options"]) + writer_options(p)),
                 filters=tuple(p["filters"]),
+                engine=p.get("engine", "typst") if p["to"] == "pdf" else "",
                 show_image=p["show-image"],
                 css=tuple(p["css"]),
                 js=tuple(p["js"]),

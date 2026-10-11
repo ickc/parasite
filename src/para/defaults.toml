@@ -211,3 +211,26 @@ script-include-after = ""
 nav = []
 footer = ""
 search-form = ""
+
+# a PDF: one engine per profile (`engine`: typst, the default, or a LaTeX engine), its
+# template pandoc's for that engine unless `template` names a file; a document's
+# `format: pdf: variables:` sets pandoc's variables (fonts, paper, …). A PDF is dated
+# by its page's date (SOURCE_DATE_EPOCH), so it is the same from build to build
+[profiles.pdf]
+to = "pdf"
+engine = "typst"
+label = "PDF"
+template = ""
+url = "{stem}/index.pdf"
+options = []
+filters = []
+show-image = false
+css = []
+js = []
+header-includes = ""
+include-before = ""
+include-after = ""
+script-include-after = ""
+nav = []
+footer = ""
+search-form = ""

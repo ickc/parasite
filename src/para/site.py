@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING
 import defopt
 import panflute as pf
 
-from .apps import post_to_html, profile_metadata, read_md_to_ast
+from .apps import post_to_html, post_to_pdf, profile_metadata, read_md_to_ast
 from .data import Pages, Posts, format_years, front_matter, root_of
 from .helpers import report_urls, to_feed, to_sitemap
 from .lang import lookup, matches
@@ -499,6 +499,23 @@ class Config(LiveConfig):
                 self.output_links(ast, profile, page.outputs, out_path, report)
                 if links:
                     self.version_links(ast, links, profile.name, out_path, record)
+                if profile.to == "pdf":
+                    # its images, from the output tree: the media are copied first (queued
+                    # before any page, so this waits on no page)
+                    for future in media_copies:
+                        future.result()
+                    updated = record.updated
+                    post_to_pdf(
+                        ast,
+                        profile,
+                        self.output_dir / out_path,
+                        self,
+                        epoch=0 if updated is None else int(updated.timestamp()),
+                        output=output,
+                        owner=record.source,
+                    )
+                    store.put_render(record.source, profile.name, render_key)
+                    continue
                 post_to_html(
                     ast,
                     root_of(out_path),

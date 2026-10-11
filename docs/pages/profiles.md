@@ -67,3 +67,24 @@ format:
     metadata:
       author: Kolen Cheung—SO:UK Data Centre Software Engineer
 ```
+
+# PDF
+
+parasite's defaults have a `pdf` profile: Typst, through pandoc. One engine per profile
+(`engine`: `typst`, or a LaTeX engine such as `xelatex`): a document is not expected
+in both. Its template is pandoc's for that engine, unless `template` names a file.
+
+```yaml
+format:
+  html: default
+  pdf:
+    variables:
+      papersize: a5
+format-links: [pdf]
+```
+
+`variables` are pandoc's (`--variable`), for any profile. A PDF's images are found from
+its folder in the output, where the media it uses are copied; it is dated by its page's
+`date-modified` or `date` (`SOURCE_DATE_EPOCH`), so the same page gives the same bytes
+and is not rewritten. It needs the engine installed (`pixi add typst`).
+
