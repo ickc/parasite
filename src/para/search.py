@@ -10,6 +10,7 @@ not rewritten.
 from __future__ import annotations
 
 import asyncio
+import json
 import tempfile
 from logging import getLogger
 from pathlib import Path
@@ -55,7 +56,13 @@ def write_pagefind(records: Sequence[Record], output_dir: Path, output: Output) 
         asyncio.run(_index(records, Path(tmp)))
         files = sorted(p for p in Path(tmp).rglob("*") if p.is_file())
         for path in files:
-            output.write(output_dir / BUNDLE / path.relative_to(tmp), path.read_bytes(), "search")
+            data = path.read_bytes()
+            if path.name == "pagefind-entry.json":
+                # its languages in a stable order (Pagefind's varies from run to run)
+                entry = json.loads(data)
+                entry["languages"] = dict(sorted(entry["languages"].items()))
+                data = json.dumps(entry, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+            output.write(output_dir / BUNDLE / path.relative_to(tmp), data, "search")
     logger.info("search: %s pages, %s files", len(records), len(files))
 
 
