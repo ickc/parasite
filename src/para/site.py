@@ -400,7 +400,13 @@ class Config(LiveConfig):
         self.live(all_pages)
 
 
-def cli(Config: type[Config] = Config) -> None:
+def cli(Config: type[Config] | None = None) -> None:
+    """Build the site in the working directory, configured by its parasite.toml (or by
+    ``Config``, from a site's own script)."""
+    if Config is None:
+        from .settings import FILE, load
+
+        Config = load() if Path(FILE).exists() else globals()["Config"]
     config = defopt.run(Config, show_types=True, cli_options="has_default")
     config.exec()
 
