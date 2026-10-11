@@ -74,7 +74,9 @@ def search_page_ast(root: str, lang: str = "en") -> pf.Doc:
                     f'<script src="{root}/{BUNDLE}/pagefind-ui.js"></script>\n'
                     "<script>\n"
                     "window.addEventListener('DOMContentLoaded', function () {\n"
-                    f"  var ui = new PagefindUI({{element: '#search', bundlePath: '{root}/{BUNDLE}/', showImages: false,\n"
+                    # Pagefind resolves a relative bundlePath against its own script
+                    f"  var bundle = new URL('{root}/{BUNDLE}/', document.baseURI).href;\n"
+                    "  var ui = new PagefindUI({element: '#search', bundlePath: bundle, showImages: false,\n"
                     f"    processResult: function (result) {{ result.url = '{root}' + result.url; return result; }}}});\n"
                     "  var q = new URLSearchParams(window.location.search).get('q');\n"
                     "  if (q) { ui.triggerSearch(q); }\n"
