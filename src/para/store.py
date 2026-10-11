@@ -99,16 +99,22 @@ def site_key(config_repr: str, sources: Iterable[Path], skip: Iterable[Path], co
     output, the store), ``copied`` the copied folders. In a git work tree the site's
     files are those git does not ignore."""
     copied = list(copied)
-    excluded = [Path(os.path.abspath(p)) for p in [*sources, *skip, *copied]]
+    excluded = [*sources, *skip, *copied]
     files = _site_files()
     if files is None:
         other = _tree(Path("."), excluded)
     else:
-        other = [
-            _stat(f)
-            for f in files
-            if not any(a == e or e in a.parents for a in [Path(os.path.abspath(f))] for e in excluded)
-        ]
+        # paths relative to the site, as git lists them
+        out = {os.path.normpath(p) for p in excluded}
+
+        def kept(path: str) -> bool:
+            while path:
+                if path in out:
+                    return False
+                path = os.path.dirname(path)
+            return True
+
+        other = [_stat(f) for f in files if kept(os.path.normpath(f))]
     listing = sorted(
         os.path.join(dirpath, name) for folder in copied for dirpath, _, names in os.walk(folder) for name in names
     )
