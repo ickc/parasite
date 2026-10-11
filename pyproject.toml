@@ -39,6 +39,8 @@ extras = [
 ]
 # search: Pagefind, with its binary
 search = ["pagefind[bin]>=1.5"]
+# translations made by conversion (Traditional and Simplified Chinese)
+opencc = ["opencc>=1.1"]
 tests = [
     "coverage",
     "pytest",

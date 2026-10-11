@@ -5,6 +5,8 @@ import json
 import os
 import shutil
 import subprocess  # nosec
+import tempfile
+from contextlib import contextmanager
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, fields
 from logging import getLogger
@@ -15,8 +17,10 @@ import defopt
 import panflute as pf
 
 from .apps import post_to_html, read_md_to_ast
-from .data import Pages, Posts, format_years, root_of
+from .data import Pages, Posts, format_years, front_matter, root_of
 from .helpers import report_urls, to_feed, to_sitemap
+from .lang import lookup, matches
+from .lang import name as lang_name
 from .live import Config as LiveConfig
 from .media import media_source, referenced_media
 from .output import MEDIA, Output
@@ -31,7 +35,7 @@ from .to_ast import (
 from .util import TimeElapse, setup_logging
 
 if TYPE_CHECKING:
-    from typing import List, TypeVar
+    from typing import Iterator, List, TypeVar
 
     from .config import Profile
     from .data import Page
@@ -71,6 +75,23 @@ def minify(inputs: List[str], output: str) -> None:
     )
 
 
+@contextmanager
+def page_options(page: Page) -> Iterator[list[str]]:
+    """The page's own pandoc options: its language from its file name or conversion,
+    and for a translation its primary's front matter, which its own overrides."""
+    options = [f"--metadata=lang:{lang}"] if (lang := page.lang_option) else []
+    front = None
+    if page.translation and not page.convert and page.primary is not None:
+        front = front_matter(page.primary)
+    if front is None:
+        yield options
+        return
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "primary.yaml"
+        path.write_text(front, encoding="utf-8")
+        yield [*options, f"--metadata-file={path}"]
+
+
 @dataclass
 class Config(LiveConfig):
     """Configure static site.
@@ -91,6 +112,59 @@ class Config(LiveConfig):
         """The config's fields that change the output, for the site key."""
         ignore = {"jobs", "prune", "full", "store_path", "check_links"}
         return repr([(f.name, getattr(self, f.name)) for f in fields(self) if f.name not in ignore and not f.name.startswith(("watch", "serve"))])
+
+    def versions(self, records: List[Record]) -> dict[str, list[dict[str, str]]]:
+        """The versions of each page that has more than one (see :mod:`para.lang`): its
+        primary first, then its translations by language. Each is its language, the
+        language's name, and its outputs by profile (and ``""``, its first)."""
+        groups: dict[str, list[Record]] = {}
+        for record in records:
+            groups.setdefault(record.group, []).append(record)
+        res = {}
+        for group in groups.values():
+            if len(group) < 2:
+                continue
+            group.sort(key=lambda r: (bool(r.translation), r.translation))
+            links = []
+            for record in group:
+                spec = self.translations.get(record.lang)
+                links.append(
+                    {
+                        "lang": record.lang,
+                        "name": spec["name"] if spec else lang_name(record.lang),
+                        "url": record.url,
+                        "": record.out_path,
+                        **record.outputs,
+                    }
+                )
+            for record in group:
+                res[record.source] = links
+        return res
+
+    def version_links(self, ast: pf.Doc, links: list[dict[str, str]], profile: str, out_path: Path, record: Record) -> None:
+        """Link the output ``out_path`` (in ``profile``) of ``record`` to its other
+        versions: ``translations`` for the template, each one's output in the same
+        profile, else its first; and ``self-href``, a translation's own file."""
+        items = []
+        for link in links:
+            target = Path(link.get(profile) or link[""])
+            href = Path(os.path.relpath(target, out_path.parent)).as_posix()
+            if target.name == "index.html":
+                # its folder, as the site links to it
+                href = href.removesuffix("index.html") or "./"
+            item = {
+                "lang": pf.MetaString(link["lang"]),
+                "name": pf.MetaString(link["name"]),
+                "href": pf.MetaString(href),
+                # hreflang wants the absolute URL
+                "url": pf.MetaString(self.site_url + link["url"] if self.site_url else href),
+            }
+            if target == out_path:
+                item["current"] = pf.MetaBool(True)
+            items.append(pf.MetaMap(**item))
+        ast.metadata["translations"] = pf.MetaList(*items)
+        if record.translation:
+            ast.metadata["self-href"] = pf.MetaString(out_path.name)
 
     def exec(self) -> None:
         """Parasite static site generator."""
@@ -146,15 +220,18 @@ class Config(LiveConfig):
                 output.claim(path, MEDIA)
                 claimed.append(Path(os.path.relpath(path, self.output_dir)).as_posix())
 
-            return read_md_to_ast(
-                self.pandoc_input_options,
-                self.panflute_input_filters,
-                inputs=[page.path],
-                **self.media_options(page),
-                claim=claim,
-                select=select,
-                pandoc_filters=pandoc_filters,
-            )
+            with page_options(page) as extra:
+                return read_md_to_ast(
+                    self.pandoc_input_options,
+                    self.panflute_input_filters,
+                    inputs=[page.path],
+                    **self.media_options(page),
+                    claim=claim,
+                    select=select,
+                    pandoc_filters=pandoc_filters,
+                    extra_options=extra,
+                    conversion=page.convert,
+                )
 
         def read(page: Page, post: bool) -> Record:
             """Step 2 and 3: the page's AST, then its record. A source with content per
@@ -180,7 +257,7 @@ class Config(LiveConfig):
         def cached(page: Page) -> Record | None:
             """The page's record from the store, if read under the same key and what the
             read wrote is still there."""
-            record = store.record(page.path.as_posix(), page.read_key)
+            record = store.record(page.key, page.read_key)
             if record is None:
                 return None
             claims = store.claims(record.source)
@@ -192,19 +269,43 @@ class Config(LiveConfig):
             page.profiles = [self.profiles[name] for name in record.outputs]
             return record
 
-        read_futures = []
-        for page, post in [*((p, False) for p in pages.pages), *((p, True) for p in posts.pages)]:
-            page.read_key = hash_key(key, page.path.as_posix(), page.out_path.as_posix(), source_hash(page.path))
-            if (record := cached(page)) is not None:
-                page.record = record
-            else:
-                read_futures.append((page, pool.submit(read, page, post)))
-        time_elapse.report("staging to get all ASTs.")
-        for page, future in read_futures:
-            page.record = future.result()
-            store.put_read(page.record.source, page.read_key, page.record, page.claims)
-        store.keep_only(source.as_posix() for source in sources)
-        logger.info("read %s of %s sources (the rest unchanged)", len(read_futures), len(sources))
+        def read_all(batch: list[tuple[Page, bool]]) -> int:
+            """Each page's record, from the store or read; how many were read."""
+            read_futures = []
+            for page, post in batch:
+                inputs_ = [source_hash(page.path)]
+                if page.translation and not page.convert and page.primary is not None:
+                    # its front matter falls back to its primary's
+                    inputs_.append(source_hash(page.primary))
+                page.read_key = hash_key(key, page.key, page.out_path.as_posix(), *inputs_, page.convert)
+                if (record := cached(page)) is not None:
+                    page.record = record
+                else:
+                    read_futures.append((page, pool.submit(read, page, post)))
+            for page, future in read_futures:
+                page.record = future.result()
+                store.put_read(page.record.source, page.read_key, page.record, page.claims)
+            return len(read_futures)
+
+        n_read = read_all([*((p, False) for p in pages.pages), *((p, True) for p in posts.pages)])
+        # translations made by OpenCC, of the pages in the language they convert from (known
+        # once read) that have none written
+        written = {(page.group, page.translation) for page in [*pages.pages, *posts.pages] if page.translation}
+        converted: list[tuple[Page, bool]] = []
+        for lang, spec in self.translations.items():
+            if not spec["convert"]:
+                continue
+            for collection, post in ((pages, False), (posts, True)):
+                for page in list(collection.pages):
+                    if page.translation or not matches(page.record.lang, spec["from"]) or (page.group, lang) in written:
+                        continue
+                    version = page.version(lang, spec["convert"])
+                    collection.pages.append(version)
+                    converted.append((version, post))
+        n_read += read_all(converted)
+        n_sources = len(pages.pages) + len(posts.pages)
+        store.keep_only(page.key for page in [*pages.pages, *posts.pages])
+        logger.info("read %s of %s sources (the rest unchanged)", n_read, n_sources)
         time_elapse.report("got all ASTs and records.")
 
         if not self.include_draft:
@@ -225,7 +326,10 @@ class Config(LiveConfig):
             for dest in media
             if (src := media_source(dest, self.media_folders)) is not None
         ]
-        post_records = [page.record for page in posts.pages]
+        # listings, feeds and the graph show a page once: its primary version
+        post_records = [page.record for page in posts.pages if not page.record.translation]
+        primaries = [record for record in all_records if not record.translation]
+        versions = self.versions(all_records)
         reports = report_urls(all_records)
         years = site_years(all_records)
         years_str = format_years(years)
@@ -302,7 +406,7 @@ class Config(LiveConfig):
             # the front page
             index_ast = posts_to_index_ast(
                 post_records,
-                self.blog_title[self.default_lang],
+                (lookup(self.blog_title, self.default_lang) or ""),
                 n_jumbotron=self.n_jumbotron,
                 n_grid=self.n_grid,
                 index_include_jumbotron=self.index_include_jumbotron,
@@ -334,9 +438,10 @@ class Config(LiveConfig):
             in_feed = record.out_path in feed
             fragment = store.fragment(record.source) if in_feed else None
             todo = []
+            links = versions.get(record.source, [])
             for profile, out_path in page.outputs:
                 report = out_path.as_posix() in reports
-                render_key = hash_key(page.read_key, profile.name, years_, report)
+                render_key = hash_key(page.read_key, profile.name, years_, report, json.dumps(links))
                 if store.rendered(record.source, profile.name, render_key) and (self.output_dir / out_path).exists():
                     output.claim(self.output_dir / out_path, record.source)
                 else:
@@ -358,6 +463,8 @@ class Config(LiveConfig):
                     ast = pf.load(io.StringIO(json.dumps(page.ast.to_json())))
                 if report:
                     ast.metadata["report-url"] = "index.html"
+                if links:
+                    self.version_links(ast, links, profile.name, out_path, record)
                 post_to_html(
                     ast,
                     root_of(out_path),
@@ -380,7 +487,8 @@ class Config(LiveConfig):
         if self.write_search:
             from .search import write_pagefind
 
-            write_pagefind(all_records, self.output_dir, output, self.default_lang)
+            # a conversion is the same text in another script: not searched twice
+            write_pagefind([r for r in all_records if not r.converted], self.output_dir, output, self.default_lang)
             time_elapse.report("wrote the search index.")
         if self.write_sitemap:
             to_sitemap(
@@ -393,7 +501,7 @@ class Config(LiveConfig):
             from .graph import records, write_graph
 
             write_graph(
-                records(all_records, {post.out_path for post in post_records}, self.site_url or None),
+                records(primaries, {post.out_path for post in post_records}, self.site_url or None),
                 self.output_dir,
                 site_url=self.site_url or None,
                 uncoloured=self.graph_uncoloured,
@@ -415,9 +523,9 @@ class Config(LiveConfig):
             to_feed(
                 post_records[: self.feed_length],
                 fragments,
-                self.blog_title[self.default_lang],
-                self.blog_description[self.default_lang],
-                self.blog_author[self.default_lang],
+                (lookup(self.blog_title, self.default_lang) or ""),
+                (lookup(self.blog_description, self.default_lang) or ""),
+                (lookup(self.blog_author, self.default_lang) or ""),
                 self.blog_email,
                 self.site_url,
                 self.logo_url,

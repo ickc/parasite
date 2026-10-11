@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any
 
 from .config import SettingsError, defaults, mathjax_config
+from .lang import tag
 from .site import Config
 
 FILE = "parasite.toml"
@@ -62,7 +63,7 @@ def load(path: Path = Path(FILE)) -> type[Config]:
         "output_dir": Path(site["output"]),
         "date_format": site["date-format"],
         "mathjax_config": mathjax_config(s["mathjax"]),
-        "default_lang": site["lang"],
+        "default_lang": tag(site["lang"]),
         "timezone": site["timezone"],
         "convert_pdf_media": s["media"]["convert-pdf"],
         "write_search": s["search"]["enabled"],

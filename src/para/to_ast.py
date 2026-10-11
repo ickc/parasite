@@ -96,11 +96,11 @@ def posts_to_tag_ast(
         ("Categories", categories),
         ("Tags", tags),
     ):
-        # tag cloud
+        # tag cloud (none when no post has a category, or a tag)
         counts_dict = {name: len(list_) for name, list_ in dict_.items()}
         counts = counts_dict.values()
-        min_ = min(counts)
-        max_ = max(counts)
+        min_ = min(counts, default=0)
+        max_ = max(counts, default=0)
         try:
             m = (font_size_max - font_size_min) / (max_ - min_)
             c = font_size_min - m * min_

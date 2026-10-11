@@ -72,6 +72,11 @@ class Record:
     outputs: dict[str, str] = field(default_factory=dict)
     # the media files it uses, in the output directory (copied by reference)
     media: Tuple[str, ...] = ()
+    # the source of the page it is a version of (its own, for a primary); for a
+    # translation, its language, and whether OpenCC made it (see para.data.Page)
+    group: str = ""
+    translation: str = ""
+    converted: bool = False
 
     @classmethod
     def from_page(cls, page: Page, post: bool, media: Sequence[str] = ()) -> Record:
@@ -81,7 +86,7 @@ class Record:
             raise ValueError(f"The following post has no date: {page.path}")
         tags = page.tags
         return cls(
-            source=page.path.as_posix(),
+            source=page.key,
             out_path=page.out_path.as_posix(),
             url=str(page.url),
             post=post,
@@ -101,6 +106,9 @@ class Record:
             citations={entry.identifier.removeprefix("ref-"): tuple(_links(entry)) for entry in _bibliography(doc)},
             outputs={profile.name: path.as_posix() for profile, path in page.outputs},
             media=tuple(media),
+            group=page.group,
+            translation=page.translation,
+            converted=bool(page.convert),
         )
 
     @property

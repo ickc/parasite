@@ -135,7 +135,8 @@ def to_feed(
     fg.title(title)
     fg.author(name=author, email=email)
     fg.logo(site_url + logo_url)
-    fg.description(description)
+    # RSS requires one: the title, when the site has no description
+    fg.description(description or title)
     fg.language(lang)
     fg.rights(copy_right)
     # from the posts' own dates, not git: reformatting a source is not an update

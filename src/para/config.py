@@ -19,6 +19,8 @@ from typing import TYPE_CHECKING, Any, ClassVar
 from custom_inherit import DocInheritMeta
 
 from .helpers import nav as nav_html
+from .lang import lookup, tag
+from .lang import name as lang_name
 from .templates import INDEX_TEMPLATE, POST_TEMPLATE, SLIDE_TEMPLATE
 
 if TYPE_CHECKING:
@@ -77,9 +79,9 @@ def math_method(options: tuple[str, ...]) -> tuple[str, ...]:
 
 
 def by_lang(value: Any, lang: str, default_lang: str) -> Any:
-    """A value, or a table of values by language."""
+    """A value, or a table of values by language (see :func:`para.lang.lookup`)."""
     if isinstance(value, dict):
-        return value.get(lang, value.get(default_lang))
+        return lookup(value, lang, default_lang)
     return value
 
 
@@ -219,7 +221,8 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
     # site ####################################################################
 
     def _per_lang(self, value: Any) -> Dict[str, str]:
-        return value if isinstance(value, dict) else {self.default_lang: value}
+        """A value by language, its keys BCP 47 tags (see :mod:`para.lang`)."""
+        return {tag(k): v for k, v in value.items()} if isinstance(value, dict) else {self.default_lang: value}
 
     @property
     def blog_author(self) -> Dict[str, str]:
@@ -236,7 +239,7 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
     @property
     def copyright(self) -> str:
         """The site's copyright line; ``{years}`` becomes its first and last year."""
-        return self.settings["site"]["copyright"].replace("{author}", self.blog_author.get(self.default_lang, ""))
+        return self.settings["site"]["copyright"].replace("{author}", lookup(self.blog_author, self.default_lang) or "")
 
     @property
     def files_folders(self) -> Dict[str, str]:
@@ -295,6 +298,26 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
         for name, spec in res.items():
             if "python" not in spec:
                 raise SettingsError(f"[filters.{name}]: only python filters for now")
+        return res
+
+    @cached_property
+    def translations(self) -> dict[str, dict[str, str]]:
+        """The site's other languages (``[translations]``), by BCP 47 tag: each one's
+        ``name`` (its own, see :data:`para.lang.NAMES`), and ``convert``, an OpenCC
+        conversion making a page's translation from a page in ``from`` (the site's
+        language), when it has none written."""
+        res = {}
+        for key, value in self.settings.get("translations", {}).items():
+            lang = tag(key)
+            value = dict(value)
+            unknown = set(value) - {"name", "convert", "from"}
+            if unknown:
+                raise SettingsError(f"[translations.{key}]: unknown keys {sorted(unknown)}")
+            res[lang] = {
+                "name": value.get("name") or lang_name(lang),
+                "convert": value.get("convert", ""),
+                "from": tag(value.get("from", self.default_lang)),
+            }
         return res
 
     @cached_property

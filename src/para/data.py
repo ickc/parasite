@@ -11,6 +11,8 @@ from zoneinfo import ZoneInfo
 import panflute as pf
 from panflute.tools import convert_text
 
+from .lang import tag
+
 if TYPE_CHECKING:
     from typing import (
         List,
@@ -49,6 +51,19 @@ def format_years(years: Optional[Tuple[int, int]]) -> str:
     return str(first) if first == last else f"{first}–{last}"
 
 
+def front_matter(path: Path) -> Optional[str]:
+    """The YAML front matter of a Markdown source, else None."""
+    if path.suffix != ".md" or not path.is_file():
+        return None
+    lines = path.read_text(encoding="utf-8").splitlines(keepends=True)
+    if not lines or lines[0].rstrip() != "---":
+        return None
+    for i, line in enumerate(lines[1:], 1):
+        if line.rstrip() in ("---", "..."):
+            return "".join(lines[1:i])
+    return None
+
+
 def root_of(out_path: Path) -> str:
     """The relative path from the output ``out_path`` to the site's root.
 
@@ -77,6 +92,15 @@ class Page:
     profiles: List[Profile] = field(default_factory=list, init=False, repr=False)
     # for a source with content per profile, the profile its AST was read for
     ast_profile: Optional[Profile] = field(default=None, init=False, repr=False)
+    # a translation (see para.lang): its language, written beside its primary's outputs
+    # (``index.html`` → ``index.zh-hans.html``); the primary's source (for a source
+    # ``x.LANG.md``, ``x.md``, even when there is none); the OpenCC conversion it is made
+    # by from the primary, if not written by hand
+    translation: str = ""
+    primary: Optional[Path] = None
+    convert: str = ""
+    # its language from its file name (``x.zh-Hans.md``), over its front matter's
+    file_lang: str = ""
 
     def __post_init__(self) -> None:
         self.profiles = [self.site_profiles[name] for name in self.collection.format]
@@ -93,9 +117,44 @@ class Page:
     def ext(self) -> str:
         return self.path.suffix
 
+    @property
+    def key(self) -> str:
+        """Its key in the store and the output tree: its source's path, and the language
+        of a translation made from the same source."""
+        return self.path.as_posix() + (f"#{self.translation}" if self.convert else "")
+
+    def version(self, lang: str, conversion: str) -> Page:
+        """Its translation into ``lang``, made by OpenCC's ``conversion``."""
+        res = type(self)(
+            self.path,
+            self.collection,
+            self.site_profiles,
+            timezone=self.timezone,
+            date_format=self.date_format,
+            default_lang=self.default_lang,
+        )
+        res.translation = lang
+        res.primary = self.primary or self.path
+        res.convert = conversion
+        return res
+
+    @property
+    def lang_option(self) -> str:
+        """The language its file name or conversion gives it, over its front matter's."""
+        return self.translation if self.convert else self.file_lang
+
+    @property
+    def group(self) -> str:
+        """The source of the page it is a version of: its primary's, else its own."""
+        return (self.primary or self.path).as_posix()
+
     def _out_path(self, profile: Profile) -> Path:
-        rel = self.out_base_path / self.path.relative_to(self.base_path)
-        return profile.out_path(rel.parent, rel.stem)
+        rel = self.out_base_path / (self.primary or self.path).relative_to(self.base_path)
+        res = profile.out_path(rel.parent, rel.stem)
+        if self.translation:
+            # beside the primary's: the same folder, so relative links and media work
+            res = res.with_name(f"{res.stem}.{self.translation.lower()}{res.suffix}")
+        return res
 
     @property
     def outputs(self) -> List[Tuple[Profile, Path]]:
@@ -254,9 +313,11 @@ class Page:
 
     @property
     def lang(self) -> str:
-        lang = self.ast.get_metadata("lang")
+        """Its language, a BCP 47 tag: from its file name, its ``lang``, or the site's."""
+        lang = self.file_lang or self.ast.get_metadata("lang")
         if lang is None:
             lang = self.default_lang
+        if self.ast.get_metadata("lang") != (lang := tag(lang)):
             self.ast.metadata["lang"] = lang
         return lang
 
@@ -316,15 +377,20 @@ class Pages:
     @classmethod
     def from_config(cls: type[PagesLike], config: Config) -> PagesLike:
         """The sources of the config's collections: those listed for :class:`Posts`, the
-        others for :class:`Pages`."""
+        others for :class:`Pages`. ``x.LANG.md``, for a language of
+        ``[translations]``, is the translation of ``x.md``, or a page in that language
+        if there is no ``x.md``."""
         listed = cls is not Pages
+        languages = {lang.lower(): lang for lang in config.translations}
         res: list[Page] = []
         for collection in config.collections:
             if collection.listed is not listed:
                 continue
             for ext in collection.ext:
-                res += [
-                    cls.page_class(
+                for path in collection.dir.glob(f"**/*{ext}"):
+                    if any(path.match(exclude) for exclude in collection.exclude):
+                        continue
+                    page = cls.page_class(
                         path,
                         collection,
                         config.profiles,
@@ -332,9 +398,14 @@ class Pages:
                         date_format=config.date_format,
                         default_lang=config.default_lang,
                     )
-                    for path in collection.dir.glob(f"**/*{ext}")
-                    if not any(path.match(exclude) for exclude in collection.exclude)
-                ]
+                    stem, dot, suffix = path.name.removesuffix(ext).rpartition(".")
+                    if dot and (lang := languages.get(tag(suffix).lower())):
+                        page.file_lang = lang
+                        # named as its primary: alone, it is a page at the primary's URL
+                        page.primary = path.with_name(stem + ext)
+                        if page.primary.exists():
+                            page.translation = lang
+                    res.append(page)
         return cls(res)
 
 

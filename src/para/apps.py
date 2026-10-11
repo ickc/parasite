@@ -17,12 +17,13 @@ from .media import (
     rebase_relative_urls,
 )
 from .config import by_lang
+from .lang import convert
 from .panflute_filters import meta_append, select_content, select_text
 
 if TYPE_CHECKING:
     from .config import Config, Profile
     from .output import Output
-    from typing import Callable, Dict, List, Optional
+    from typing import Callable, Dict, List, Optional, Sequence
 
 
     from .panflute_filters import PanfluteFilter
@@ -76,6 +77,8 @@ def read_md_to_ast(
     claim: Optional[Callable[[Path], None]] = None,
     select: Optional[Profile] = None,
     pandoc_filters: bool = True,
+    extra_options: Sequence[str] = (),
+    conversion: str = "",
 ) -> pf.elements.Doc:
     """Read from markdown to panflute AST
 
@@ -88,6 +91,9 @@ def read_md_to_ast(
     heading identifiers, crossref's numbers and citeproc's bibliography are the
     output's own), or for a notebook after parsing and before pandoc's filters.
     ``pandoc_filters`` False leaves out pandoc's filters (crossref, citeproc, Lua).
+    ``extra_options`` are the page's own pandoc options (its language, its primary's
+    front matter, see :mod:`para.lang`); ``conversion``, an OpenCC conversion of its
+    text, applied last.
     """
     assert len(inputs) == 1
     path = inputs[0]
@@ -98,7 +104,7 @@ def read_md_to_ast(
     input_format = "markdown" if ext == ".md" else ext[1:]
     # comments in a source are notes, not content: and commented-out drafts
     # (`<!-- … -- … -->`) would make the page ill-formed
-    options = ["--strip-comments"] + pandoc_options(ext)
+    options = ["--strip-comments"] + pandoc_options(ext) + list(extra_options)
     if not pandoc_filters:
         # e.g. to list the media of every output of a source with content per profile
         options, _ = split_filter_options(options)
@@ -128,6 +134,8 @@ def read_md_to_ast(
 
     for filter_ in panflute_filters(ext):
         doc = filter_(doc)
+    if conversion:
+        doc = convert(doc, conversion)
     return doc
 
 

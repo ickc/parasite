@@ -38,7 +38,8 @@ footer = '© {years} <a href="mailto:{email}">{author}</a> function f(){ return 
 """,
     )
     config = load(path)()
-    assert config.blog_title == {"en": "T", "zh_tw": "祺"}
+    # keys by language are BCP 47 tags (para.lang)
+    assert config.blog_title == {"en": "T", "zh-TW": "祺"}
     assert config.blog_author == {"en": "A"}
     html, slides = config.profiles["html"], config.profiles["slides"]
     footer = config.part(html, "footer", "en").replace("{years}", "2020")

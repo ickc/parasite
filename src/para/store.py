@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 
 logger = getLogger(__name__)
 
-SCHEMA = 2
+SCHEMA = 3
 
 
 def hash_key(*parts: Any) -> str:
