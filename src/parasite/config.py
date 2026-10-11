@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Dict, Union
 
@@ -30,6 +30,9 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
         write_atom: write atom feed.
         write_sitemap: write sitemap.
         include_draft: output draft posts as well.
+        write_graph: write the post graph (graph.json and its viewer, needs sitegraph).
+        graph_uncoloured: tags never coloured in the graph (they say what form a post takes).
+        graph_colours: how many tags the graph colours at first.
 
     Notes:
         All attributes, properties, and methods must be runtime constant
@@ -66,6 +69,10 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
     write_atom: bool = True
     write_sitemap: bool = True
     include_draft: bool = False
+
+    write_graph: bool = False
+    graph_uncoloured: list[str] = field(default_factory=list)
+    graph_colours: int = 7
 
     @property
     def copyright(self) -> str:

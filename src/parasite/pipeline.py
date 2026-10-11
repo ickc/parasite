@@ -302,6 +302,18 @@ class Config(LiveConfig):
             for future in minifies_js:
                 future.result()
         time_elapse.report("collecting all futures.")
+        if self.write_graph:
+            from .graph import write_graph
+
+            write_graph(
+                all_pages,
+                {post.out_path.as_posix() for post in posts.pages},
+                self.output_dir,
+                site_url=self.site_url or None,
+                uncoloured=self.graph_uncoloured,
+                colours=self.graph_colours,
+            )
+            time_elapse.report("wrote the post graph.")
         self.live(all_pages)
 
 
