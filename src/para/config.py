@@ -135,10 +135,10 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
         date_format: how dates are written.
         mathjax_config: the MathJax config, a <script>.
         default_lang: the site's language.
-        root_relative_to_search_form: the relative path from the search page to the root.
         timezone: the time zone of dates without one.
         convert_pdf_media: convert PDF media embedded in sources (e.g. notebook outputs) to SVG.
-        write_tipuesearch_json: write tipuesearch JSON file.
+        write_search: write the search index and page (Pagefind).
+        search_page: the search page's path: a folder ("search/") or a file.
         write_rss: write RSS feed.
         write_atom: write atom feed.
         write_sitemap: write sitemap.
@@ -165,12 +165,12 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
     date_format: str = r"%Y-%m-%d"
     mathjax_config: str = ""
     default_lang: str = "en"
-    root_relative_to_search_form: str = ".."
     timezone: str = r"America/Los_Angeles"
 
     convert_pdf_media: bool = True
 
-    write_tipuesearch_json: bool = True
+    write_search: bool = True
+    search_page: str = "search/"
     write_rss: bool = True
     write_atom: bool = True
     write_sitemap: bool = True

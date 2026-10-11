@@ -37,10 +37,11 @@ length = 10
 [sitemap]
 enabled = true
 
+# search (Pagefind, needs pagefind[bin]): an index of the pages, and a search page
 [search]
 enabled = true
-# the relative path from the search page to the site's root
-root = ".."
+# the search page, a folder ("search/") or a file ("search.html")
+page = "search/"
 
 [graph]
 enabled = false
@@ -70,11 +71,9 @@ files = ""
     "_css/theme.css",
     "_css/bootblog.css",
     "_css/custom.css",
-    "_css/tipuesearch.css",
 ]
 
 [minify.js]
-"assets/js/tipuesearch.js" = ["_js/tipuesearch_set.js", "_js/tipuesearch.js"]
 
 # window.MathJax, as a table; `macros-file` (a JSON file) is merged into tex.macros
 [mathjax]
@@ -164,7 +163,7 @@ nav = [
 footer = 'Contents © {years}         <a href="mailto:{email}">{author}</a>'
 search-form = """<form class="navbar-form navbar-left" action="{root}/search/" role="search">
     <div class="form-group">
-        <input type="text" class="form-control" id="tipue_search_input" name="q" placeholder="Search" autocomplete="off" />
+        <input type="text" class="form-control" name="q" placeholder="Search" autocomplete="off" />
     </div>
 </form>"""
 

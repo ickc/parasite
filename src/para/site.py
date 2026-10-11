@@ -15,7 +15,7 @@ import panflute as pf
 
 from .apps import post_to_html, read_md_to_ast
 from .data import Pages, Posts, format_years, root_of
-from .helpers import report_urls, to_feed, to_sitemap, write_tipuesearch
+from .helpers import report_urls, to_feed, to_sitemap
 from .live import Config as LiveConfig
 from .media import media_source, referenced_media
 from .output import MEDIA, Output
@@ -124,6 +124,8 @@ class Config(LiveConfig):
             import feedgen.feed  # noqa: F401  (in the code stamp)
         if self.write_graph:
             import sitegraph.extract  # noqa: F401
+        if self.write_search:
+            import pagefind.index  # noqa: F401
         key = site_key(
             self.output_repr(),
             sources,
@@ -308,6 +310,12 @@ class Config(LiveConfig):
             from .graph import graph_page_ast
 
             derived(graph_page_ast(lang=self.default_lang), "..", self.output_dir / "graph" / "index.html", "graph page", inputs)
+        if self.write_search:
+            from .search import search_page_ast
+
+            search = Path(self.search_page + "index.html" if self.search_page.endswith("/") else self.search_page)
+            search_root = root_of(search)
+            derived(search_page_ast(search_root, lang=self.default_lang), search_root, self.output_dir / search, "search page", inputs)
         time_elapse.report("staging derived pages.")
 
         feed = {post.out_path for post in post_records[: self.feed_length]} if self.write_atom or self.write_rss else set()
@@ -364,15 +372,11 @@ class Config(LiveConfig):
         page_futures = [pool.submit(render, page) for page in all_pages]
         time_elapse.report("staging pages/posts HTML output.")
 
-        if self.write_tipuesearch_json:
-            # one file over all pages (to be replaced by a sharded index)
-            write_tipuesearch(
-                self.output_dir / "assets/js/tipuesearch_content.js",
-                all_records,
-                root=self.root_relative_to_search_form,
-                output=output,
-            )
-            time_elapse.report("wrote tipuesearch.")
+        if self.write_search:
+            from .search import write_pagefind
+
+            write_pagefind(all_records, self.output_dir, output)
+            time_elapse.report("wrote the search index.")
         if self.write_sitemap:
             to_sitemap(
                 self.site_url,

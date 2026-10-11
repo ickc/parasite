@@ -1,15 +1,13 @@
 from __future__ import annotations
 
-import json
 import posixpath
 from logging import getLogger
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from .util import join_url
 
 if TYPE_CHECKING:
-    from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union
+    from typing import List, Mapping, Optional, Sequence, Tuple, Union
 
     from .output import Output
     from .record import Record
@@ -79,38 +77,6 @@ def report_urls(pages: Sequence[Record]) -> set[str]:
         for path in out_paths
         if (report := posixpath.join(posixpath.dirname(path), "index.html")) != path and report in out_paths
     }
-
-
-def tipuesearch(
-    pages: Sequence[Record],
-    root: str = "..",
-) -> Dict[str, List[Dict[str, None | str]]]:
-    return {
-        "pages": [
-            {
-                "title": page.title,
-                "text": page.text,
-                "tags": ",".join(page.tags),
-                "url": join_url(root, page.url),
-                # doesn't work
-                # 'image': None if page.previewimage is None else str(root / page.previewimage),
-            }
-            for page in pages
-        ]
-    }
-
-
-def write_tipuesearch(
-    path: Path,
-    pages: Sequence[Record],
-    root: str = "..",
-    output: Optional[Output] = None,
-) -> None:
-    text = "var tipuesearch=" + json.dumps(tipuesearch(pages, root=root))
-    if output is None:
-        path.write_text(text)
-    else:
-        output.write(path, text, "search")
 
 
 def minify_html(html: str) -> str:
