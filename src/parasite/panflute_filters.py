@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import hashlib
-import random
 from functools import partial
 from itertools import chain
 from logging import getLogger
@@ -9,7 +8,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from panflute.elements import Div, Image, Link, MetaBlocks, MetaList, Plain, RawBlock
-from panflute.tools import stringify
 from urlpath import URL as Url
 
 if TYPE_CHECKING:

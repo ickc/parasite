@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Dict, Union
@@ -16,8 +15,6 @@ if TYPE_CHECKING:
 
     from .data import Page
     from .panflute_filters import PanfluteFilter
-
-THIS_YEAR = time.gmtime().tm_year
 
 MD_OR_IPYNB = {".md", ".ipynb"}
 
@@ -72,7 +69,8 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
 
     @property
     def copyright(self) -> str:
-        return f"Contents © 2021–{THIS_YEAR} {self.blog_author[self.default_lang]}"
+        """The site's copyright line; ``{years}`` becomes its first and last year."""
+        return "Contents © {years} " + self.blog_author[self.default_lang]
 
     @property
     def pretty_urls(self) -> Dict[str, Union[bool, Callable[[Path, str], Path]]]:
@@ -189,23 +187,18 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
     def html_filters(self) -> List[Callable[[str], str]]:
         return []
 
-    # @staticmethod
-    # def content_footer(self, lang: str, ext: str, out_ext: str) -> str:
-    #     if ext == '.md' and out_ext == '.html':
-    #         return f'Contents © 2021–{THIS_YEAR}         <a href="mailto:"></a>'
-    #     else:
-    #         return ''
-
     @property
     def content_footer(self) -> Callable[[str, str, str], str]:
+        """The footer of a page, formatted with ``{root}`` and ``{years}``: the page's
+        own years (``date`` to ``date-modified``), or the site's for an undated page."""
         blog_email = self.blog_email
         blog_author = self.blog_author
 
         def _content_footer(lang: str, ext: str, out_ext: str) -> str:
             if ext in MD_OR_IPYNB and out_ext == ".html":
                 return (
-                    f"Contents © 2021–{THIS_YEAR}         <a"
-                    f' href="mailto:{blog_email}">{blog_author}</a>'
+                    "Contents © {years}         <a"
+                    f' href="mailto:{blog_email}">{blog_author[lang]}</a>'
                 )
             else:
                 return ""

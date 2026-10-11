@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
 from logging import getLogger
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -162,14 +161,10 @@ def to_feed(
     fg.description(description)
     fg.language(lang)
     fg.rights(copy_right)
-    try:
-        import git
-
-        repo = git.Repo(".")
-        commit = next(repo.iter_commits(max_count=1))
-        fg.updated(datetime.fromtimestamp(commit.committed_date, timezone.utc))
-    except StopIteration:
-        logger.warn("Cannot obtain last committed date.")
+    # from the posts' own dates, not git: reformatting a source is not an update
+    updated = [post.updated for post in posts if post.updated is not None]
+    if updated:
+        fg.updated(max(updated))
     for post in posts:
         url = str(site_url / post.url)
 
@@ -180,7 +175,7 @@ def to_feed(
         fe.link(href=url)
         fe.author(name=post.author)
         fe.published(post.time)
-        fe.updated(post.committed_date)
+        fe.updated(post.updated or post.time)
         # xml don't like invalid characters that somehow pandoc can produce
         fe.content(regex.sub("", post.html), type="CDATA")
 
@@ -207,6 +202,7 @@ def to_sitemap(
         loc = SubElement(url, "loc")
         loc.text = str(site_url / page.url)
 
-        lastmod = SubElement(url, "lastmod")
-        lastmod.text = page.committed_date_str
+        if page.updated is not None:
+            lastmod = SubElement(url, "lastmod")
+            lastmod.text = page.updated.strftime(r"%Y-%m-%d")
     tree.write(output_dir / filename, encoding="utf-8", xml_declaration=True)

@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 import defopt
 
 from .apps import post_to_html, read_md_to_ast
-from .data import Pages, Posts
+from .data import Pages, Posts, format_years, site_years
 from .helpers import set_report_urls, to_feed, to_sitemap, write_tipuesearch
 from .live import Config as LiveConfig
 from .to_ast import posts_to_archive_ast, posts_to_index_ast, posts_to_tag_ast
@@ -131,6 +131,8 @@ class Config(LiveConfig):
 
         all_pages: List[Page] = list(pages.pages) + list(posts.pages)
         set_report_urls(all_pages)
+        years = site_years(all_pages)
+        years_str = format_years(years)
         output_futures = [
             pool.submit(
                 post_to_html,
@@ -141,6 +143,7 @@ class Config(LiveConfig):
                 inputs=[] if page.template is None else [page.template],
                 outputs=[self.output_dir / page.out_path],
                 **page.options,
+                years=format_years(page.years or years),
             )
             for page in all_pages
         ]
@@ -178,6 +181,7 @@ class Config(LiveConfig):
                             / "index.html"
                         ],
                         **options,
+                        years=years_str,
                     )
                 )
         time_elapse.report("staging cat-index.")
@@ -202,6 +206,7 @@ class Config(LiveConfig):
                 inputs=inputs,
                 outputs=[self.output_dir / "categories" / "index.html"],
                 **options,
+                years=years_str,
             )
         )
         time_elapse.report("staging tag page.")
@@ -221,6 +226,7 @@ class Config(LiveConfig):
                 inputs=inputs,
                 outputs=[self.output_dir / "archive" / "index.html"],
                 **options,
+                years=years_str,
             )
         )
         time_elapse.report("staging archive page.")
@@ -243,6 +249,7 @@ class Config(LiveConfig):
                 inputs=[] if self.index_template is None else [self.index_template],
                 outputs=[self.output_dir / "index.html"],
                 **options,
+                years=years_str,
             )
         )
         time_elapse.report("staging index.")
@@ -268,7 +275,7 @@ class Config(LiveConfig):
                 self.site_url,
                 self.logo_url,
                 self.default_lang,
-                self.copyright,
+                self.copyright.format(years=years_str),
                 self.timezone,
                 output_dir=self.output_dir,
                 write_atom=self.write_atom,

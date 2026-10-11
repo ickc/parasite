@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import os
 from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime
 from functools import cached_property
 from logging import getLogger
 from pathlib import Path
@@ -34,6 +33,23 @@ if TYPE_CHECKING:
     PagesLike = TypeVar("PagesLike", bound="Pages")
 
 logger = getLogger(__name__)
+
+
+def format_years(years: Optional[Tuple[int, int]]) -> str:
+    """``2016``, ``2016–2026``, or empty when unknown."""
+    if years is None:
+        return ""
+    first, last = years
+    return str(first) if first == last else f"{first}–{last}"
+
+
+def site_years(pages: Sequence[Page]) -> Optional[Tuple[int, int]]:
+    """The first and last year of the site's content, from the pages' own dates:
+    importing an old post widens the range, and the clock never enters it."""
+    years = [page.years for page in pages if page.years is not None]
+    if not years:
+        return None
+    return min(first for first, _ in years), max(last for _, last in years)
 
 
 @dataclass
@@ -131,28 +147,45 @@ class Page:
         Note: this cannot return `Url`. As `Url(".")` would be normalized to `Url("")`."""
         return "." if (level := self.level) == 0 else "/".join([".."] * level)
 
-    @cached_property
-    def mtime(self) -> datetime:
-        return datetime.fromtimestamp(os.path.getmtime(self.path), timezone.utc)
-
-    @cached_property
-    def committed_date(self) -> datetime:
-        import git
-
-        repo = git.Repo(".")
+    def _metadata_time(self, key: str) -> Optional[datetime]:
+        """The date-time in metadata ``key``, in the site's time zone unless it says
+        otherwise; None if absent or not a date."""
+        value = self.ast.get_metadata(key)
+        if value is None:
+            return None
+        value = str(value).strip()
         try:
-            commit = next(repo.iter_commits(paths=self.path, max_count=1))
-            return datetime.fromtimestamp(commit.committed_date, timezone.utc)
-        except StopIteration:
-            logger.warn(
-                f"Cannot obtain committed date for {self.path}, returning mtime"
-                " instead."
-            )
-            return self.mtime
+            time = datetime.strptime(value, self.date_format)
+        except ValueError:
+            try:
+                time = datetime.fromisoformat(value)
+            except ValueError:
+                logger.warning("%s: %s is not a date: %s", self.path, key, value)
+                return None
+        if time.tzinfo is None:
+            time = time.replace(tzinfo=ZoneInfo(key=self.timezone))
+        return time
 
     @cached_property
-    def committed_date_str(self) -> str:
-        return self.committed_date.strftime(r"%Y-%m-%d")
+    def published(self) -> Optional[datetime]:
+        """When it was first published: its ``date``."""
+        return self._metadata_time("date")
+
+    @cached_property
+    def modified(self) -> Optional[datetime]:
+        """When its content last changed: its ``date-modified``, set by hand."""
+        return self._metadata_time("date-modified")
+
+    @property
+    def updated(self) -> Optional[datetime]:
+        return self.modified or self.published
+
+    @property
+    def years(self) -> Optional[Tuple[int, int]]:
+        """The first and last year of its content, from its own dates only."""
+        if self.published is None:
+            return None
+        return self.published.year, max(self.published, self.updated).year
 
     # AST & its derivatives
 

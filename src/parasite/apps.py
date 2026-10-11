@@ -18,7 +18,7 @@ from .media import (
 from .panflute_filters import meta_append
 
 if TYPE_CHECKING:
-    from typing import Any, Callable, Dict, List, Optional, Tuple
+    from typing import Callable, Dict, List, Optional
 
     from urlpath import URL as Url
 
@@ -96,6 +96,7 @@ def post_to_html(
     nav: Optional[Callable[[str, str, str], str]] = None,
     logo_url: Optional[Url] = None,
     html_filters: List[Callable[[str], str]] = [],
+    years: str = "",
 ) -> None:
     """
     warning: AST is currently mutated
@@ -132,7 +133,7 @@ def post_to_html(
         ast.metadata["show-previewimage-in-post"] = "true"
     if content_footer:
         ast.metadata["content-footer"] = pf.RawBlock(
-            content_footer(lang, ext, ".html").format(root=root)
+            content_footer(lang, ext, ".html").format(root=root, years=years)
         )
     if mathjax_config:
         ast.metadata["mathjax-config"] = pf.RawBlock(mathjax_config)
