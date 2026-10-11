@@ -2,7 +2,7 @@
 
 Pagefind (an optional dependency, ``pagefind[bin]``) shards its index by term and its
 documents by content, so one more page changes a few files. It indexes the records
-(their URL, title, text and tags, see :mod:`para.record`), not the rendered HTML, and
+(their URL, title and text, see :mod:`para.record`), not the rendered HTML, and
 its files are written through the output tree: those whose bytes did not change are
 not rewritten.
 """
@@ -43,7 +43,8 @@ async def _index(records: Sequence[Record], out: Path) -> None:
                 content=record.text,
                 language=_language(record.lang),
                 meta={"title": record.title or record.url},
-                filters={"tags": list(record.tags)} if record.tags else None,
+                # no filters (tags as facets): Pagefind 1.5.2 writes them differently
+                # from one run to the next, so its files would change every build
             )
         await index.write_files(output_path=str(out))
 
