@@ -8,12 +8,12 @@ from logging import getLogger
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from panflute.elements import Div, Image, Link, Math, MetaBlocks, MetaList, Plain, RawBlock
+from panflute.elements import Div, Image, Link, Math, MetaBlocks, MetaList, Plain, RawBlock, Span
 
 from .util import join_url
 
 if TYPE_CHECKING:
-    from typing import Callable, List, Optional, Sequence, TypeVar, Union
+    from typing import Any, Callable, List, Optional, Sequence, TypeVar, Union
 
     from panflute.base import Block
     from panflute.containers import ListContainer
@@ -177,3 +177,32 @@ def mathjax_bold_ell_action(elem: Element, doc: Doc) -> None:
 def mathjax_bold_ell_filter(doc: Doc) -> Doc:
     """For HTML with MathJax: a bold ℓ that MathJax can show."""
     return doc.walk(mathjax_bold_ell_action)
+
+
+def _when(elem: Element, key: str) -> list[str]:
+    return elem.attributes[key].split() if key in elem.attributes else []
+
+
+def select_content(doc: Doc, profile: Any) -> Doc:
+    """Content per output profile, in Quarto's syntax: a div or span with class
+    ``content-visible`` or ``content-hidden``, and ``when-format`` or ``unless-format``
+    naming profiles (or writers). What is visible in ``profile`` is unwrapped, the rest
+    removed."""
+
+    def action(elem: Element, doc: Doc) -> Any:
+        if not isinstance(elem, (Div, Span)):
+            return None
+        visible = "content-visible" in elem.classes
+        if not visible and "content-hidden" not in elem.classes:
+            return None
+        when, unless = _when(elem, "when-format"), _when(elem, "unless-format")
+        if when:
+            selected = any(profile.matches(name) for name in when)
+        elif unless:
+            selected = not any(profile.matches(name) for name in unless)
+        else:
+            selected = True
+        shown = selected if visible else not selected
+        return list(elem.content) if shown else []
+
+    return doc.walk(action)

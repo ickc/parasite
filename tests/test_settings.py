@@ -40,18 +40,16 @@ footer = '© {years} <a href="mailto:{email}">{author}</a> function f(){ return 
     config = load(path)()
     assert config.blog_title == {"en": "T", "zh_tw": "祺"}
     assert config.blog_author == {"en": "A"}
-    footer = config.content_footer("en", ".md", ".html").format(root="..", years="2020")
+    html, slides = config.profiles["html"], config.profiles["slides"]
+    footer = config.part(html, "footer", "en").replace("{years}", "2020")
     assert footer == '© 2020 <a href="mailto:a@b">A</a> function f(){ return 1; }'
-    assert config.content_footer("en", ".md", ".pdf") == ""
-    assert config.pandoc_output_options(".markdown", ".html")[-1] == "--to=slidy"
-    assert [f.__name__ for f in config.panflute_output_filters(".md", ".html")] == [
-        "lightgallery_filter",
-        "mathjax_bold_ell_filter",
-    ]
+    assert config.part(slides, "footer", "en") == ""
+    assert slides.options[-1] == "--to=slidy"
+    assert [f.__name__ for f in html.filters] == ["lightgallery_filter", "mathjax_bold_ell_filter"]
     assert read(path)["site"]["lang"] == "en"
 
 
 def test_unknown_profile(tmp_path):
     path = write(tmp_path, '[[sources]]\ndir = "posts"\next = [".md"]\nformat = ["nope"]\n')
     with pytest.raises(SettingsError):
-        load(path)
+        load(path)().collections

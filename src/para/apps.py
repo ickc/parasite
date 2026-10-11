@@ -16,9 +16,11 @@ from .media import (
     localize_extracted_media,
     rebase_relative_urls,
 )
-from .panflute_filters import meta_append
+from .config import by_lang
+from .panflute_filters import meta_append, select_content
 
 if TYPE_CHECKING:
+    from .config import Config, Profile
     from .output import Output
     from typing import Callable, Dict, List, Optional
 
@@ -91,58 +93,38 @@ def post_to_html(
     ast: pf.elements.Doc,
     root: str,
     lang: str,
-    ext: str,
+    profile: Profile,
+    out_path: Path,
+    config: Config,
     /,
     *,
-    inputs: List[Path] = [],  # template
-    outputs: List[Path] = [],  # out_path
-    show_image_in_post: bool = True,
-    header_includes: Callable[[str, str, str], str],
-    include_before: Callable[[str, str, str], str],
-    include_after: Callable[[str, str, str], str],
-    script_include_after: Callable[[str, str], str],
-    pandoc_options: Callable[[str, str], List[str]],
-    panflute_filters: Callable[[str, str], list[PanfluteFilter]],
-    js: Callable[[str, str], List[str]],
-    css: Callable[[str, str], List[str]],
-    mathjax_config: str = "",
-    search_form: Optional[Callable[[str, str, str], str]] = None,
-    content_footer: Optional[Callable[[str, str, str], str]] = None,
-    blog_title: Dict[str, str] = {},
-    nav: Optional[Callable[[str, str, str], str]] = None,
-    logo_url: Optional[str] = None,
-    html_filters: List[Callable[[str], str]] = [],
+    template: Optional[Path] = None,
     years: str = "",
-    graph: bool = False,
     output: Optional[Output] = None,
     owner: str = "",
+    per_profile: bool = False,
 ) -> None:
-    """Write ``ast`` as a standalone HTML page.
+    """Write ``ast`` as a standalone page in output profile ``profile`` (its template,
+    or ``template``), with the page's parts from ``config``. ``{root}`` and ``{years}``
+    in the parts become ``root`` and ``years``.
+
+    ``per_profile``: the AST has content per profile (``.content-visible`` and
+    ``.content-hidden``, see :func:`para.panflute_filters.select_content`).
 
     It changes ``ast`` (the includes, the output filters): render an AST once, after
     everything that reads it.
     """
-    assert len(inputs) <= 1
-    assert len(outputs) == 1
-    template = inputs[0] if inputs else None
-    out_path = outputs[0]
+    template = template or profile.template
 
-    meta_append(
-        ast.metadata,
-        "header-includes",
-        header_includes(lang, ext, ".html").format(root=root),
-    )
-    meta_append(
-        ast.metadata,
-        "include-before",
-        include_before(lang, ext, ".html").format(root=root),
-    )
-    meta_append(
-        ast.metadata,
-        "include-after",
-        include_after(lang, ext, ".html").format(root=root),
-    )
-    if graph:
+    def part(name: str) -> str:
+        return config.part(profile, name, lang).replace("{root}", root).replace("{years}", years)
+
+    if per_profile:
+        ast = select_content(ast, profile)
+    meta_append(ast.metadata, "header-includes", part("header_includes"))
+    meta_append(ast.metadata, "include-before", part("include_before"))
+    meta_append(ast.metadata, "include-after", part("include_after"))
+    if config.write_graph:
         # the post graph: the local graph on every page (it does nothing on a page
         # that is not in the graph), the full one at /graph/
         meta_append(
@@ -156,47 +138,35 @@ def post_to_html(
             f'<script src="{root}/sitegraph-local.js" data-src="{root}/graph.json"'
             f' data-page="{root}/graph/" data-after="article" defer="defer"></script>',
         )
-    for url in js(ext, ".html"):
-        meta_append(ast.metadata, "js-include-after", url.format(root=root))
-    meta_append(
-        ast.metadata,
-        "script-include-after",
-        script_include_after(ext, ".html").format(root=root),
-    )
+    for url in profile.js:
+        meta_append(ast.metadata, "js-include-after", url.replace("{root}", root))
+    meta_append(ast.metadata, "script-include-after", part("script_include_after"))
 
-    if show_image_in_post:
+    if profile.show_image:
         ast.metadata["show-image-in-post"] = "true"
     # <meta name="description"> falls back to the subtitle, as listings do
     if "description" not in ast.metadata.content and "subtitle" in ast.metadata.content:
         ast.metadata["description-meta"] = pf.MetaString(pf.stringify(ast.metadata.content["subtitle"]))
-    if content_footer:
-        ast.metadata["content-footer"] = pf.RawBlock(
-            content_footer(lang, ext, ".html").format(root=root, years=years)
-        )
-    if mathjax_config:
-        ast.metadata["mathjax-config"] = pf.RawBlock(mathjax_config)
-    if search_form:
-        ast.metadata["search-form"] = pf.RawBlock(
-            search_form(lang, ext, ".html").format(root=root)
-        )
-    if blog_title:
-        ast.metadata["title-prefix"] = pf.RawBlock(blog_title[lang])
-    if logo_url:
-        ast.metadata["logo-url"] = str(logo_url)
-    if nav:
-        ast.metadata["nav"] = pf.RawBlock(nav(lang, ext, ".html").format(root=root))
+    # set even when empty, as before
+    ast.metadata["content-footer"] = pf.RawBlock(part("footer"))
+    if config.mathjax_config:
+        ast.metadata["mathjax-config"] = pf.RawBlock(config.mathjax_config)
+    ast.metadata["search-form"] = pf.RawBlock(part("search_form"))
+    if config.blog_title:
+        ast.metadata["title-prefix"] = pf.RawBlock(by_lang(config.blog_title, lang, config.default_lang))
+    if config.logo_url:
+        ast.metadata["logo-url"] = config.logo_url
+    ast.metadata["nav"] = pf.RawBlock(part("nav"))
     if root:
         ast.metadata["root"] = root
 
-    extra_args = pandoc_options(ext, ".html") + [
-        f"--css={c.format(root=root)}" for c in css(ext, ".html")
-    ]
+    extra_args = list(profile.options) + [f"--css={c.replace('{root}', root)}" for c in profile.css]
     if template is not None:
         extra_args.append(f"--template={template}")
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
-    for filter_ in panflute_filters(ext, ".html"):
+    for filter_ in profile.filters:
         ast = filter_(ast)
     html = convert_text(
         ast,
@@ -206,7 +176,7 @@ def post_to_html(
         extra_args=extra_args,
     )
     html = xml_safe(html)
-    for html_filter in html_filters:
+    for html_filter in config.html_filters:
         html = html_filter(html)
     if output is None:
         with open(out_path, "w") as f:

@@ -8,11 +8,11 @@ import pytest
 from para.data import Page, Post, format_years
 from para.record import Record, by_category, site_years
 
+from conftest import make_page
+
 
 def make(cls: type[Page], path: str, **metadata: str) -> Page:
-    page = cls(Path("posts") / path, Path("posts"), Path(""), None)
-    page.ast = pf.Doc(metadata=metadata)
-    return page
+    return make_page(cls, path, pf.Doc(metadata=metadata))
 
 
 @pytest.mark.parametrize(
@@ -77,3 +77,19 @@ def test_summary_falls_back_to_the_subtitle():
     assert make(Post, "a.md", subtitle="S").summary == "S"
     assert make(Post, "a.md", subtitle="S", description="D").summary == "D"
     assert make(Post, "a.md").summary is None
+
+
+def test_a_document_chooses_its_profiles():
+    page = make_page(Post, "x/a.md", pf.Doc(metadata={"date": "2020-01-01", "format": ["html", "slides"]}))
+    assert [(profile.name, path.as_posix()) for profile, path in page.outputs] == [
+        ("html", "x/a/index.html"),
+        ("slides", "x/a/present.html"),
+    ]
+    assert page.url == "x/a/"
+    with pytest.raises(ValueError):
+        make_page(Post, "x/b.md", pf.Doc(metadata={"date": "2020-01-01", "format": ["nope"]}))
+
+
+def test_404_is_not_a_folder():
+    assert make(Page, "404.md").out_path.as_posix() == "404.html"
+    assert make(Page, "404.md").url == "404.html"

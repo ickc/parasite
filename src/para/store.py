@@ -1,8 +1,8 @@
 """The record store: what makes a build incremental.
 
 For each source the store keeps its record (see :mod:`para.record`), the key it was read
-under, the files its read wrote into the output (media), the key its page was rendered
-under, and its feed fragment. A build re-reads a source only when its read key changed
+under, the files its read wrote into the output (media), the keys its outputs were
+rendered under, and its feed fragment. A build re-reads a source only when its read key changed
 and re-renders a page only when its render key changed, or when a file it produced is
 gone from the output. A full build is the same code with an empty store.
 
@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 
 logger = getLogger(__name__)
 
-SCHEMA = 1
+SCHEMA = 2
 
 
 def hash_key(*parts: Any) -> str:
@@ -169,11 +169,14 @@ class Store:
     def put_read(self, source: str, read_key: str, record: Record, claims: list[str]) -> None:
         self.pages[source] = {"read_key": read_key, "record": record.to_json(), "claims": claims}
 
-    def rendered(self, source: str, render_key: str) -> bool:
-        return self.pages.get(source, {}).get("render_key") == render_key
+    def rendered(self, source: str, profile: str, render_key: str) -> bool:
+        """Whether the source's output in ``profile`` was rendered under ``render_key``."""
+        return self.pages.get(source, {}).get("renders", {}).get(profile) == render_key
 
-    def put_render(self, source: str, render_key: str, fragment: Optional[str]) -> None:
-        self.pages[source]["render_key"] = render_key
+    def put_render(self, source: str, profile: str, render_key: str) -> None:
+        self.pages[source].setdefault("renders", {})[profile] = render_key
+
+    def put_fragment(self, source: str, fragment: Optional[str]) -> None:
         self.pages[source]["fragment"] = fragment
 
     def fragment(self, source: str) -> Optional[str]:

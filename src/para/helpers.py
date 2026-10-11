@@ -70,15 +70,14 @@ def pretty_urls_present(parent: Path, stem: str) -> Path:
 
 
 def report_urls(pages: Sequence[Record]) -> set[str]:
-    """The output paths of the pages (e.g. slides at ``present.html``) to link to the page
-    output as ``index.html`` in the same directory, via the ``report-url`` metadata used
-    by the slidy template."""
-    out_paths = {page.out_path for page in pages}
+    """The outputs (e.g. slides at ``present.html``) to link to the page output as
+    ``index.html`` in the same directory, if any, via the ``report-url`` metadata used by
+    the slidy template."""
+    out_paths = {path for page in pages for path in page.outputs.values()}
     return {
-        page.out_path
-        for page in pages
-        if (report := posixpath.join(posixpath.dirname(page.out_path), "index.html")) != page.out_path
-        and report in out_paths
+        path
+        for path in out_paths
+        if (report := posixpath.join(posixpath.dirname(path), "index.html")) != path and report in out_paths
     }
 
 

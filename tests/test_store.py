@@ -8,10 +8,11 @@ from para.data import Post
 from para.record import Record
 from para.store import Store, hash_key
 
+from conftest import make_page
+
 
 def record() -> Record:
-    page = Post(Path("posts/a.md"), Path("posts"), Path(""), None)
-    page.ast = pf.Doc(pf.Para(pf.Str("x")), metadata={"title": "A", "date": "2020-01-01"})
+    page = make_page(Post, "a.md", pf.Doc(pf.Para(pf.Str("x")), metadata={"title": "A", "date": "2020-01-01"}))
     return Record.from_page(page, True)
 
 
@@ -20,7 +21,8 @@ def test_store_round_trip(tmp_path):
     store = Store(path)
     rec = record()
     store.put_read(rec.source, "k1", rec, ["a/b.svg"])
-    store.put_render(rec.source, "r1", "<p>x</p>")
+    store.put_render(rec.source, "html", "r1")
+    store.put_fragment(rec.source, "<p>x</p>")
     store.renders = {"index.html": "d1"}
     store.save()
 
@@ -28,7 +30,8 @@ def test_store_round_trip(tmp_path):
     assert again.record(rec.source, "k1") == rec
     assert again.record(rec.source, "k2") is None
     assert again.claims(rec.source) == ["a/b.svg"]
-    assert again.rendered(rec.source, "r1") and not again.rendered(rec.source, "r2")
+    assert again.rendered(rec.source, "html", "r1") and not again.rendered(rec.source, "html", "r2")
+    assert not again.rendered(rec.source, "slides", "r1")
     assert again.fragment(rec.source) == "<p>x</p>"
     assert again.renders == {"index.html": "d1"}
     assert Store(path, load=False).pages == {}

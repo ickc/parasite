@@ -1,26 +1,121 @@
+"""A site's configuration: what a build reads from parasite.toml (see :mod:`para.settings`).
+
+:class:`Config`'s fields are the settings a command line may override; everything else
+(collections, output profiles, filters, the page's parts) is read from
+:attr:`Config.settings`, the site's parasite.toml merged over parasite's defaults.
+"""
+
 from __future__ import annotations
 
+import json
+import tomllib
 from dataclasses import dataclass, field
+from functools import cached_property
+from importlib import import_module, resources
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Dict, Union
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from custom_inherit import DocInheritMeta
 
-from .helpers import nav, pretty_urls_present
-from .panflute_filters import (
-    lightgallery_filter,
-    lightgallery_from_dir_filter,
-    mathjax_bold_ell_filter,
-)
+from .helpers import nav as nav_html
 from .templates import INDEX_TEMPLATE, POST_TEMPLATE, SLIDE_TEMPLATE
 
 if TYPE_CHECKING:
-    from typing import Callable, List, Optional, Tuple, Union
+    from typing import Dict, List, Optional
 
     from .data import Page
     from .panflute_filters import PanfluteFilter
 
-MD_OR_IPYNB = {".md", ".ipynb"}
+TEMPLATES = {"post": POST_TEMPLATE, "index": INDEX_TEMPLATE, "slides": SLIDE_TEMPLATE}
+
+
+class SettingsError(ValueError):
+    pass
+
+
+def defaults() -> dict[str, Any]:
+    """parasite's defaults (defaults.toml)."""
+    return tomllib.loads(resources.files(__package__).joinpath("defaults.toml").read_text(encoding="utf-8"))
+
+
+def import_filter(spec: str) -> Any:
+    """``module:function`` imported."""
+    module, _, attr = spec.partition(":")
+    if not attr:
+        raise SettingsError(f"{spec!r}: a filter is 'module:function'")
+    obj = import_module(module)
+    for name in attr.split("."):
+        obj = getattr(obj, name)
+    return obj
+
+
+def by_lang(value: Any, lang: str, default_lang: str) -> Any:
+    """A value, or a table of values by language."""
+    if isinstance(value, dict):
+        return value.get(lang, value.get(default_lang))
+    return value
+
+
+def _nav_data(items: list[dict[str, Any]]) -> tuple:
+    res = []
+    for item in items:
+        if "menu" in item:
+            res.append((_nav_data(item["menu"]), item["text"]))
+        else:
+            res.append((item["href"], item["text"]))
+    return tuple(res)
+
+
+@dataclass(frozen=True)
+class Collection:
+    """A folder of sources (``[[sources]]``)."""
+
+    dir: Path
+    out: Path
+    ext: tuple[str, ...]
+    listed: bool
+    format: tuple[str, ...]
+    exclude: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class Profile:
+    """An output profile (``[profiles.NAME]``). Its strings keep ``{root}`` and
+    ``{years}``, replaced per page."""
+
+    name: str
+    to: str
+    template: Path
+    url: str
+    options: tuple[str, ...]
+    filters: tuple[Any, ...]
+    show_image: bool
+    css: tuple[str, ...]
+    js: tuple[str, ...]
+    header_includes: Any
+    include_before: Any
+    include_after: Any
+    script_include_after: Any
+    nav: Any
+    footer: Any
+    search_form: Any
+
+    @property
+    def pretty(self) -> bool:
+        """Its outputs are folders: ``{stem}/`` is ``{stem}/index.html``."""
+        return self.url == "{stem}/"
+
+    def out_path(self, parent: Path, stem: str) -> Path:
+        if self.pretty:
+            # 404 is special: a server serves 404.html, not 404/index.html
+            if stem == "404" and parent == Path(""):
+                return Path("404.html")
+            return parent / stem / "index.html"
+        return parent / self.url.format(stem=stem)
+
+    def matches(self, name: str) -> bool:
+        """Whether a ``when-format`` names this profile: by its name or its writer."""
+        return name in (self.name, self.to)
 
 
 @dataclass
@@ -28,6 +123,20 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
     """Configure static site.
 
     Args:
+        site_url: the site's URL.
+        blog_email: the author's email.
+        n_jumbotron: posts shown large on the front page.
+        n_grid: posts in a grid on the front page after those.
+        index_include_jumbotron: list those in the front page's list too.
+        tag_cloud_font_size_min: the smallest tag in the tag cloud, in %.
+        tag_cloud_font_size_max: the largest tag in the tag cloud, in %.
+        logo_url: the site's logo.
+        output_dir: the output directory.
+        date_format: how dates are written.
+        mathjax_config: the MathJax config, a <script>.
+        default_lang: the site's language.
+        root_relative_to_search_form: the relative path from the search page to the root.
+        timezone: the time zone of dates without one.
         convert_pdf_media: convert PDF media embedded in sources (e.g. notebook outputs) to SVG.
         write_tipuesearch_json: write tipuesearch JSON file.
         write_rss: write RSS feed.
@@ -39,18 +148,10 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
         write_graph: write the post graph (graph.json and its viewer, needs sitegraph).
         graph_uncoloured: tags never coloured in the graph (they say what form a post takes).
         graph_colours: how many tags the graph colours at first.
-
-    Notes:
-        All attributes, properties, and methods must be runtime constant
-        (i.e. not changing after initiated),
-        to ensure caching works properly.
-
-        That means methods can only be static methods.
-
-        If a method has to depends on self,
-        implement it as a property that returns a callable using closure.
-        See `content_footer` for an example on how to do this.
     """
+
+    # the merged parasite.toml (see para.settings); a site's class sets its own
+    settings: ClassVar[dict[str, Any]] = defaults()
 
     site_url: str = ""
     blog_email: str = ""
@@ -60,7 +161,6 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
     tag_cloud_font_size_min: int = 70
     tag_cloud_font_size_max: int = 280
     logo_url: str = ""
-    show_image_in_post: bool = True
     output_dir: Path = Path("output")
     date_format: str = r"%Y-%m-%d"
     mathjax_config: str = ""
@@ -82,248 +182,153 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
     graph_uncoloured: list[str] = field(default_factory=list)
     graph_colours: int = 7
 
-    @property
-    def copyright(self) -> str:
-        """The site's copyright line; ``{years}`` becomes its first and last year."""
-        return "Contents © {years} " + self.blog_author[self.default_lang]
+    # site ####################################################################
 
-    @property
-    def pretty_urls(self) -> Dict[str, Union[bool, Callable[[Path, str], Path]]]:
-        return {
-            ".md": True,
-            ".ipynb": True,
-            ".markdown": pretty_urls_present,
-        }
+    def _per_lang(self, value: Any) -> Dict[str, str]:
+        return value if isinstance(value, dict) else {self.default_lang: value}
 
     @property
     def blog_author(self) -> Dict[str, str]:
-        return {
-            "en": "",
-        }
+        return self._per_lang(self.settings["site"]["author"])
 
     @property
     def blog_title(self) -> Dict[str, str]:
-        return {
-            "en": "",
-        }
+        return self._per_lang(self.settings["site"]["title"])
 
     @property
     def blog_description(self) -> Dict[str, str]:
-        return {
-            "en": "",
-        }
+        return self._per_lang(self.settings["site"]["description"])
+
+    @property
+    def copyright(self) -> str:
+        """The site's copyright line; ``{years}`` becomes its first and last year."""
+        return self.settings["site"]["copyright"].replace("{author}", self.blog_author.get(self.default_lang, ""))
 
     @property
     def files_folders(self) -> Dict[str, str]:
-        return {
-            "files": "",
-            "media": "media",
-        }
+        return dict(self.settings["files"])
 
-    def media_options(self, page: Page) -> Dict[str, Any]:
-        """Options of :func:`para.apps.read_md_to_ast` resolving media for ``page``."""
-        return {
-            "out_dir": self.output_dir / page.out_path.parent,
-            "output_dir": self.output_dir,
-            "files_folders": self.files_folders,
-            "convert_pdf_media": self.convert_pdf_media,
-        }
+    @property
+    def compress_css(self) -> Dict[str, List[str]]:  # output file, input files
+        return {f"{self.output_dir}/{k}": v for k, v in self.settings["minify"].get("css", {}).items()}
+
+    @property
+    def compress_js(self) -> Dict[str, List[str]]:  # output file, input files
+        return {f"{self.output_dir}/{k}": v for k, v in self.settings["minify"].get("js", {}).items()}
 
     @property
     def index_template(self) -> Optional[Path]:
         return INDEX_TEMPLATE
 
-    # input files for pandoc
     @property
-    def posts(
-        self,
-    ) -> Tuple[
-        Tuple[
-            str,  # in-dir
-            str,  # out-dir
-            str,  # ext
-            Optional[Path],  # template
-            list[str],  # excludes
-        ],
-        ...,
-    ]:
-        return (
-            ("posts", "", ".md", POST_TEMPLATE, []),
-            ("posts", "", ".ipynb", POST_TEMPLATE, [".ipynb_checkpoints/**"]),
-        )
-
-    @property
-    def pages(
-        self,
-    ) -> Tuple[
-        Tuple[
-            str,  # in-dir
-            str,  # out-dir
-            str,  # ext
-            Optional[Path],  # template
-            list[str],  # excludes
-        ],
-        ...,
-    ]:
-        return (
-            ("pages", "", ".md", POST_TEMPLATE, []),
-            ("pages", "", ".ipynb", POST_TEMPLATE, [".ipynb_checkpoints/**"]),
-            ("posts", "", ".markdown", SLIDE_TEMPLATE, []),
-        )
-
-    # this will be compressed
-    @property
-    def compress_css(
-        self,
-    ) -> Dict[str, List[str]]:  # output file, input files
-        return {
-            f"{self.output_dir}/assets/css/all-nocdn.css": [
-                "_css/bootstrap.css",
-                "_css/rst_base.css",
-                "_css/nikola_rst.css",
-                "_css/code.css",
-                "_css/theme.css",
-                "_css/bootblog.css",
-                "_css/custom.css",
-                "_css/tipuesearch.css",
-            ]
-        }
-
-    @property
-    def compress_js(self) -> Dict[str, List[str]]:  # output file, input files
-        return {
-            f"{self.output_dir}/assets/js/tipuesearch.js": [
-                "_js/tipuesearch_set.js",
-                "_js/tipuesearch.js",
-            ]
-        }
-
-    @property
-    def html_filters(self) -> List[Callable[[str], str]]:
+    def html_filters(self) -> List[Any]:
         return []
 
-    @property
-    def content_footer(self) -> Callable[[str, str, str], str]:
-        """The footer of a page, formatted with ``{root}`` and ``{years}``: the page's
-        own years (``date`` to ``date-modified``), or the site's for an undated page."""
-        blog_email = self.blog_email
-        blog_author = self.blog_author
+    # sources and profiles ####################################################
 
-        def _content_footer(lang: str, ext: str, out_ext: str) -> str:
-            if ext in MD_OR_IPYNB and out_ext == ".html":
-                return (
-                    "Contents © {years}         <a"
-                    f' href="mailto:{blog_email}">{blog_author[lang]}</a>'
-                )
-            else:
-                return ""
-
-        return _content_footer
-
-    @staticmethod
-    def search_form(lang: str, ext: str, out_ext: str) -> str:
-        if ext in MD_OR_IPYNB and out_ext == ".html":
-            return """<form class="navbar-form navbar-left" action="{root}/search/" role="search">
-    <div class="form-group">
-        <input type="text" class="form-control" id="tipue_search_input" name="q" placeholder="Search" autocomplete="off" />
-    </div>
-</form>"""
-        else:
-            return ""
-
-    @staticmethod
-    def header_includes(lang: str, ext: str, out_ext: str) -> str:
-        return ""
-
-    @staticmethod
-    def include_before(lang: str, ext: str, out_ext: str) -> str:
-        return ""
-
-    @staticmethod
-    def include_after(lang: str, ext: str, out_ext: str) -> str:
-        return ""
-
-    @staticmethod
-    def nav_includes(lang: str, ext: str, out_ext: str) -> str:
-        if lang == "en" and ext in MD_OR_IPYNB and out_ext == ".html":
-            return nav(
-                (
-                    ("{root}/index.html", "Home"),
-                    ("{root}/about/", "About"),
-                    (
-                        (
-                            ("{root}/categories/", "Categories"),
-                            ("{root}/archive/", "Archive"),
-                        ),
-                        "Archive",
-                    ),
-                    # ("{root}/rss.xml", "RSS feed"),
+    @cached_property
+    def collections(self) -> list[Collection]:
+        res = []
+        for c in self.settings["sources"]:
+            for name in c["format"]:
+                if name not in self.settings["profiles"]:
+                    raise SettingsError(f"[[sources]] {c['dir']}: no profile {name!r} in [profiles]")
+            res.append(
+                Collection(
+                    dir=Path(c["dir"]),
+                    out=Path(c.get("out", "")),
+                    ext=tuple(c["ext"]),
+                    listed=c.get("listed", False),
+                    format=tuple(c["format"]),
+                    exclude=tuple(c.get("exclude", ())),
                 )
             )
-        else:
-            return ""
-
-    @staticmethod
-    def css(ext: str, out_ext: str) -> List[str]:
-        if ext in MD_OR_IPYNB and out_ext == ".html":
-            return [
-                "{root}/assets/css/all-nocdn.css",
-                "https://fonts.googleapis.com/css?family=Playfair+Display:700,900",
-            ]
-        else:
-            return []
-
-    @staticmethod
-    def js(ext: str, out_ext: str) -> List[str]:
-        if ext in MD_OR_IPYNB and out_ext == ".html":
-            return [
-                "https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js",
-                "https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.bundle.min.js",
-                "https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js",
-                "https://cdn.jsdelivr.net/npm/lightgallery@2/lightgallery.umd.js",
-                "https://cdn.jsdelivr.net/npm/lightgallery@2/plugins/thumbnail/lg-thumbnail.umd.js",
-                "https://cdn.jsdelivr.net/npm/justifiedGallery@3/dist/js/jquery.justifiedGallery.min.js",
-            ]
-        else:
-            return []
-
-    @staticmethod
-    def script_include_after(ext: str, out_ext: str) -> str:
-        if ext in MD_OR_IPYNB and out_ext == ".html":
-            return """tocbot.init({{
-  tocSelector: '.js-toc',
-  contentSelector: '.entry-content',
-  headingSelector: 'h1, h2, h3, h4, h5, h6',
-  collapseDepth: 1,
-}});"""
-        else:
-            return ""
-
-    @staticmethod
-    def pandoc_input_options(ext: str) -> List[str]:
-        return []
-
-    @staticmethod
-    def panflute_input_filters(ext: str) -> list[PanfluteFilter]:
-        return [
-            lightgallery_from_dir_filter,
-        ]
-
-    @staticmethod
-    def pandoc_output_options(ext: str, out_ext: str) -> List[str]:
-        res = []
-        if out_ext == ".html":
-            res += ["--mathjax", "--wrap=none"]
-        if ext == ".markdown":
-            res.append("--to=slidy")
         return res
 
-    @staticmethod
-    def panflute_output_filters(ext: str, out_ext: str) -> list[PanfluteFilter]:
-        if out_ext == ".html":
-            return [
-                lightgallery_filter,
-                mathjax_bold_ell_filter,
-            ]
-        else:
-            return []
+    @cached_property
+    def filters(self) -> dict[str, dict[str, Any]]:
+        res = self.settings["filters"]
+        for name, spec in res.items():
+            if "python" not in spec:
+                raise SettingsError(f"[filters.{name}]: only python filters for now")
+        return res
+
+    @cached_property
+    def profiles(self) -> dict[str, Profile]:
+        res = {}
+        for name, p in self.settings["profiles"].items():
+            missing = [f for f in p["filters"] if f not in self.filters]
+            if missing:
+                raise SettingsError(f"[profiles.{name}]: filters {missing} are not in [filters]")
+            navs = p["nav"] if isinstance(p["nav"], dict) else {self.default_lang: p["nav"]}
+            res[name] = Profile(
+                name=name,
+                to=p["to"],
+                template=TEMPLATES[p["template"]] if p["template"] in TEMPLATES else Path(p["template"]),
+                url=p["url"],
+                options=tuple(p["options"]) + (() if p["to"] == "html" else (f"--to={p['to']}",)),
+                filters=tuple(import_filter(self.filters[f]["python"]) for f in p["filters"]),
+                show_image=p["show-image"],
+                css=tuple(p["css"]),
+                js=tuple(p["js"]),
+                header_includes=p["header-includes"],
+                include_before=p["include-before"],
+                include_after=p["include-after"],
+                script_include_after=p["script-include-after"],
+                nav={lang: nav_html(_nav_data(items)) if items else "" for lang, items in navs.items()},
+                footer=p["footer"],
+                search_form=p["search-form"],
+            )
+        return res
+
+    @property
+    def listing_profile(self) -> Profile:
+        """The profile of the derived pages (listings, archive, graph)."""
+        return self.profiles[self.settings["listing"]["profile"]]
+
+    def part(self, profile: Profile, name: str, lang: str) -> str:
+        """A part of a page (``header_includes``, ``nav``, …) in ``lang``; in the footer,
+        ``{email}`` and ``{author}`` are the site's."""
+        res = by_lang(getattr(profile, name), lang, self.default_lang) or ""
+        if name == "footer":
+            res = res.replace("{email}", self.blog_email).replace(
+                "{author}", by_lang(self.blog_author, lang, self.default_lang) or ""
+            )
+        return res
+
+    # reading #################################################################
+
+    def pandoc_input_options(self, ext: str) -> List[str]:
+        read = self.settings["read"]
+        return list(read["options"]) + list(read.get(ext.lstrip("."), {}).get("options", []))
+
+    def panflute_input_filters(self, ext: str) -> list[PanfluteFilter]:
+        return [
+            import_filter(spec["python"])
+            for spec in self.filters.values()
+            if spec.get("at", "read") == "read"
+            and spec.get("default", False)
+            and ("inputs" not in spec or ext.lstrip(".") in spec["inputs"])
+        ]
+
+    def media_options(self, page: Page) -> Dict[str, Any]:
+        """Options of :func:`para.apps.read_md_to_ast` resolving media for ``page``."""
+        return {
+            "out_dir": self.output_dir / page.media_dir,
+            "output_dir": self.output_dir,
+            "files_folders": self.files_folders,
+            "convert_pdf_media": self.convert_pdf_media,
+        }
+
+
+def mathjax_config(table: dict[str, Any]) -> str:
+    """The MathJax config <script> from ``[mathjax]``; ``macros-file`` (JSON) is merged
+    into ``tex.macros``."""
+    if not table:
+        return ""
+    table = dict(table)
+    macros_file = table.pop("macros-file", None)
+    if macros_file is not None:
+        with open(macros_file, encoding="utf-8") as f:
+            table["tex"] = {**table.get("tex", {}), "macros": json.load(f)}
+    return f"<script>\nwindow.MathJax = {json.dumps(table, indent=4, ensure_ascii=False)};\n</script>"

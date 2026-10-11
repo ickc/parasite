@@ -68,6 +68,8 @@ class Record:
     # every link's URL in document order, and citeproc's entries: key → their URLs
     links: Tuple[str, ...] = ()
     citations: dict[str, Tuple[str, ...]] = field(default_factory=dict)
+    # its outputs, by profile: the first is out_path's
+    outputs: dict[str, str] = field(default_factory=dict)
 
     @classmethod
     def from_page(cls, page: Page, post: bool) -> Record:
@@ -95,6 +97,7 @@ class Record:
             text=page.text,
             links=tuple(_links(doc)),
             citations={entry.identifier.removeprefix("ref-"): tuple(_links(entry)) for entry in _bibliography(doc)},
+            outputs={profile.name: path.as_posix() for profile, path in page.outputs},
         )
 
     @property

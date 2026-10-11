@@ -26,6 +26,8 @@ jumbotron = 1
 grid = 2
 include-jumbotron = true
 tag-cloud = [70, 280]
+# the output profile of the derived pages (listings, the archive, the graph)
+profile = "html"
 
 [feeds]
 rss = true

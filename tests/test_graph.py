@@ -8,14 +8,14 @@ import pytest
 from para.data import Page, Post
 from para.record import Record
 
+from conftest import make_page
+
 pytest.importorskip("sitegraph")
 from para.graph import records  # noqa: E402
 
 
-def page(cls: type[Page], path: str, ast: pf.Doc) -> Page:
-    p = cls(Path("posts") / path, Path("posts"), Path(""), None)
-    p.ast = ast
-    return p
+def page(cls: type[Page], path: str, ast: pf.Doc, format: tuple[str, ...] = ("html",)) -> Page:
+    return make_page(cls, path, ast, format)
 
 
 def test_records():
@@ -32,9 +32,7 @@ def test_records():
         ),
     )
     b = page(Post, "x/b.md", pf.Doc(metadata={"title": "B", "date": "2020-01-02"}))
-    slides = page(Page, "x/a.markdown", pf.Doc(metadata={"title": "A slides"}))
-    slides.pretty_urls = lambda parent, stem: parent / stem / "present.html"
-    del slides.out_path
+    slides = page(Page, "x/a.markdown", pf.Doc(metadata={"title": "A slides"}), ("slides",))
     pages = [Record.from_page(p, isinstance(p, Post)) for p in (a, b, slides)]
     res = records(pages, {"x/a/index.html", "x/b/index.html"}, None)
     ra = res["x/a/index.html"]

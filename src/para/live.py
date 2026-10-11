@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+import io
+import json
 import logging
 import time
 from dataclasses import dataclass, field
@@ -13,8 +15,10 @@ from pathlib import Path
 from typing import TYPE_CHECKING, List, Optional
 
 
+import panflute as pf
+
 from .apps import post_to_html, read_md_to_ast
-from .data import format_years
+from .data import format_years, root_of
 from .config import Config as StaticConfig
 from .util import TimeElapse
 
@@ -110,6 +114,7 @@ class Config(StaticConfig):
         webbrowser.open(full_url, new=2)
 
     def make_page(self, page: Page) -> None:
+        """Read ``page`` and render its outputs (a live rebuild: its own years only)."""
         time_elapse = TimeElapse(logger)
         page.ast = read_md_to_ast(
             self.pandoc_input_options,
@@ -117,19 +122,23 @@ class Config(StaticConfig):
             inputs=[page.path],
             **self.media_options(page),
         )
-        if page.out_path.name != "index.html" and (self.output_dir / page.out_path.parent / "index.html").exists():
-            page.ast.metadata["report-url"] = "index.html"
-        post_to_html(
-            page.ast,
-            page.root,
-            page.lang,
-            page.ext,
-            inputs=[] if page.template is None else [page.template],
-            outputs=[self.output_dir / page.out_path],
-            **page.options,
-            # its own years; a page without dates gets the site's only in a full build
-            years=format_years(page.years),
-        )
+        page.set_profiles()
+        outputs = page.outputs
+        for i, (profile, out_path) in enumerate(outputs):
+            ast = page.ast if i == len(outputs) - 1 else pf.load(io.StringIO(json.dumps(page.ast.to_json())))
+            if out_path.name != "index.html" and (self.output_dir / out_path.parent / "index.html").exists():
+                ast.metadata["report-url"] = "index.html"
+            post_to_html(
+                ast,
+                root_of(out_path),
+                page.lang,
+                profile,
+                self.output_dir / out_path,
+                self,
+                # its own years; a page without dates gets the site's only in a full build
+                years=format_years(page.years),
+                per_profile=page.per_profile,
+            )
         time_elapse.report(f"{page.path} redone.")
 
     def live_routine(

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 import json
 import os
 import subprocess  # nosec
@@ -13,7 +14,7 @@ import defopt
 import panflute as pf
 
 from .apps import post_to_html, read_md_to_ast
-from .data import Pages, Posts, format_years
+from .data import Pages, Posts, format_years, root_of
 from .helpers import report_urls, to_feed, to_sitemap, write_tipuesearch
 from .live import Config as LiveConfig
 from .output import MEDIA, Output
@@ -146,6 +147,7 @@ class Config(LiveConfig):
                 claim=claim,
             )
             page.check_metadata()
+            page.set_profiles()
             record = Record.from_page(page, post)
             page.claims = claimed
             return record
@@ -162,6 +164,7 @@ class Config(LiveConfig):
             for claim in claims:
                 output.claim(self.output_dir / claim, MEDIA)
             page.claims = claims
+            page.profiles = [self.profiles[name] for name in record.outputs]
             return record
 
         read_futures = []
@@ -198,13 +201,13 @@ class Config(LiveConfig):
         # derived pages, and each page in its own task; rendering changes the page's AST
         # (includes, output filters), and nothing else reads it any more.
         output_futures = []
-        options = posts.pages[0].options
-        _template = posts.pages[0].template
-        inputs = [] if _template is None else [_template]
-        index_inputs = [] if self.index_template is None else [self.index_template]
+        listing_profile = self.listing_profile
+        # the index template for listings of posts, the profile's for the rest
+        inputs = None
+        index_inputs = self.index_template
         renders: dict[str, str] = {}
 
-        def derived(ast: pf.Doc, root: str, out_path: Path, owner: str, inputs: list[Path]) -> None:
+        def derived(ast: pf.Doc, root: str, out_path: Path, owner: str, template: Path | None) -> None:
             """Render a derived page, unless it was rendered from the same AST last time."""
             rel = Path(os.path.relpath(out_path, self.output_dir)).as_posix()
             renders[rel] = render_key = hash_key(key, rel, root, years_str, json.dumps(ast.to_json(), sort_keys=True))
@@ -217,12 +220,12 @@ class Config(LiveConfig):
                     ast,
                     root,
                     self.default_lang,
-                    ".md",
-                    inputs=inputs,
-                    outputs=[out_path],
+                    listing_profile,
+                    out_path,
+                    self,
+                    template=template,
                     output=output,
                     owner=owner,
-                    **options,
                     years=years_str,
                 )
             )
@@ -282,43 +285,49 @@ class Config(LiveConfig):
 
         feed = {post.out_path for post in post_records[: self.feed_length]} if self.write_atom or self.write_rss else set()
 
-        def render(page: Page) -> tuple[str | None, bool]:
-            """Step 5 for a page, unless it was rendered under the same key last time;
-            returns its HTML fragment if a feed carries it (from the AST as read), and
-            whether it was rendered. The AST is dropped afterwards."""
+        def render(page: Page) -> tuple[str | None, int]:
+            """Step 5 for a page: each of its outputs, unless rendered under the same key
+            last time. Returns its HTML fragment if a feed carries it (from the AST as
+            read), and how many outputs were rendered. The AST is dropped afterwards."""
             record = page.record
-            report = record.out_path in reports
-            render_key = hash_key(page.read_key, format_years(record.years or years), report)
+            years_ = format_years(record.years or years)
             in_feed = record.out_path in feed
             fragment = store.fragment(record.source) if in_feed else None
-            if (
-                store.rendered(record.source, render_key)
-                and (self.output_dir / record.out_path).exists()
-                and (fragment is not None or not in_feed)
-            ):
-                output.claim(self.output_dir / record.out_path, record.source)
-                return fragment, False
+            todo = []
+            for profile, out_path in page.outputs:
+                report = out_path.as_posix() in reports
+                render_key = hash_key(page.read_key, profile.name, years_, report)
+                if store.rendered(record.source, profile.name, render_key) and (self.output_dir / out_path).exists():
+                    output.claim(self.output_dir / out_path, record.source)
+                else:
+                    todo.append((profile, out_path, report, render_key))
+            if not todo and (fragment is not None or not in_feed):
+                return fragment, 0
             if not hasattr(page, "_ast"):
                 read(page, record.post)
             if in_feed:
                 fragment = page.html
-            if report:
-                page.ast.metadata["report-url"] = "index.html"
-            post_to_html(
-                page.ast,
-                page.root,
-                page.lang,
-                page.ext,
-                inputs=[] if page.template is None else [page.template],
-                outputs=[self.output_dir / page.out_path],
-                output=output,
-                owner=record.source,
-                **page.options,
-                years=format_years(record.years or years),
-            )
+            for i, (profile, out_path, report, render_key) in enumerate(todo):
+                # rendering changes the AST: a copy for all but the last output
+                ast = page.ast if i == len(todo) - 1 else pf.load(io.StringIO(json.dumps(page.ast.to_json())))
+                if report:
+                    ast.metadata["report-url"] = "index.html"
+                post_to_html(
+                    ast,
+                    root_of(out_path),
+                    page.lang,
+                    profile,
+                    self.output_dir / out_path,
+                    self,
+                    output=output,
+                    owner=record.source,
+                    years=years_,
+                    per_profile=page.per_profile,
+                )
+                store.put_render(record.source, profile.name, render_key)
+            store.put_fragment(record.source, fragment)
             del page.ast
-            store.put_render(record.source, render_key, fragment)
-            return fragment, True
+            return fragment, len(todo)
 
         page_futures = [pool.submit(render, page) for page in all_pages]
         time_elapse.report("staging pages/posts HTML output.")
@@ -359,7 +368,7 @@ class Config(LiveConfig):
             rendered += done
             if fragment is not None:
                 fragments[page.record.out_path] = fragment
-        logger.info("rendered %s of %s pages (the rest unchanged)", rendered, len(all_pages))
+        logger.info("rendered %s of %s outputs (the rest unchanged)", rendered, sum(len(page.outputs) for page in all_pages))
         time_elapse.report("pages/posts rendered.")
         if self.write_atom or self.write_rss:
             to_feed(

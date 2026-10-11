@@ -13,19 +13,14 @@ from panflute.tools import convert_text
 
 if TYPE_CHECKING:
     from typing import (
-        Any,
-        Callable,
         List,
         Optional,
         Sequence,
         Tuple,
         TypeVar,
-        Union,
     )
 
-    import pandas as pd
-
-    from .config import Config
+    from .config import Collection, Config, Profile
     from .record import Record
 
     PagesLike = TypeVar("PagesLike", bound="Pages")
@@ -54,85 +49,95 @@ def format_years(years: Optional[Tuple[int, int]]) -> str:
     return str(first) if first == last else f"{first}–{last}"
 
 
+def root_of(out_path: Path) -> str:
+    """The relative path from the output ``out_path`` to the site's root.
+
+    Note: not a URL object, as one would normalise "." to ""."""
+    level = len(out_path.parent.parts)
+    return "." if level == 0 else "/".join([".."] * level)
+
+
 @dataclass
 class Page:
+    """A source, and its outputs: one per output profile, the first its URL's."""
+
     path: Path
-    base_path: Path
-    out_base_path: Path
-    template: Optional[Path]
+    collection: Collection
+    # the site's profiles by name
+    site_profiles: dict[str, Profile] = field(repr=False)
     timezone: str = r"America/Los_Angeles"
-    pretty_urls: Union[bool, Callable[[Path, str], Path]] = True
     date_format: str = r"%Y-%m-%d"
     default_lang: str = "en"
-    options: dict[str, Any] = field(default_factory=dict)
     # its record, once read (see para.record)
     record: Optional[Record] = field(default=None, init=False, repr=False)
     # the key it was read under, and the files its read wrote into the output (para.store)
     read_key: str = field(default="", init=False, repr=False)
     claims: List[str] = field(default_factory=list, init=False, repr=False)
+    # its profiles: the collection's, until its own ``format`` is read
+    profiles: List[Profile] = field(default_factory=list, init=False, repr=False)
 
     def __post_init__(self) -> None:
-        # special casing 404
-        if self.pretty_urls is True and str(self.out_path) == "404/index.html":
-            logger.debug(f"Forcing non-pretty URL for {self.path}.")
-            self.pretty_urls = False
-            del self.out_path
+        self.profiles = [self.site_profiles[name] for name in self.collection.format]
 
     @property
-    def _dict(self) -> dict[str, Any]:
-        """A dict representation of self including all attributes and properties
-
-        Primarily for dataframe
-        """
-        return {
-            # init
-            "path": self.path,
-            "base_path": self.base_path,
-            "out_base_path": self.out_base_path,
-            "template": self.template,
-            "pretty_urls": self.pretty_urls,
-            # property
-            "out_path": self.out_path,
-            "url": self.url,
-
-            "level": self.level,
-            "root": self.root,
-        }
+    def base_path(self) -> Path:
+        return self.collection.dir
 
     @property
-    def dict_ast(self) -> dict[str, Any]:
-        """A dict representation of self including the AST derived attributes
-
-        Primarily for dataframe
-        """
-        res = self._dict
-        res["lang"] = self.lang
-        for key in self.ast.metadata.content:
-            res["ast." + key] = self.ast.get_metadata(key)
-        return res
+    def out_base_path(self) -> Path:
+        return self.collection.out
 
     @property
     def ext(self) -> str:
         return self.path.suffix
 
-    @cached_property
+    def _out_path(self, profile: Profile) -> Path:
+        rel = self.out_base_path / self.path.relative_to(self.base_path)
+        return profile.out_path(rel.parent, rel.stem)
+
+    @property
+    def outputs(self) -> List[Tuple[Profile, Path]]:
+        """Its outputs: (profile, path in the output directory)."""
+        return [(profile, self._out_path(profile)) for profile in self.profiles]
+
+    @property
     def out_path(self) -> Path:
-        out_path = self.out_base_path / self.path.relative_to(self.base_path)
-        pretty_urls = self.pretty_urls
-        if pretty_urls is True:
-            out_path = out_path.parent / out_path.stem / "index.html"
-        elif callable(pretty_urls):
-            out_path = pretty_urls(out_path.parent, out_path.stem)
-        else:
-            out_path = out_path.parent / (out_path.stem + ".html")
-        return out_path
+        """Its first output's path."""
+        return self._out_path(self.profiles[0])
 
     @cached_property
+    def media_dir(self) -> Path:
+        """Where its read writes media: the folder of its collection's first output. Its
+        outputs are all in this folder (see :meth:`set_profiles`)."""
+        return self._out_path(self.site_profiles[self.collection.format[0]]).parent
+
+    def set_profiles(self) -> None:
+        """Its profiles from its ``format``: a list of profile names, or a table keyed by
+        them (Quarto's form), else its collection's."""
+        value = self.ast.get_metadata("format")
+        if value is None:
+            return
+        names = list(value) if isinstance(value, (list, dict)) else [str(value)]
+        unknown = [name for name in names if name not in self.site_profiles]
+        if unknown:
+            raise ValueError(f"{self.path}: format {unknown} not in the site's [profiles]")
+        self.profiles = [self.site_profiles[name] for name in names]
+        elsewhere = [str(path) for _, path in self.outputs if path.parent != self.media_dir]
+        if elsewhere:
+            raise ValueError(f"{self.path}: outputs {elsewhere} are not in {self.media_dir}, where its media are")
+
+    @cached_property
+    def per_profile(self) -> bool:
+        """Whether the source has content per profile (``.content-visible``,
+        ``.content-hidden``): a cheap test of its text."""
+        return b"content-visible" in (data := self.path.read_bytes()) or b"content-hidden" in data
+
+    @property
     def url(self) -> str:
-        """Its URL relative to the site's root: ``a/b/`` for ``a/b/index.html`` with pretty
-        URLs."""
+        """Its URL relative to the site's root: ``a/b/`` for ``a/b/index.html`` from a
+        profile of folders."""
         out_path = self.out_path
-        if self.pretty_urls is True:
+        if self.profiles[0].pretty and out_path.name == "index.html":
             parent = out_path.parent.as_posix()
             return ("" if parent == "." else parent) + "/"
         return out_path.as_posix()
@@ -146,16 +151,10 @@ class Page:
             return str(category).strip("/")
         return "/".join(self.path.relative_to(self.base_path).parent.parts)
 
-    @cached_property
-    def level(self) -> int:
-        return len(self.out_path.parent.parts)
-
-    @cached_property
+    @property
     def root(self) -> str:
-        """Relative path to root directory.
-
-        """
-        return "." if (level := self.level) == 0 else "/".join([".."] * level)
+        """The relative path from its first output to the site's root."""
+        return root_of(self.out_path)
 
     def _metadata_time(self, key: str) -> Optional[datetime]:
         """The date-time in metadata ``key``, in the site's time zone unless it says
@@ -304,25 +303,7 @@ class Page:
 
 @dataclass
 class Post(Page):
-    @property
-    def dict_ast(self) -> dict[str, Any]:
-        dict_ast = super().dict_ast
-        dict_ast["time"] = self.time
-        return dict_ast
-
-    @property
-    def date(self) -> str:
-        date = self.ast.get_metadata("date")
-        if date is None:
-            raise ValueError(f"The following post has no date: {self.path}")
-        return date
-
-    @cached_property
-    def time(self) -> datetime:
-        time = datetime.strptime(self.date, self.date_format)
-        time = time.replace(tzinfo=ZoneInfo(key=self.timezone))
-        return time
-
+    """A listed page: dated, in the listings and feeds."""
 
 
 @dataclass
@@ -331,100 +312,28 @@ class Pages:
     page_class: ClassVar[type] = Page
 
     @classmethod
-    def from_file_system(
-        cls: type[PagesLike],
-        path: Path,
-        out_path: Path,
-        ext: str,
-        template: Optional[Path],
-        excludes: list[str] = [],
-        timezone: str = r"America/Los_Angeles",
-        pretty_urls: Union[bool, Callable[[Path, str], Path]] = True,
-        date_format: str = r"%Y-%m-%d",
-        default_lang: str = "en",
-        options: dict[str, Any] = {},
-    ) -> PagesLike:
-        path = Path(path)
-        out_path = Path(out_path)
-        return cls(
-            [
-                cls.page_class(
-                    path_,
-                    path,
-                    out_path,
-                    template,
-                    timezone=timezone,
-                    pretty_urls=pretty_urls,
-                    date_format=date_format,
-                    default_lang=default_lang,
-                    options=options,
-                )
-                for path_ in path.glob(f"**/*{ext}")
-                if not any(path_.match(exclude) for exclude in excludes)
-            ]
-        )
-
-    @classmethod
-    def from_config(
-        cls: type[PagesLike],
-        config: Config,
-    ) -> PagesLike:
-        pageses: list[Page] = []
-        for path, out_path, ext, template, excludes in (
-            config.pages if cls is Pages else config.posts
-        ):
-            options = {
-                "show_image_in_post": config.show_image_in_post,
-                "header_includes": config.header_includes,
-                "include_before": config.include_before,
-                "include_after": config.include_after,
-                "script_include_after": config.script_include_after,
-                "mathjax_config": config.mathjax_config,
-                "search_form": config.search_form,
-                "content_footer": config.content_footer,
-                "blog_title": config.blog_title,
-                "nav": config.nav_includes,
-                "pandoc_options": config.pandoc_output_options,
-                "css": config.css,
-                "js": config.js,
-                "logo_url": config.logo_url or None,
-                "panflute_filters": config.panflute_output_filters,
-                "html_filters": config.html_filters,
-                "graph": config.write_graph,
-            }
-            pageses += cls.from_file_system(
-                Path(path),
-                Path(out_path),
-                ext,
-                template,
-                excludes=excludes,
-                timezone=config.timezone,
-                pretty_urls=config.pretty_urls[ext],
-                date_format=config.date_format,
-                default_lang=config.default_lang,
-                options=options,
-            ).pages
-        return cls(pageses)
-
-    @property
-    def _dict(self) -> List[dict[str, Any]]:
-        return [page._dict for page in self.pages]
-
-    @property
-    def dict_ast(self) -> List[dict[str, Any]]:
-        return [page.dict_ast for page in self.pages]
-
-    @cached_property
-    def dataframe(self) -> pd.DataFrame:
-        import pandas as pd
-
-        return pd.DataFrame(self._dict)
-
-    @cached_property
-    def dataframe_ast(self) -> pd.DataFrame:
-        import pandas as pd
-
-        return pd.DataFrame(self.dict_ast)
+    def from_config(cls: type[PagesLike], config: Config) -> PagesLike:
+        """The sources of the config's collections: those listed for :class:`Posts`, the
+        others for :class:`Pages`."""
+        listed = cls is not Pages
+        res: list[Page] = []
+        for collection in config.collections:
+            if collection.listed is not listed:
+                continue
+            for ext in collection.ext:
+                res += [
+                    cls.page_class(
+                        path,
+                        collection,
+                        config.profiles,
+                        timezone=config.timezone,
+                        date_format=config.date_format,
+                        default_lang=config.default_lang,
+                    )
+                    for path in collection.dir.glob(f"**/*{ext}")
+                    if not any(path.match(exclude) for exclude in collection.exclude)
+                ]
+        return cls(res)
 
 
 @dataclass
