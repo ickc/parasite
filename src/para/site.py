@@ -11,11 +11,11 @@ from typing import TYPE_CHECKING
 import defopt
 
 from .apps import post_to_html, read_md_to_ast
-from .data import Pages, Posts, format_years, site_years
+from .data import Pages, Posts, format_years
 from .helpers import set_report_urls, to_feed, to_sitemap, write_tipuesearch
 from .live import Config as LiveConfig
+from .record import Record, by_category, by_tag, by_year, site_years
 from .to_ast import (
-    posts_by_year,
     posts_to_archive_ast,
     posts_to_archive_index_ast,
     posts_to_index_ast,
@@ -100,57 +100,50 @@ class Config(LiveConfig):
         posts = Posts.from_config(self)
         time_elapse.report("glob pages/posts from file system.")
 
-        pages_ast_futures = [
-            pool.submit(
-                read_md_to_ast,
+        def read(page: Page, post: bool) -> Record:
+            """Step 2 and 3: the page's AST, then its record."""
+            page.ast = read_md_to_ast(
                 self.pandoc_input_options,
                 self.panflute_input_filters,
                 inputs=[page.path],
                 **self.media_options(page),
             )
-            for page in pages.pages
-        ]
-        posts_ast_futures = [
-            pool.submit(
-                read_md_to_ast,
-                self.pandoc_input_options,
-                self.panflute_input_filters,
-                inputs=[page.path],
-                **self.media_options(page),
-            )
-            for page in posts.pages
+            page.check_metadata()
+            return Record.from_page(page, post)
+
+        read_futures = [pool.submit(read, page, False) for page in pages.pages] + [
+            pool.submit(read, page, True) for page in posts.pages
         ]
         time_elapse.report("staging to get all ASTs.")
-        for page, future in zip(pages.pages, pages_ast_futures):
-            page.ast = future.result()
-        for page, future in zip(posts.pages, posts_ast_futures):
-            page.ast = future.result()
-        for page in list(pages.pages) + list(posts.pages):
-            page.check_metadata()
-        time_elapse.report("got all ASTs.")
+        for page, future in zip(list(pages.pages) + list(posts.pages), read_futures):
+            page.record = future.result()
+        time_elapse.report("got all ASTs and records.")
 
         if not self.include_draft:
-            pages = Pages([page for page in pages.pages if not page.is_draft])
-            posts = Posts([page for page in posts.pages if not page.is_draft])
+            pages = Pages([page for page in pages.pages if not page.record.draft])
+            posts = Posts([page for page in posts.pages if not page.record.draft])
             time_elapse.report("filter out drafts.")
 
-        posts.sort()
+        # newest first; sorted() is stable, so posts of the same date keep their order
+        posts.pages = sorted(posts.pages, key=lambda page: page.record.time, reverse=True)
         time_elapse.report("sorting posts.")
 
         all_pages: List[Page] = list(pages.pages) + list(posts.pages)
+        all_records = [page.record for page in all_pages]
+        post_records = [page.record for page in posts.pages]
         set_report_urls(all_pages)
-        years = site_years(all_pages)
+        years = site_years(all_records)
         years_str = format_years(years)
-        # The listings are built first, from the pages' metadata. A page's own task then
-        # reads its AST for search, feeds and the graph, and renders it last: rendering
-        # changes the AST (includes, output filters), and no other task reads it.
+        # Step 4: what crosses pages comes from the records alone. Step 5 renders the
+        # derived pages, and each page in its own task; rendering changes the page's AST
+        # (includes, output filters), and nothing else reads it any more.
         output_futures = []
 
         # cat index
         options = posts.pages[0].options
         for case, dict_ in (
-            ("categories", posts.categories),
-            ("tags", posts.tags),
+            ("categories", by_category(post_records)),
+            ("tags", by_tag(post_records)),
         ):
             for name, cat_posts in dict_.items():
                 # categories/a/b/index.html is 3 levels down
@@ -187,8 +180,8 @@ class Config(LiveConfig):
             pool.submit(
                 post_to_html,
                 posts_to_tag_ast(
-                    posts.categories,
-                    posts.tags,
+                    by_category(post_records),
+                    by_tag(post_records),
                     font_size_min=self.tag_cloud_font_size_min,
                     font_size_max=self.tag_cloud_font_size_max,
                     root="..",
@@ -206,8 +199,8 @@ class Config(LiveConfig):
         ]
         time_elapse.report("staging tag page.")
         # archive: a page per year, and one linking them
-        by_year = posts_by_year(posts.pages)
-        for year, year_posts in by_year.items():
+        years_posts = by_year(post_records)
+        for year, year_posts in years_posts.items():
             output_futures.append(
                 pool.submit(
                     post_to_html,
@@ -229,7 +222,7 @@ class Config(LiveConfig):
         output_futures.append(
             pool.submit(
                 post_to_html,
-                posts_to_archive_index_ast(by_year, lang=self.default_lang),
+                posts_to_archive_index_ast(years_posts, lang=self.default_lang),
                 "..",
                 self.default_lang,
                 ".md",
@@ -242,7 +235,7 @@ class Config(LiveConfig):
         time_elapse.report("staging archive page.")
         # index
         index_ast = posts_to_index_ast(
-            posts.pages,
+            post_records,
             self.blog_title[self.default_lang],
             n_jumbotron=self.n_jumbotron,
             n_grid=self.n_grid,
@@ -281,20 +274,12 @@ class Config(LiveConfig):
                     years=years_str,
                 )
             )
-        feed = {id(post) for post in posts.pages[: self.feed_length]} if self.write_atom or self.write_rss else set()
-        recorder = None
-        if self.write_graph:
-            from .graph import Recorder
+        feed = {post.out_path for post in post_records[: self.feed_length]} if self.write_atom or self.write_rss else set()
 
-            recorder = Recorder(all_pages, {post.out_path.as_posix() for post in posts.pages}, self.site_url or None)
-
-        def read_then_render(page: Page):
-            # cached properties: search and the feeds use them after the render
-            if self.write_tipuesearch_json:
-                page.text  # noqa: B018
-            if id(page) in feed:
-                page.html  # noqa: B018
-            record = None if recorder is None else recorder(page)
+        def render(page: Page) -> str | None:
+            """Step 5 for a page, returning its HTML fragment if a feed carries it (from the
+            AST as read). The AST is dropped afterwards."""
+            fragment = page.html if page.record.out_path in feed else None
             post_to_html(
                 page.ast,
                 page.root,
@@ -303,29 +288,46 @@ class Config(LiveConfig):
                 inputs=[] if page.template is None else [page.template],
                 outputs=[self.output_dir / page.out_path],
                 **page.options,
-                years=format_years(page.years or years),
+                years=format_years(page.record.years or years),
             )
-            return record
+            del page.ast
+            return fragment
 
-        page_futures = [pool.submit(read_then_render, page) for page in all_pages]
+        page_futures = [pool.submit(render, page) for page in all_pages]
         time_elapse.report("staging pages/posts HTML output.")
-        records = {page.out_path.as_posix(): future.result() for page, future in zip(all_pages, page_futures)}
-        time_elapse.report("pages/posts rendered.")
 
         if self.write_tipuesearch_json:
-            # search: not in the pool, as
-            # it needs to be re-generated even if only one page is changed,
-            # and the time taken is very small for now.
+            # one file over all pages (to be replaced by a sharded index)
             write_tipuesearch(
                 self.output_dir / "assets/js/tipuesearch_content.js",
-                all_pages,
+                all_records,
                 root=self.root_relative_to_search_form,
             )
             time_elapse.report("wrote tipuesearch.")
+        if self.write_sitemap:
+            to_sitemap(
+                self.site_url,
+                all_records,
+                output_dir=self.output_dir,
+            )
+        if self.write_graph:
+            from .graph import records, write_graph
 
+            write_graph(
+                records(all_records, {post.out_path for post in post_records}, self.site_url or None),
+                self.output_dir,
+                site_url=self.site_url or None,
+                uncoloured=self.graph_uncoloured,
+                colours=self.graph_colours,
+            )
+            time_elapse.report("wrote the post graph.")
+
+        fragments = {page.record.out_path: fragment for page, future in zip(all_pages, page_futures) if (fragment := future.result()) is not None}
+        time_elapse.report("pages/posts rendered.")
         if self.write_atom or self.write_rss:
             to_feed(
-                posts.pages[: self.feed_length],
+                post_records[: self.feed_length],
+                fragments,
                 self.blog_title[self.default_lang],
                 self.blog_description[self.default_lang],
                 self.blog_author[self.default_lang],
@@ -340,12 +342,6 @@ class Config(LiveConfig):
                 write_rss=self.write_rss,
             )
             time_elapse.report("wrote rss and/or atom feed.")
-        if self.write_sitemap:
-            to_sitemap(
-                self.site_url,
-                all_pages,
-                output_dir=self.output_dir,
-            )
 
         for future in output_futures:
             future.result()
@@ -359,17 +355,6 @@ class Config(LiveConfig):
             for future in minifies_js:
                 future.result()
         time_elapse.report("collecting all futures.")
-        if self.write_graph:
-            from .graph import write_graph
-
-            write_graph(
-                records,
-                self.output_dir,
-                site_url=self.site_url or None,
-                uncoloured=self.graph_uncoloured,
-                colours=self.graph_colours,
-            )
-            time_elapse.report("wrote the post graph.")
         self.live(all_pages)
 
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import posixpath
 import re
 from functools import partial
 from itertools import chain
@@ -9,7 +10,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from panflute.elements import Div, Image, Link, Math, MetaBlocks, MetaList, Plain, RawBlock
-from urlpath import URL as Url
 
 if TYPE_CHECKING:
     from typing import Callable, List, Optional, Sequence, TypeVar, Union
@@ -123,7 +123,7 @@ def lightgallery_from_dir(
     if isinstance(elem, Div) and attribute in elem.attributes:
         root = doc.get_metadata("root", "/")
         res = [
-            Link(Image(url=(url := str(root / Url(path)))), url=url)
+            Link(Image(url=(url := posixpath.join(root, path.as_posix()))), url=url)
             for path in sorted(
                 chain(
                     *(

@@ -1,14 +1,16 @@
 from __future__ import annotations
 
 import json
+import posixpath
 from logging import getLogger
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from typing import Dict, List, Sequence, Tuple, Union
+    from typing import Dict, List, Mapping, Sequence, Tuple, Union
 
-    from .data import Page, Post
+    from .data import Page
+    from .record import Record
 
 logger = getLogger(__name__)
 
@@ -75,7 +77,7 @@ def set_report_urls(pages: Sequence[Page]) -> None:
 
 
 def tipuesearch(
-    pages: Sequence[Page],
+    pages: Sequence[Record],
     root: str = "..",
 ) -> Dict[str, List[Dict[str, None | str]]]:
     return {
@@ -84,7 +86,7 @@ def tipuesearch(
                 "title": page.title,
                 "text": page.text,
                 "tags": ",".join(page.tags),
-                "url": str(root / page.url),
+                "url": posixpath.join(root, page.url),
                 # doesn't work
                 # 'image': None if page.previewimage is None else str(root / page.previewimage),
             }
@@ -95,7 +97,7 @@ def tipuesearch(
 
 def write_tipuesearch(
     path: Path,
-    pages: Sequence[Page],
+    pages: Sequence[Record],
     root: str = "..",
 ) -> None:
     data = tipuesearch(pages, root=root)
@@ -128,7 +130,8 @@ def minify_html(html: str) -> str:
 
 
 def to_feed(
-    posts: Sequence[Post],
+    posts: Sequence[Record],
+    fragments: Mapping[str, str],
     title: str,
     description: str,
     author: str,
@@ -166,7 +169,7 @@ def to_feed(
     if updated:
         fg.updated(max(updated))
     for post in posts:
-        url = str(site_url / post.url)
+        url = posixpath.join(site_url, post.url)
 
         fe = fg.add_entry()
 
@@ -177,7 +180,7 @@ def to_feed(
         fe.published(post.time)
         fe.updated(post.updated or post.time)
         # xml don't like invalid characters that somehow pandoc can produce
-        fe.content(regex.sub("", post.html), type="CDATA")
+        fe.content(regex.sub("", fragments[post.out_path]), type="CDATA")
 
     if write_atom:
         fg.atom_file(str(output_dir / "atom.xml"))
@@ -187,7 +190,7 @@ def to_feed(
 
 def to_sitemap(
     site_url: str,
-    pages: Sequence[Page],
+    pages: Sequence[Record],
     output_dir: Path = Path("output"),
     filename: str = "sitemapindex.xml",
 ) -> None:
@@ -200,7 +203,7 @@ def to_sitemap(
         url = SubElement(urlset, "url")
 
         loc = SubElement(url, "loc")
-        loc.text = str(site_url / page.url)
+        loc.text = posixpath.join(site_url, page.url)
 
         if page.updated is not None:
             lastmod = SubElement(url, "lastmod")

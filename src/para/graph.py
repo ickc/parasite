@@ -1,10 +1,11 @@
 """The post graph, from the documents rather than the rendered HTML.
 
 sitegraph (an optional dependency) reads a rendered site's HTML, so that it works for any
-generator. parasite has the documents already, so it gives sitegraph its page records
-directly: links, citations and external links from the document, the nodes from what is
-listed (posts that are not drafts), and a page's other outputs (its slides) as alternates
-that stand for it. Nothing is read back.
+generator. parasite has the pages' records already (see :mod:`para.record`), made from
+the documents as read, so it gives sitegraph its page records directly: links,
+citations and external links, the nodes from what is listed (posts that are not
+drafts), and a page's other outputs (its slides) as alternates that stand for it.
+Nothing is read back.
 """
 
 from __future__ import annotations
@@ -21,74 +22,41 @@ import panflute as pf
 if TYPE_CHECKING:
     from typing import Sequence
 
-    from .data import Page
+    from .record import Record
 
 logger = getLogger(__name__)
 
 VIEWER = ("sitegraph.js", "sitegraph-local.js", "sitegraph.css")
 
 
-def _bibliography(doc: pf.Doc) -> list[pf.Div]:
-    """citeproc's entries: the divs with id ref-<key> inside #refs."""
-    found: list[pf.Div] = []
-
-    def action(elem: pf.Element, doc: pf.Doc) -> None:
-        if isinstance(elem, pf.Div) and elem.identifier.startswith("ref-"):
-            found.append(elem)
-
-    doc.walk(action)
-    return found
-
-
-def _link_elements(elem: pf.Element) -> list[pf.Link]:
-    found: list[pf.Link] = []
-
-    def action(e: pf.Element, doc: pf.Doc) -> None:
-        if isinstance(e, pf.Link):
-            found.append(e)
-
-    elem.walk(action)
-    return found
-
-
-def _links(elem: pf.Element) -> list[str]:
-    return [link.url for link in _link_elements(elem)]
-
-
 class Recorder:
-    """Makes sitegraph Page records, one page at a time (each in its page's task, before
-    the page is rendered); nodes are the output paths in ``listed``."""
+    """Makes sitegraph Page records from page records; nodes are the output paths in
+    ``listed``."""
 
-    def __init__(self, pages: Sequence[Page], listed: set[str], site_url: str | None) -> None:
+    def __init__(self, pages: Sequence[Record], listed: set[str], site_url: str | None) -> None:
         from sitegraph.extract import Resolver
 
         self.resolve = Resolver(site_url)
         self.listed = listed
         # a page's other outputs in its directory (slides beside a page)
         self.by_dir: dict[str, list[str]] = {}
-        for path in sorted({page.out_path.as_posix() for page in pages}):
+        for path in sorted({page.out_path for page in pages}):
             self.by_dir.setdefault(path.rsplit("/", 1)[0] if "/" in path else "", []).append(path)
 
-    def __call__(self, page: Page):
+    def __call__(self, page: Record):
         from sitegraph.extract import Page as GraphPage
 
         resolve = self.resolve
-        path = page.out_path.as_posix()
-        doc = page.ast
-        entries = _bibliography(doc)
-        in_bibliography = {id(link) for entry in entries for link in _link_elements(entry)}
+        path = page.out_path
         record = GraphPage(path=path)
         record.has_content = path in self.listed
         record.title = page.title or ""
-        record.date = str(doc.get_metadata("date", "") or "")
+        record.date = page.date or ""
         record.categories = list(page.tags)
-        record.links = [t for url in _links(doc) if (t := resolve(path, url))]
-        record.external = sorted(
-            {u for link in _link_elements(doc) if id(link) not in in_bibliography and (u := resolve.external(link.url))}
-        )
+        record.links = [t for url in page.links if (t := resolve(path, url))]
+        record.external = sorted({u for url in page.external_candidates if (u := resolve.external(url))})
         record.cited_urls = {
-            entry.identifier.removeprefix("ref-"): sorted({u for url in _links(entry) if (u := resolve.external(url))})
-            for entry in entries
+            key: sorted({u for url in urls if (u := resolve.external(url))}) for key, urls in page.citations.items()
         }
         record.citations = sorted(record.cited_urls)
         directory = path.rsplit("/", 1)[0] if "/" in path else ""
@@ -96,10 +64,10 @@ class Recorder:
         return record
 
 
-def records(pages: Sequence[Page], listed: set[str], site_url: str | None):
+def records(pages: Sequence[Record], listed: set[str], site_url: str | None):
     """sitegraph Page records, by output path, for ``pages``."""
     recorder = Recorder(pages, listed, site_url)
-    return {page.out_path.as_posix(): recorder(page) for page in pages}
+    return {page.out_path: recorder(page) for page in pages}
 
 
 def graph_page_ast(lang: str = "en") -> pf.Doc:

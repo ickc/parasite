@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime
 from functools import cached_property
@@ -11,13 +10,11 @@ from zoneinfo import ZoneInfo
 
 import panflute as pf
 from panflute.tools import convert_text
-from urlpath import URL as Url
 
 if TYPE_CHECKING:
     from typing import (
         Any,
         Callable,
-        Dict,
         List,
         Optional,
         Sequence,
@@ -29,6 +26,7 @@ if TYPE_CHECKING:
     import pandas as pd
 
     from .config import Config
+    from .record import Record
 
     PagesLike = TypeVar("PagesLike", bound="Pages")
 
@@ -56,15 +54,6 @@ def format_years(years: Optional[Tuple[int, int]]) -> str:
     return str(first) if first == last else f"{first}–{last}"
 
 
-def site_years(pages: Sequence[Page]) -> Optional[Tuple[int, int]]:
-    """The first and last year of the site's content, from the pages' own dates:
-    importing an old post widens the range, and the clock never enters it."""
-    years = [page.years for page in pages if page.years is not None]
-    if not years:
-        return None
-    return min(first for first, _ in years), max(last for _, last in years)
-
-
 @dataclass
 class Page:
     path: Path
@@ -76,6 +65,8 @@ class Page:
     date_format: str = r"%Y-%m-%d"
     default_lang: str = "en"
     options: dict[str, Any] = field(default_factory=dict)
+    # its record, once read (see para.record)
+    record: Optional[Record] = field(default=None, init=False, repr=False)
 
     def __post_init__(self) -> None:
         # special casing 404
@@ -134,16 +125,14 @@ class Page:
         return out_path
 
     @cached_property
-    def url(self) -> Url:
+    def url(self) -> str:
+        """Its URL relative to the site's root: ``a/b/`` for ``a/b/index.html`` with pretty
+        URLs."""
         out_path = self.out_path
-        # pass to Url to normalize
-        # to str to force adding a trailing /
-        # back to Url again
-        return (
-            Url(str(Url(out_path.parent)) + "/")
-            if self.pretty_urls is True
-            else Url(out_path)
-        )
+        if self.pretty_urls is True:
+            parent = out_path.parent.as_posix()
+            return ("" if parent == "." else parent) + "/"
+        return out_path.as_posix()
 
     @cached_property
     def category(self) -> str:
@@ -162,7 +151,7 @@ class Page:
     def root(self) -> str:
         """Relative path to root directory.
 
-        Note: this cannot return `Url`. As `Url(".")` would be normalized to `Url("")`."""
+        """
         return "." if (level := self.level) == 0 else "/".join([".."] * level)
 
     def _metadata_time(self, key: str) -> Optional[datetime]:
@@ -289,10 +278,10 @@ class Page:
         return None if meta is None else pf.stringify(meta)
 
     @property
-    def image(self) -> Optional[Url]:
+    def image(self) -> Optional[str]:
         """Its thumbnail and og:image: ``image``."""
         res = self.ast.get_metadata("image")
-        return None if res is None else Url(res)
+        return None if res is None else str(res)
 
     def check_metadata(self) -> None:
         """Warn about front matter from parasite ≤ 0.1, which is ignored now."""
@@ -395,7 +384,7 @@ class Pages:
                 "pandoc_options": config.pandoc_output_options,
                 "css": config.css,
                 "js": config.js,
-                "logo_url": Url(config.logo_url) if config.logo_url else None,
+                "logo_url": config.logo_url or None,
                 "panflute_filters": config.panflute_output_filters,
                 "html_filters": config.html_filters,
                 "graph": config.write_graph,
@@ -439,26 +428,3 @@ class Pages:
 class Posts(Pages):
     pages: Sequence[Post]
     page_class: ClassVar[type] = Post
-
-    # AST's derivatives
-
-    def sort(self) -> None:
-        self.pages = sorted(self.pages, key=lambda page: page.time, reverse=True)
-
-    @cached_property
-    def tags(self) -> Dict[str, List[Post]]:
-        res = defaultdict(list)
-        for page in self.pages:
-            for tag in page.tags:
-                res[tag].append(page)
-        return res
-
-    @cached_property
-    def categories(self) -> Dict[str, List[Post]]:
-        """Posts by category; a category also lists its subcategories' posts."""
-        res = defaultdict(list)
-        for page in self.pages:
-            parts = page.category.split("/") if page.category else []
-            for i in range(1, len(parts) + 1):
-                res["/".join(parts[:i])].append(page)
-        return dict(sorted(res.items()))

@@ -12,9 +12,9 @@ from itertools import chain
 from pathlib import Path
 from typing import TYPE_CHECKING, List, Optional
 
-from urlpath import URL as Url
 
 from .apps import post_to_html, read_md_to_ast
+from .data import format_years
 from .config import Config as StaticConfig
 from .util import TimeElapse
 
@@ -70,7 +70,7 @@ class Config(StaticConfig):
     watch_with: str = ""
     serve_host: str = "localhost"
     serve_port: int = 5500
-    serve_open: Optional[Url] = None
+    serve_open: Optional[str] = None
 
     def __post_init__(self) -> None:
         if not self.watch_with:
@@ -99,7 +99,7 @@ class Config(StaticConfig):
         logger.info("Serving simple server at port %s.", port)
         return httpd
 
-    def open_browser(self, url: Url) -> None:
+    def open_browser(self, url: str) -> None:
         host = self.serve_host
         port = self.serve_port
 
@@ -127,6 +127,8 @@ class Config(StaticConfig):
             inputs=[] if page.template is None else [page.template],
             outputs=[self.output_dir / page.out_path],
             **page.options,
+            # its own years; a page without dates gets the site's only in a full build
+            years=format_years(page.years),
         )
         time_elapse.report(f"{page.path} redone.")
 

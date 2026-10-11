@@ -12,7 +12,6 @@ hatchling = "*"
 # the dependencies in pyproject.toml, from conda-forge
 custom-inherit = ">=2.4"
 panflute = ">=2.3.1,<2.4"
-urlpath = ">=1.1"
 defopt = ">=7"
 feedgen = ">=1"
 coloredlogs = "*"

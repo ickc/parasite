@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import posixpath
 from collections import defaultdict
 from typing import TYPE_CHECKING
 
@@ -10,13 +11,11 @@ from .translate import translate
 if TYPE_CHECKING:
     from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
-    from urlpath import URL as Url
-
-    from .data import Post
+    from .record import Record
 
 
 def posts_to_index_ast(
-    posts: Sequence[Post],
+    posts: Sequence[Record],
     title: str,
     n_jumbotron: int = 1,
     n_grid: int = 2,
@@ -32,16 +31,16 @@ def posts_to_index_ast(
     else:
         older_url = None
 
-    def post_to_dict(post: Post) -> dict[str, Any]:
+    def post_to_dict(post: Record) -> dict[str, Any]:
         res = {
-            "url": str(post.url),
+            "url": post.url,
         }
         if post.summary:
             res["description"] = post.summary
         if post.title is not None:
             res["title"] = post.title
         if post.image is not None:
-            res["image"] = str(post.image)
+            res["image"] = post.image
         if post.author is not None:
             res["author"] = post.author
         res["date"] = post.date
@@ -79,8 +78,8 @@ def posts_to_index_ast(
 
 
 def posts_to_tag_ast(
-    categories: Dict[str, List[Post]],
-    tags: Dict[str, List[Post]],
+    categories: Dict[str, List[Record]],
+    tags: Dict[str, List[Record]],
     font_size_min: int = 70,
     font_size_max: int = 280,
     root: str = "..",
@@ -138,7 +137,7 @@ def posts_to_tag_ast(
                         pf.Plain(
                             pf.Link(
                                 pf.Str(f"{post.date} — {post.title}"),
-                                url=str(root / post.url),
+                                url=posixpath.join(root, post.url),
                             )
                         )
                     )
@@ -151,16 +150,8 @@ def posts_to_tag_ast(
     )
 
 
-def posts_by_year(posts: Sequence[Post]) -> Dict[int, List[Post]]:
-    """Posts by the year they were published, newest year first."""
-    res: Dict[int, List[Post]] = defaultdict(list)
-    for post in posts:
-        res[post.time.year].append(post)
-    return dict(sorted(res.items(), reverse=True))
-
-
 def posts_to_archive_index_ast(
-    years: Dict[int, List[Post]],
+    years: Dict[int, List[Record]],
     lang: str = "en",
 ) -> pf.elements.Doc:
     """The archive's front page: one link per year. A new post changes it only when it
@@ -176,7 +167,7 @@ def posts_to_archive_index_ast(
 
 
 def posts_to_archive_ast(
-    posts: Sequence[Post],
+    posts: Sequence[Record],
     root: str = "..",
     lang: str = "en",
     title: Optional[str] = None,
@@ -187,7 +178,7 @@ def posts_to_archive_ast(
         "lang": lang,
     }
 
-    res: Dict[int, Dict[str, List[Tuple[str, Optional[str], Url]]]] = defaultdict(
+    res: Dict[int, Dict[str, List[Tuple[str, Optional[str], str]]]] = defaultdict(
         lambda: defaultdict(list)
     )
     for page in posts:
@@ -210,7 +201,7 @@ def posts_to_archive_ast(
                         pf.Plain(
                             pf.Link(
                                 pf.Str(f"{date} — {title_}"),
-                                url=str(root / url),
+                                url=posixpath.join(root, url),
                             )
                         )
                     )

@@ -27,7 +27,6 @@ requires-python = ">=3.12"
 dependencies = [
     "custom-inherit>=2.4",
     "panflute>=2.3.1,<2.4",
-    "urlpath>=1.1",
     "defopt>=7",
     "feedgen>=1",
 ]

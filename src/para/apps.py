@@ -21,7 +21,6 @@ from .panflute_filters import meta_append
 if TYPE_CHECKING:
     from typing import Callable, Dict, List, Optional
 
-    from urlpath import URL as Url
 
     from .panflute_filters import PanfluteFilter
 
@@ -108,7 +107,7 @@ def post_to_html(
     content_footer: Optional[Callable[[str, str, str], str]] = None,
     blog_title: Dict[str, str] = {},
     nav: Optional[Callable[[str, str, str], str]] = None,
-    logo_url: Optional[Url] = None,
+    logo_url: Optional[str] = None,
     html_filters: List[Callable[[str], str]] = [],
     years: str = "",
     graph: bool = False,

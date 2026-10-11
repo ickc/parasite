@@ -6,6 +6,7 @@ import panflute as pf
 import pytest
 
 from para.data import Page, Post
+from para.record import Record
 
 pytest.importorskip("sitegraph")
 from para.graph import records  # noqa: E402
@@ -34,7 +35,8 @@ def test_records():
     slides = page(Page, "x/a.markdown", pf.Doc(metadata={"title": "A slides"}))
     slides.pretty_urls = lambda parent, stem: parent / stem / "present.html"
     del slides.out_path
-    res = records([a, b, slides], {"x/a/index.html", "x/b/index.html"}, None)
+    pages = [Record.from_page(p, isinstance(p, Post)) for p in (a, b, slides)]
+    res = records(pages, {"x/a/index.html", "x/b/index.html"}, None)
     ra = res["x/a/index.html"]
     assert ra.has_content and not res["x/a/present.html"].has_content
     assert ra.links == ["x/b/index.html"]
