@@ -98,13 +98,17 @@ def mentioned(source: Path, text: str) -> None:
     seen = set()
     for word in _PATHS.findall(text):
         word = word.rstrip(".")
-        if word in seen:
+        # no path is that long (a notebook's base64 is)
+        if word in seen or len(word) > 255:
             continue
         seen.add(word)
         for base in (source.parent, Path(".")):
             path = Path(os.path.normpath(base / word))
-            if path != Path(".") and path.exists():
-                touch(path)
+            try:
+                if path != Path(".") and path.exists():
+                    touch(path)
+            except OSError:
+                pass
 
 
 def unchanged(deps: Mapping[str, str]) -> bool:
