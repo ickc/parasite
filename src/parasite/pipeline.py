@@ -297,14 +297,14 @@ class Config(LiveConfig):
         for future in output_futures:
             future.result()
         if self.files_folders:
-            for rsync in rsyncs:
-                rsync.result()
+            for future in rsyncs:
+                future.result()
         if self.compress_css:
-            for minify in minifies:
-                minify.result()
+            for future in minifies:
+                future.result()
         if self.compress_js:
-            for minify in minifies_js:
-                minify.result()
+            for future in minifies_js:
+                future.result()
         time_elapse.report("collecting all futures.")
         self.live(all_pages)
 
