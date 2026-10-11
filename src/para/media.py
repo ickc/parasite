@@ -24,7 +24,7 @@ from urllib.parse import quote, unquote, urlsplit
 from panflute.elements import Image, Link
 
 if TYPE_CHECKING:
-    from typing import Dict, List, Optional
+    from typing import Callable, Dict, List, Optional
 
     from panflute.elements import Doc, Element
 
@@ -58,33 +58,47 @@ def pdf_to_svg(path: Path) -> Path:
     return out_path
 
 
-def localize_extracted_media(doc: Doc, out_dir: Path, convert_pdf: bool = True) -> Doc:
+def localize_extracted_media(
+    doc: Doc, out_dir: Path, convert_pdf: bool = True, claim: Optional[Callable[[Path], None]] = None
+) -> Doc:
     """Make URLs of media extracted into ``out_dir`` relative to the page in ``out_dir``.
 
     PDFs are converted to SVG if ``convert_pdf``, as an HTML page can only embed them.
+    ``claim`` is told each file written.
     """
     prefix = f"{out_dir}{os.sep}"
 
     def action(elem: Element, doc: Doc) -> None:
         if isinstance(elem, Image) and elem.url.startswith(prefix):
             path = Path(elem.url)
+            if claim is not None:
+                claim(path)
             if convert_pdf and path.suffix == ".pdf":
                 path = pdf_to_svg(path)
+                if claim is not None:
+                    claim(path)
             elem.url = path.name
 
     return doc.walk(action)
 
 
-def copy_media(path: Path, out_dir: Path, convert_pdf: bool = True) -> Path:
+def copy_media(
+    path: Path, out_dir: Path, convert_pdf: bool = True, claim: Optional[Callable[[Path], None]] = None
+) -> Path:
     """Copy a local media file next to the page in ``out_dir``, named by its content hash
-    as pandoc names extracted media, converting PDF to SVG if ``convert_pdf``."""
+    as pandoc names extracted media, converting PDF to SVG if ``convert_pdf``. ``claim``
+    is told each file written."""
     data = path.read_bytes()
     dest = out_dir / (hashlib.sha1(data, usedforsecurity=False).hexdigest() + path.suffix)
+    if claim is not None:
+        claim(dest)
     if not dest.exists():
         out_dir.mkdir(parents=True, exist_ok=True)
         dest.write_bytes(data)
     if convert_pdf and dest.suffix == ".pdf":
         dest = pdf_to_svg(dest)
+        if claim is not None:
+            claim(dest)
     return dest
 
 
@@ -96,6 +110,7 @@ def rebase_relative_urls(
     files_folders: Dict[str, str],
     image_extension: str = "",
     convert_pdf: bool = True,
+    claim: Optional[Callable[[Path], None]] = None,
 ) -> Doc:
     """Rewrite relative URLs of local files to work from the page in ``out_dir``.
 
@@ -116,6 +131,7 @@ def rebase_relative_urls(
         files_folders: input directory -> output sub-directory, see ``Config.files_folders``.
         image_extension: pandoc's ``--default-image-extension`` for images without one.
         convert_pdf: convert copied PDF images to SVG.
+        claim: told each file copied into the output.
     """
     folders = {Path(in_dir): output_dir / out_sub_dir for in_dir, out_sub_dir in files_folders.items()}
 
@@ -147,7 +163,7 @@ def rebase_relative_urls(
         else:
             if not is_image:
                 return None
-            new = copy_media(file, out_dir, convert_pdf=convert_pdf).name
+            new = copy_media(file, out_dir, convert_pdf=convert_pdf, claim=claim).name
         if new == url_path:
             return None
         # keep the quoting style of the original

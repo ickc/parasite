@@ -4,6 +4,7 @@ import os
 import subprocess  # nosec
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
+from functools import partial
 from logging import getLogger
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -14,6 +15,7 @@ from .apps import post_to_html, read_md_to_ast
 from .data import Pages, Posts, format_years
 from .helpers import set_report_urls, to_feed, to_sitemap, write_tipuesearch
 from .live import Config as LiveConfig
+from .output import MEDIA, Output
 from .record import Record, by_category, by_tag, by_year, site_years
 from .to_ast import (
     posts_to_archive_ast,
@@ -67,9 +69,11 @@ class Config(LiveConfig):
 
     Args:
         jobs: number of pages processed at once (default: the number of CPUs).
+        prune: remove the files in the output directory that the build did not produce.
     """
 
     jobs: int = 0
+    prune: bool = False
 
     def exec(self) -> None:
         """Parasite static site generator."""
@@ -78,17 +82,16 @@ class Config(LiveConfig):
 
     def _exec(self, pool: ThreadPoolExecutor) -> None:
         time_elapse = TimeElapse(logger)
+        output = Output(self.output_dir)
 
+        for out_path in list(self.compress_js) + list(self.compress_css):
+            output.claim(Path(out_path), "minify")
+        for in_dir, out_sub_dir in self.files_folders.items():
+            output.claim_tree(Path(in_dir), self.output_dir / out_sub_dir, f"files_folders {in_dir}")
         if self.compress_js:
-            minifies_js = [
-                pool.submit(minify, paths, out_path)
-                for out_path, paths in self.compress_js.items()
-            ]
+            minifies_js = [pool.submit(minify, paths, out_path) for out_path, paths in self.compress_js.items()]
         if self.compress_css:
-            minifies = [
-                pool.submit(minify, paths, out_path)
-                for out_path, paths in self.compress_css.items()
-            ]
+            minifies = [pool.submit(minify, paths, out_path) for out_path, paths in self.compress_css.items()]
         if self.files_folders:
             rsyncs = [
                 pool.submit(rsync, in_dir, self.output_dir, out_sub_dir)
@@ -107,6 +110,7 @@ class Config(LiveConfig):
                 self.panflute_input_filters,
                 inputs=[page.path],
                 **self.media_options(page),
+                claim=partial(output.claim, owner=MEDIA),
             )
             page.check_metadata()
             return Record.from_page(page, post)
@@ -167,6 +171,8 @@ class Config(LiveConfig):
                         if self.index_template is None
                         else [self.index_template],
                         outputs=[self.output_dir / case / name / "index.html"],
+                        output=output,
+                        owner=f"{case} {name}",
                         **options,
                         years=years_str,
                     )
@@ -192,6 +198,8 @@ class Config(LiveConfig):
                 ".md",
                 inputs=inputs,
                 outputs=[self.output_dir / case / "index.html"],
+                output=output,
+                owner=f"{case} overview",
                 **options,
                 years=years_str,
             )
@@ -215,6 +223,8 @@ class Config(LiveConfig):
                     ".md",
                     inputs=inputs,
                     outputs=[self.output_dir / "archive" / str(year) / "index.html"],
+                    output=output,
+                    owner=f"archive {year}",
                     **options,
                     years=years_str,
                 )
@@ -228,6 +238,8 @@ class Config(LiveConfig):
                 ".md",
                 inputs=inputs,
                 outputs=[self.output_dir / "archive" / "index.html"],
+                output=output,
+                owner="archive",
                 **options,
                 years=years_str,
             )
@@ -253,6 +265,8 @@ class Config(LiveConfig):
                 ".md",
                 inputs=[] if self.index_template is None else [self.index_template],
                 outputs=[self.output_dir / "index.html"],
+                output=output,
+                owner="front page",
                 **options,
                 years=years_str,
             )
@@ -270,6 +284,8 @@ class Config(LiveConfig):
                     ".md",
                     inputs=inputs,
                     outputs=[self.output_dir / "graph" / "index.html"],
+                    output=output,
+                    owner="graph page",
                     **options,
                     years=years_str,
                 )
@@ -287,6 +303,8 @@ class Config(LiveConfig):
                 page.ext,
                 inputs=[] if page.template is None else [page.template],
                 outputs=[self.output_dir / page.out_path],
+                output=output,
+                owner=page.record.source,
                 **page.options,
                 years=format_years(page.record.years or years),
             )
@@ -302,6 +320,7 @@ class Config(LiveConfig):
                 self.output_dir / "assets/js/tipuesearch_content.js",
                 all_records,
                 root=self.root_relative_to_search_form,
+                output=output,
             )
             time_elapse.report("wrote tipuesearch.")
         if self.write_sitemap:
@@ -309,6 +328,7 @@ class Config(LiveConfig):
                 self.site_url,
                 all_records,
                 output_dir=self.output_dir,
+                output=output,
             )
         if self.write_graph:
             from .graph import records, write_graph
@@ -319,6 +339,7 @@ class Config(LiveConfig):
                 site_url=self.site_url or None,
                 uncoloured=self.graph_uncoloured,
                 colours=self.graph_colours,
+                output=output,
             )
             time_elapse.report("wrote the post graph.")
 
@@ -340,6 +361,7 @@ class Config(LiveConfig):
                 output_dir=self.output_dir,
                 write_atom=self.write_atom,
                 write_rss=self.write_rss,
+                output=output,
             )
             time_elapse.report("wrote rss and/or atom feed.")
 
@@ -355,6 +377,7 @@ class Config(LiveConfig):
             for future in minifies_js:
                 future.result()
         time_elapse.report("collecting all futures.")
+        output.finish(prune=self.prune)
         self.live(all_pages)
 
 

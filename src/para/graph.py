@@ -11,7 +11,6 @@ Nothing is read back.
 from __future__ import annotations
 
 import json
-import shutil
 from importlib.resources import files
 from logging import getLogger
 from pathlib import Path
@@ -22,6 +21,7 @@ import panflute as pf
 if TYPE_CHECKING:
     from typing import Sequence
 
+    from .output import Output
     from .record import Record
 
 logger = getLogger(__name__)
@@ -94,6 +94,7 @@ def write_graph(
     site_url: str | None = None,
     uncoloured: Sequence[str] = (),
     colours: int = 7,
+    output: Output | None = None,
 ) -> None:
     """Write graph.json from ``records`` (by output path), and sitegraph's viewer, into
     ``output_dir``."""
@@ -101,9 +102,13 @@ def write_graph(
 
     config = Config(output_dir=output_dir, site_url=site_url, uncoloured=list(uncoloured), colours=colours)
     graph = build_graph(config, records)
-    (output_dir / "graph.json").write_text(json.dumps(graph, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+    data = {"graph.json": (json.dumps(graph, indent=1, ensure_ascii=False) + "\n").encode("utf-8")}
     viewer = files("sitegraph") / "viewer"
     for name in VIEWER:
-        with (viewer / name).open("rb") as src, open(output_dir / name, "wb") as dst:
-            shutil.copyfileobj(src, dst)
+        data[name] = (viewer / name).read_bytes()
+    for name, content in data.items():
+        if output is None:
+            (output_dir / name).write_bytes(content)
+        else:
+            output.write(output_dir / name, content, "graph")
     logger.info("graph: %s pages, %s links", len(graph["nodes"]), len(graph["links"]))

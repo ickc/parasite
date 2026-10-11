@@ -9,9 +9,10 @@ from typing import TYPE_CHECKING
 from .util import join_url
 
 if TYPE_CHECKING:
-    from typing import Dict, List, Mapping, Sequence, Tuple, Union
+    from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union
 
     from .data import Page
+    from .output import Output
     from .record import Record
 
 
@@ -102,11 +103,13 @@ def write_tipuesearch(
     path: Path,
     pages: Sequence[Record],
     root: str = "..",
+    output: Optional[Output] = None,
 ) -> None:
-    data = tipuesearch(pages, root=root)
-    with open(path, "w") as f:
-        print("var tipuesearch=", file=f, end="")
-        json.dump(data, f)
+    text = "var tipuesearch=" + json.dumps(tipuesearch(pages, root=root))
+    if output is None:
+        path.write_text(text)
+    else:
+        output.write(path, text, "search")
 
 
 def minify_html(html: str) -> str:
@@ -147,6 +150,7 @@ def to_feed(
     output_dir: Path = Path("output"),
     write_atom: bool = True,
     write_rss: bool = True,
+    output: Optional[Output] = None,
 ) -> None:
     import re
 
@@ -186,9 +190,9 @@ def to_feed(
         fe.content(regex.sub("", fragments[post.out_path]), type="CDATA")
 
     if write_atom:
-        fg.atom_file(str(output_dir / "atom.xml"))
+        _write(output_dir / "atom.xml", fg.atom_str(), "feeds", output)
     if write_rss:
-        fg.rss_file(str(output_dir / "rss.xml"))
+        _write(output_dir / "rss.xml", fg.rss_str(), "feeds", output)
 
 
 def to_sitemap(
@@ -196,6 +200,7 @@ def to_sitemap(
     pages: Sequence[Record],
     output_dir: Path = Path("output"),
     filename: str = "sitemapindex.xml",
+    output: Optional[Output] = None,
 ) -> None:
     from xml.etree.ElementTree import Element, ElementTree, SubElement  # nosec
 
@@ -211,4 +216,15 @@ def to_sitemap(
         if page.updated is not None:
             lastmod = SubElement(url, "lastmod")
             lastmod.text = page.updated.strftime(r"%Y-%m-%d")
-    tree.write(output_dir / filename, encoding="utf-8", xml_declaration=True)
+    from io import BytesIO
+
+    data = BytesIO()
+    tree.write(data, encoding="utf-8", xml_declaration=True)
+    _write(output_dir / filename, data.getvalue(), "sitemap", output)
+
+
+def _write(path: Path, data: bytes, owner: str, output: Optional[Output]) -> None:
+    if output is None:
+        path.write_bytes(data)
+    else:
+        output.write(path, data, owner)

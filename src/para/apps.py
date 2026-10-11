@@ -19,6 +19,7 @@ from .media import (
 from .panflute_filters import meta_append
 
 if TYPE_CHECKING:
+    from .output import Output
     from typing import Callable, Dict, List, Optional
 
 
@@ -46,12 +47,13 @@ def read_md_to_ast(
     output_dir: Path = Path("output"),
     files_folders: Dict[str, str] = {},
     convert_pdf_media: bool = True,
+    claim: Optional[Callable[[Path], None]] = None,
 ) -> pf.elements.Doc:
     """Read from markdown to panflute AST
 
     If ``out_dir``, the output directory of the page, is given, embedded media are
     written there, and relative URLs to local files are made to work from the page,
-    see :mod:`para.media`.
+    see :mod:`para.media`; ``claim`` is told each media file written.
     """
     assert len(inputs) == 1
     path = inputs[0]
@@ -68,7 +70,7 @@ def read_md_to_ast(
         text, input_format=input_format, standalone=True, extra_args=extra_args
     )
     if out_dir is not None:
-        doc = localize_extracted_media(doc, out_dir, convert_pdf=convert_pdf_media)
+        doc = localize_extracted_media(doc, out_dir, convert_pdf=convert_pdf_media, claim=claim)
         doc = rebase_relative_urls(
             doc,
             path,
@@ -77,6 +79,7 @@ def read_md_to_ast(
             files_folders,
             image_extension=default_image_extension(options),
             convert_pdf=convert_pdf_media,
+            claim=claim,
         )
 
     for filter_ in panflute_filters(ext):
@@ -111,6 +114,8 @@ def post_to_html(
     html_filters: List[Callable[[str], str]] = [],
     years: str = "",
     graph: bool = False,
+    output: Optional[Output] = None,
+    owner: str = "",
 ) -> None:
     """Write ``ast`` as a standalone HTML page.
 
@@ -203,5 +208,8 @@ def post_to_html(
     html = xml_safe(html)
     for html_filter in html_filters:
         html = html_filter(html)
-    with open(out_path, "w") as f:
-        f.write(html)
+    if output is None:
+        with open(out_path, "w") as f:
+            f.write(html)
+    else:
+        output.write(out_path, html, owner)
