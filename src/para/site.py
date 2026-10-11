@@ -163,7 +163,10 @@ class Config(LiveConfig):
                 page.ast = read_ast(page, page.profiles[0], claimed)
                 page.set_profiles()
             page.ast_profile = page.profiles[0] if page.per_profile else None
-            media = referenced_media(page.ast, self.output_dir / page.media_dir, self.output_dir, self.media_folders)
+            # the media every output uses: a source with content per profile is read whole
+            # for them (its other outputs are read when rendered)
+            whole = read_ast(page, None, claimed) if page.per_profile else page.ast
+            media = referenced_media(whole, self.output_dir / page.media_dir, self.output_dir, self.media_folders)
             record = Record.from_page(page, post, media)
             page.claims = claimed
             return record

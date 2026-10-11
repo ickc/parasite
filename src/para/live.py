@@ -184,7 +184,7 @@ class Config(StaticConfig):
             raise ValueError(
                 f"Cannot find page/post with path from the following KeyError: {e}"
             )
-        time_elapse.report(f"Found pages to match.")
+        time_elapse.report("Found pages to match.")
         return pages
 
     def observe_pages_with_watchdog(
