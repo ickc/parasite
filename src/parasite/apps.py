@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from logging import getLogger
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -26,6 +27,15 @@ if TYPE_CHECKING:
 
 logger = getLogger(__name__)
 
+# ANSI escape sequences (colours in notebook outputs), and the C0 controls XML forbids
+ANSI_ESCAPE = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
+XML_INVALID = re.compile("[\x00-\x08\x0b\x0c\x0e-\x1f]")
+
+
+def xml_safe(html: str) -> str:
+    """Drop what makes a page not well-formed XML: terminal escapes and C0 controls."""
+    return XML_INVALID.sub("", ANSI_ESCAPE.sub("", html))
+
 
 def read_md_to_ast(
     pandoc_options: Callable[[str], List[str]],
@@ -49,7 +59,9 @@ def read_md_to_ast(
     with open(path, "r") as f:
         text = f.read()
     input_format = "markdown" if ext == ".md" else ext[1:]
-    options = pandoc_options(ext)
+    # comments in a source are notes, not content: and commented-out drafts
+    # (`<!-- … -- … -->`) would make the page ill-formed
+    options = ["--strip-comments"] + pandoc_options(ext)
     extra_args = options if out_dir is None else options + extract_media_options(ext, out_dir)
     doc = convert_text(
         text, input_format=input_format, standalone=True, extra_args=extra_args
@@ -160,8 +172,6 @@ def post_to_html(
 
     for filter_ in panflute_filters(ext, ".html"):
         ast = filter_(ast)
-    if not html_filters:
-        extra_args.append(f"--output={out_path}")
     html = convert_text(
         ast,
         input_format="panflute",
@@ -169,8 +179,8 @@ def post_to_html(
         standalone=True,
         extra_args=extra_args,
     )
-    if html_filters:
-        for html_filter in html_filters:
-            html = html_filter(html)
-        with open(out_path, "w") as f:
-            f.write(html)
+    html = xml_safe(html)
+    for html_filter in html_filters:
+        html = html_filter(html)
+    with open(out_path, "w") as f:
+        f.write(html)

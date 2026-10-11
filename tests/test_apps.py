@@ -41,3 +41,7 @@ def test_read_md_to_ast(panflute_filters):
         inputs=[example_path],
     )
 
+
+
+def test_xml_safe():
+    assert apps.xml_safe("a\x1b[0;31mred\x1b[0m\x08b\tc\n") == "aredb\tc\n"
