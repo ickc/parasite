@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import pytest
 
 from para.output import Output
@@ -38,8 +41,10 @@ def test_pagefind_stable(tmp_path):
     for run in range(3):
         out = tmp_path / str(run)
         output = Output(out)
-        write_pagefind(records(), out, output)
+        write_pagefind(records(), out, output, "zh_tw")
         built.append({p.relative_to(out): p.read_bytes() for p in sorted(out.rglob("*")) if p.is_file()})
         assert not output.unclaimed()
     assert built[0] == built[1] == built[2]
     assert any(p.parts[1] == "filter" for p in built[0])
+    # one index, in the site's language, for pages in any
+    assert list(json.loads(built[0][Path("pagefind/pagefind-entry.json")])["languages"]) == ["zh-tw"]

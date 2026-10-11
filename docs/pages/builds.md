@@ -58,7 +58,8 @@ image becomes SVG, which a browser can show.
 With `[search] enabled` and `para[search]` installed, parasite indexes the records with
 [Pagefind](https://pagefind.app/) and makes the search page (`[search] page`). The index
 is sharded: one more page changes a few of its files. The search box in the navigation
-sends `?q=` to it. Tags and categories are its filters, and a page's tags are searched
+sends `?q=` to it. Every page is indexed in the site's language (Pagefind searches the index
+of the search page's language only). Tags and categories are its filters, and a page's tags are searched
 as its words.
 
 # Links

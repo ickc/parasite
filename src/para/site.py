@@ -380,7 +380,7 @@ class Config(LiveConfig):
         if self.write_search:
             from .search import write_pagefind
 
-            write_pagefind(all_records, self.output_dir, output)
+            write_pagefind(all_records, self.output_dir, output, self.default_lang)
             time_elapse.report("wrote the search index.")
         if self.write_sitemap:
             to_sitemap(

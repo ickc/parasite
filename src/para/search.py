@@ -36,7 +36,7 @@ def _language(lang: str) -> str:
     return lang.replace("_", "-").lower()
 
 
-async def _index(records: Sequence[Record], out: Path) -> None:
+async def _index(records: Sequence[Record], out: Path, language: str) -> None:
     from pagefind.index import IndexConfig, PagefindIndex
 
     # leaving the context writes the files, to the output path of the config
@@ -49,7 +49,10 @@ async def _index(records: Sequence[Record], out: Path) -> None:
                 url="/" + record.url,
                 # the tags are searched too, as words of the page
                 content="\n\n".join((record.text, " ".join(record.tags))) if record.tags else record.text,
-                language=_language(record.lang),
+                # one index for the site: Pagefind searches only the index of the search
+                # page's language, so pages in another (kcic's English posts) would not
+                # be found
+                language=language,
                 meta={"title": record.title or record.url},
                 filters=filters,
             )
@@ -155,10 +158,11 @@ def _stable(files: dict[str, bytes]) -> dict[str, bytes]:
     return files
 
 
-def write_pagefind(records: Sequence[Record], output_dir: Path, output: Output) -> None:
-    """Pagefind's index of ``records`` and its UI, at ``output_dir``/pagefind/."""
+def write_pagefind(records: Sequence[Record], output_dir: Path, output: Output, lang: str = "en") -> None:
+    """Pagefind's index of ``records`` and its UI, at ``output_dir``/pagefind/, in the
+    site's language ``lang``, that of the search page."""
     with tempfile.TemporaryDirectory() as tmp:
-        asyncio.run(_index(records, Path(tmp)))
+        asyncio.run(_index(records, Path(tmp), _language(lang)))
         files = {p.relative_to(tmp).as_posix(): p.read_bytes() for p in sorted(Path(tmp).rglob("*")) if p.is_file()}
     files = _stable(files)
     for path, data in sorted(files.items()):
