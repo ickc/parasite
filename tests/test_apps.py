@@ -57,3 +57,42 @@ def test_mathjax_bold_ell():
     doc = mathjax_bold_ell_filter(doc)
     assert doc.content[0].content[0].text == r"\pmb{\ell} + \pmb{\hat{\ell}} + \mathbf{\hat{x}}"
 
+
+
+def test_profile_metadata():
+    import panflute as pf
+
+    doc = pf.convert_text(
+        "---\nauthor: A\nformat:\n  html: default\n  slides:\n    metadata:\n      author: A B\n---\nx\n",
+        standalone=True,
+    )
+    apps.profile_metadata(doc, "html")
+    assert doc.get_metadata("author") == "A"
+    apps.profile_metadata(doc, "slides")
+    assert doc.get_metadata("author") == "A B"
+
+
+def test_split_filter_options():
+    reader, filters = apps.split_filter_options(
+        ["--from=ipynb", "--filter=pandoc-crossref", "--citeproc", "--bibliography", "c.yaml", "-M", "a=b", "--strip-comments"]
+    )
+    assert reader == ["--from=ipynb", "--strip-comments"]
+    assert filters == ["--filter=pandoc-crossref", "--citeproc", "--bibliography", "c.yaml", "-M", "a=b"]
+
+
+def test_select_content():
+    import panflute as pf
+
+    from para.config import Config
+    from para.panflute_filters import select_content
+
+    text = (
+        "a\n\n::: {.content-visible when-format=\"html\"}\npage\n:::\n\n"
+        "::: {.content-visible when-format=\"slides\"}\nslides\n:::\n\n"
+        "::: {.content-hidden unless-format=\"slidy\"}\nonly slidy\n:::\n"
+    )
+    profiles = Config().profiles
+    html = pf.stringify(select_content(pf.convert_text(text, standalone=True), profiles["html"]))
+    slides = pf.stringify(select_content(pf.convert_text(text, standalone=True), profiles["slides"]))
+    assert html.split() == ["a", "page"]
+    assert slides.split() == ["a", "slides", "only", "slidy"]

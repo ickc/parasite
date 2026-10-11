@@ -27,6 +27,7 @@ if TYPE_CHECKING:
     from types import ModuleType
     from typing import Sequence
 
+    from .config import Profile
     from .data import Page
 
 logger = logging.getLogger(__name__)
@@ -116,16 +117,24 @@ class Config(StaticConfig):
     def make_page(self, page: Page) -> None:
         """Read ``page`` and render its outputs (a live rebuild: its own years only)."""
         time_elapse = TimeElapse(logger)
-        page.ast = read_md_to_ast(
-            self.pandoc_input_options,
-            self.panflute_input_filters,
-            inputs=[page.path],
-            **self.media_options(page),
-        )
+
+        def read(select: Profile | None) -> pf.Doc:
+            return read_md_to_ast(
+                self.pandoc_input_options,
+                self.panflute_input_filters,
+                inputs=[page.path],
+                **self.media_options(page),
+                select=select,
+            )
+
+        page.ast = read(page.profiles[0] if page.per_profile else None)
         page.set_profiles()
         outputs = page.outputs
         for i, (profile, out_path) in enumerate(outputs):
-            ast = page.ast if i == len(outputs) - 1 else pf.load(io.StringIO(json.dumps(page.ast.to_json())))
+            if page.per_profile:
+                ast = page.ast if i == 0 else read(profile)
+            else:
+                ast = page.ast if i == len(outputs) - 1 else pf.load(io.StringIO(json.dumps(page.ast.to_json())))
             if out_path.name != "index.html" and (self.output_dir / out_path.parent / "index.html").exists():
                 ast.metadata["report-url"] = "index.html"
             post_to_html(
@@ -137,7 +146,6 @@ class Config(StaticConfig):
                 self,
                 # its own years; a page without dates gets the site's only in a full build
                 years=format_years(page.years),
-                per_profile=page.per_profile,
             )
         time_elapse.report(f"{page.path} redone.")
 

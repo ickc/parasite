@@ -75,6 +75,8 @@ class Page:
     claims: List[str] = field(default_factory=list, init=False, repr=False)
     # its profiles: the collection's, until its own ``format`` is read
     profiles: List[Profile] = field(default_factory=list, init=False, repr=False)
+    # for a source with content per profile, the profile its AST was read for
+    ast_profile: Optional[Profile] = field(default=None, init=False, repr=False)
 
     def __post_init__(self) -> None:
         self.profiles = [self.site_profiles[name] for name in self.collection.format]

@@ -31,6 +31,7 @@ from .util import TimeElapse, setup_logging
 if TYPE_CHECKING:
     from typing import List, TypeVar
 
+    from .config import Profile
     from .data import Page
 
     PagesOrPosts = TypeVar("PagesOrPosts", Pages, Posts)
@@ -131,23 +132,36 @@ class Config(LiveConfig):
         store = Store(self.store_path, load=not self.full)
         time_elapse.report("site key.")
 
-        def read(page: Page, post: bool) -> Record:
-            """Step 2 and 3: the page's AST, then its record."""
-            claimed: list[str] = []
+        def read_ast(page: Page, select: Profile | None, claimed: list[str]) -> pf.Doc:
+            """The page's AST, as ``select``'s output sees it (for a source with content
+            per profile)."""
 
             def claim(path: Path) -> None:
                 output.claim(path, MEDIA)
                 claimed.append(Path(os.path.relpath(path, self.output_dir)).as_posix())
 
-            page.ast = read_md_to_ast(
+            return read_md_to_ast(
                 self.pandoc_input_options,
                 self.panflute_input_filters,
                 inputs=[page.path],
                 **self.media_options(page),
                 claim=claim,
+                select=select,
             )
+
+        def read(page: Page, post: bool) -> Record:
+            """Step 2 and 3: the page's AST, then its record. A source with content per
+            profile is read as its first output sees it."""
+            claimed: list[str] = []
+            select = page.profiles[0] if page.per_profile else None
+            page.ast = read_ast(page, select, claimed)
             page.check_metadata()
             page.set_profiles()
+            if select is not None and page.profiles[0] is not select:
+                # its own format puts another profile first
+                page.ast = read_ast(page, page.profiles[0], claimed)
+                page.set_profiles()
+            page.ast_profile = page.profiles[0] if page.per_profile else None
             record = Record.from_page(page, post)
             page.claims = claimed
             return record
@@ -308,8 +322,14 @@ class Config(LiveConfig):
             if in_feed:
                 fragment = page.html
             for i, (profile, out_path, report, render_key) in enumerate(todo):
-                # rendering changes the AST: a copy for all but the last output
-                ast = page.ast if i == len(todo) - 1 else pf.load(io.StringIO(json.dumps(page.ast.to_json())))
+                if page.per_profile and profile is not page.ast_profile:
+                    # its content per profile: read as this output sees it
+                    ast = read_ast(page, profile, [])
+                elif i == len(todo) - 1 or page.per_profile:
+                    ast = page.ast
+                else:
+                    # rendering changes the AST: a copy for all but the last output
+                    ast = pf.load(io.StringIO(json.dumps(page.ast.to_json())))
                 if report:
                     ast.metadata["report-url"] = "index.html"
                 post_to_html(
@@ -322,7 +342,6 @@ class Config(LiveConfig):
                     output=output,
                     owner=record.source,
                     years=years_,
-                    per_profile=page.per_profile,
                 )
                 store.put_render(record.source, profile.name, render_key)
             store.put_fragment(record.source, fragment)
