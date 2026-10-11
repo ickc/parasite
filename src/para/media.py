@@ -15,13 +15,14 @@ from __future__ import annotations
 import hashlib
 import os
 import posixpath
+import re
 import subprocess  # nosec
 from logging import getLogger
 from pathlib import Path
 from typing import TYPE_CHECKING
 from urllib.parse import quote, unquote, urlsplit
 
-from panflute.elements import Image, Link
+from panflute.elements import Image, Link, RawBlock, RawInline
 
 if TYPE_CHECKING:
     from typing import Callable, Dict, List, Optional
@@ -177,3 +178,69 @@ def rebase_relative_urls(
                 elem.url = new
 
     return doc.walk(action)
+
+
+# references in raw HTML, SVG and CSS: attributes and url(…)
+_RAW_REF = re.compile(r"""(?:\b(?:href|src|data|poster|xlink:href)\s*=\s*["']([^"']+)["']|url\(\s*["']?([^)"']+?)["']?\s*\))""")
+# media whose own references are followed
+_CONTAINERS = {".html", ".htm", ".svg", ".css"}
+
+
+def _local(url: str) -> Optional[str]:
+    """The path of a local URL, or None."""
+    parts = urlsplit(url.strip())
+    if parts.scheme or parts.netloc or not parts.path:
+        return None
+    return unquote(parts.path)
+
+
+def media_source(dest: str, folders: Dict[str, str]) -> Optional[Path]:
+    """The source file of ``dest`` (relative to the output directory), if it is in one
+    of the media ``folders`` (source folder → output folder)."""
+    for src, out in folders.items():
+        prefix = f"{out}/" if out else ""
+        if dest.startswith(prefix):
+            candidate = Path(src) / dest[len(prefix):]
+            if candidate.is_file():
+                return candidate
+    return None
+
+
+def referenced_media(doc: Doc, out_dir: Path, output_dir: Path, folders: Dict[str, str]) -> List[str]:
+    """The media files (paths in the output directory) the document references, from a
+    page in ``out_dir``: its images and links, its raw HTML, its ``image``, and what those
+    files reference in turn (an HTML plot's scripts, an SVG's images, a style sheet's)."""
+    urls: List[str] = []
+
+    def action(elem: Element, doc: Doc) -> None:
+        if isinstance(elem, (Image, Link)):
+            urls.append(elem.url)
+        elif isinstance(elem, (RawBlock, RawInline)) and elem.format == "html":
+            urls.extend(a or b for a, b in _RAW_REF.findall(elem.text))
+
+    doc.walk(action)
+    image = doc.get_metadata("image")
+    found: dict[str, Path] = {}
+
+    def add(path: str, base: str) -> None:
+        dest = posixpath.normpath(path.lstrip("/") if path.startswith("/") else posixpath.join(base, path))
+        if dest.startswith("../") or dest in found:
+            return
+        src = media_source(dest, folders)
+        if src is None:
+            return
+        found[dest] = src
+        if src.suffix.lower() in _CONTAINERS:
+            text = src.read_text(encoding="utf-8", errors="replace")
+            for a, b in _RAW_REF.findall(text):
+                if (p := _local(a or b)) is not None:
+                    add(p, posixpath.dirname(dest))
+
+    base = Path(os.path.relpath(out_dir, output_dir)).as_posix()
+    for url in urls:
+        if (p := _local(url)) is not None:
+            add(p, "" if base == "." else base)
+    if isinstance(image, str) and (p := _local(image)) is not None:
+        # a thumbnail is written from the site's root
+        add(p.lstrip("/"), "")
+    return sorted(found)

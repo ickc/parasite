@@ -17,6 +17,7 @@ from .apps import post_to_html, read_md_to_ast
 from .data import Pages, Posts, format_years, root_of
 from .helpers import report_urls, to_feed, to_sitemap, write_tipuesearch
 from .live import Config as LiveConfig
+from .media import media_source, referenced_media
 from .output import MEDIA, Output
 from .record import Record, by_category, by_tag, by_year, site_years
 from .store import Store, hash_key, site_key, source_hash
@@ -127,7 +128,7 @@ class Config(LiveConfig):
             self.output_repr(),
             sources,
             skip=[self.output_dir, self.store_path.parent],
-            copied=[Path(in_dir) for in_dir in self.files_folders],
+            copied=[Path(in_dir) for in_dir in [*self.files_folders, *self.media_folders]],
         )
         store = Store(self.store_path, load=not self.full)
         time_elapse.report("site key.")
@@ -162,7 +163,8 @@ class Config(LiveConfig):
                 page.ast = read_ast(page, page.profiles[0], claimed)
                 page.set_profiles()
             page.ast_profile = page.profiles[0] if page.per_profile else None
-            record = Record.from_page(page, post)
+            media = referenced_media(page.ast, self.output_dir / page.media_dir, self.output_dir, self.media_folders)
+            record = Record.from_page(page, post, media)
             page.claims = claimed
             return record
 
@@ -207,6 +209,13 @@ class Config(LiveConfig):
 
         all_pages: List[Page] = list(pages.pages) + list(posts.pages)
         all_records = [page.record for page in all_pages]
+        # media, by reference: what the pages built use
+        media = sorted({dest for record in all_records for dest in record.media})
+        media_copies = [
+            pool.submit(output.copy, src, self.output_dir / dest, "media folders")
+            for dest in media
+            if (src := media_source(dest, self.media_folders)) is not None
+        ]
         post_records = [page.record for page in posts.pages]
         reports = report_urls(all_records)
         years = site_years(all_records)
@@ -420,6 +429,8 @@ class Config(LiveConfig):
         if self.compress_js:
             for future in minifies_js:
                 future.result()
+        copied = sum(future.result() for future in media_copies)
+        logger.info("media: %s files used, %s copied (the rest unchanged)", len(media_copies), copied)
         logger.info("rendered %s of %s derived pages (the rest unchanged)", len(output_futures), len(renders))
         time_elapse.report("collecting all futures.")
         store.renders = renders

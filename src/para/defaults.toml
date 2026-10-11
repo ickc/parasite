@@ -51,10 +51,14 @@ colours = 7
 # convert PDF media embedded in sources (e.g. notebook outputs) to SVG
 convert-pdf = true
 
-# folders copied into the output as they are: source folder = output folder
+# folders of media, copied by reference: only the files pages use (their images, links,
+# raw HTML, `image`, and what those files reference); source folder = output folder
+[media.folders]
+media = "media"
+
+# folders of site files, copied whole (robots.txt, favicons, …): source folder = output folder
 [files]
 files = ""
-media = "media"
 
 # minified into the output: output path = [source files]
 [minify.css]

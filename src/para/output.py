@@ -15,6 +15,7 @@ produce the same file, and its name says it has the same bytes.
 from __future__ import annotations
 
 import os
+import shutil
 import threading
 from logging import getLogger
 from pathlib import Path
@@ -66,6 +67,24 @@ class Output:
         except FileNotFoundError:
             path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(new)
+        with self._lock:
+            self.written += 1
+        return True
+
+    def copy(self, src: Path, dest: Path, owner: str) -> bool:
+        """Claim ``dest`` and copy ``src`` to it unless it is there already (the same
+        size and modification time); True if it was copied."""
+        self.claim(dest, owner)
+        st = src.stat()
+        try:
+            dt = dest.stat()
+            if dt.st_size == st.st_size and dt.st_mtime_ns == st.st_mtime_ns:
+                with self._lock:
+                    self.unchanged += 1
+                return False
+        except FileNotFoundError:
+            dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src, dest)
         with self._lock:
             self.written += 1
         return True

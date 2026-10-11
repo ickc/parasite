@@ -206,7 +206,13 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
 
     @property
     def files_folders(self) -> Dict[str, str]:
+        """Folders of site files, copied whole: source → output folder."""
         return dict(self.settings["files"])
+
+    @property
+    def media_folders(self) -> Dict[str, str]:
+        """Folders of media, copied by reference: source → output folder."""
+        return dict(self.settings["media"].get("folders", {}))
 
     @property
     def compress_css(self) -> Dict[str, List[str]]:  # output file, input files
@@ -316,7 +322,8 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
         return {
             "out_dir": self.output_dir / page.media_dir,
             "output_dir": self.output_dir,
-            "files_folders": self.files_folders,
+            # a URL into either kind of folder works from the page
+            "files_folders": {**self.files_folders, **self.media_folders},
             "convert_pdf_media": self.convert_pdf_media,
         }
 

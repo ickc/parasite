@@ -20,7 +20,7 @@ from .site import Config
 FILE = "parasite.toml"
 
 # tables that list a site's own entries: a site's replaces the default whole
-WHOLE = {("files",), ("minify", "css"), ("minify", "js")}
+WHOLE = {("files",), ("media", "folders"), ("minify", "css"), ("minify", "js")}
 # tables whose order matters: a site's keys come first, in its order
 ORDERED = {("filters",)}
 
