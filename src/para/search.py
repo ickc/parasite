@@ -10,6 +10,8 @@ not rewritten.
 from __future__ import annotations
 
 import asyncio
+import gzip
+import hashlib
 import json
 import tempfile
 from logging import getLogger
@@ -19,7 +21,7 @@ from typing import TYPE_CHECKING
 import panflute as pf
 
 if TYPE_CHECKING:
-    from typing import Sequence
+    from typing import Any, Sequence
 
     from .output import Output
     from .record import Record
@@ -37,34 +39,130 @@ def _language(lang: str) -> str:
 async def _index(records: Sequence[Record], out: Path) -> None:
     from pagefind.index import IndexConfig, PagefindIndex
 
-    # the output path in the config too: leaving the context writes the files again,
-    # by default to ./pagefind
+    # leaving the context writes the files, to the output path of the config
     async with PagefindIndex(IndexConfig(write_playground=False, output_path=str(out))) as index:
         for record in records:
+            filters = {"tag": sorted(record.tags)} if record.tags else {}
+            if record.category:
+                filters["category"] = [record.category]
             await index.add_custom_record(
                 url="/" + record.url,
-                content=record.text,
+                # the tags are searched too, as words of the page
+                content="\n\n".join((record.text, " ".join(record.tags))) if record.tags else record.text,
                 language=_language(record.lang),
                 meta={"title": record.title or record.url},
-                # no filters (tags as facets): Pagefind 1.5.2 writes them differently
-                # from one run to the next, so its files would change every build
+                filters=filters,
             )
-        await index.write_files(output_path=str(out))
+
+
+# Pagefind's files: gzipped, a signature, then CBOR (definite lengths, smallest heads)
+
+SIGNATURE = b"pagefind_dcd"
+
+
+def _cbor_load(data: bytes, i: int = 0) -> tuple[Any, int]:
+    major, info = data[i] >> 5, data[i] & 31
+    i += 1
+    if info < 24:
+        n = info
+    elif info < 28:
+        size = 1 << (info - 24)
+        n = int.from_bytes(data[i : i + size], "big")
+        i += size
+    else:
+        raise ValueError(f"CBOR: not read here, {data[i - 1]:#x}")
+    if major == 0:
+        return n, i
+    if major == 2:
+        return bytes(data[i : i + n]), i + n
+    if major == 3:
+        return data[i : i + n].decode("utf-8"), i + n
+    if major == 4:
+        res = []
+        for _ in range(n):
+            item, i = _cbor_load(data, i)
+            res.append(item)
+        return res, i
+    raise ValueError(f"CBOR: major type {major} not read here")
+
+
+def _cbor_dump(value: Any) -> bytes:
+    if isinstance(value, int):
+        major, n, body = 0, value, b""
+    elif isinstance(value, bytes):
+        major, n, body = 2, len(value), value
+    elif isinstance(value, str):
+        body = value.encode("utf-8")
+        major, n = 3, len(body)
+    else:
+        major, n = 4, len(value)
+        body = b"".join(_cbor_dump(item) for item in value)
+    if n < 24:
+        head = bytes([major << 5 | n])
+    else:
+        info = next(info for info in range(24, 28) if n < 1 << (8 << (info - 24)))
+        head = bytes([major << 5 | info]) + n.to_bytes(1 << (info - 24), "big")
+    return head + body
+
+
+def _read(data: bytes) -> Any:
+    raw = gzip.decompress(data)
+    if not raw.startswith(SIGNATURE):
+        raise ValueError("not a Pagefind file")
+    value, end = _cbor_load(raw, len(SIGNATURE))
+    # what is read here is written back the same: else it is not this format
+    if end != len(raw) or _cbor_dump(value) != raw[len(SIGNATURE) :]:
+        raise ValueError("not read whole")
+    return value
+
+
+def _write(value: Any) -> bytes:
+    return gzip.compress(SIGNATURE + _cbor_dump(value), mtime=0)
+
+
+def _named(language: str, data: bytes, length: int) -> str:
+    return f"{language}_{hashlib.sha256(data).hexdigest()[:length]}"
+
+
+def _stable(files: dict[str, bytes]) -> dict[str, bytes]:
+    """Pagefind's files with their filters (tags) in a stable order.
+
+    Pagefind 1.5 writes a filter's values in an order that varies from run to run (a
+    hash map's), so its filter file, and the language's meta file naming it, would
+    change every build. Here the values are sorted, and the two files renamed by their
+    new content, as Pagefind names them.
+    """
+    entry = json.loads(files["pagefind-entry.json"])
+    for language, info in entry["languages"].items():
+        meta_path = f"pagefind.{info['hash']}.pf_meta"
+        meta = _read(files.pop(meta_path))
+        filters = meta[3]
+        for item in filters:
+            name, digest = item
+            path = f"filter/{digest}.pf_filter"
+            values = _read(files.pop(path))
+            values[1].sort(key=lambda value: value[0])
+            data = _write(values)
+            item[1] = _named(language, data, 7)
+            files[f"filter/{item[1]}.pf_filter"] = data
+        filters.sort(key=lambda item: item[0])
+        data = _write(meta)
+        info["hash"] = _named(language, data, 10)
+        files[f"pagefind.{info['hash']}.pf_meta"] = data
+    # its languages in a stable order too
+    entry["languages"] = dict(sorted(entry["languages"].items()))
+    files["pagefind-entry.json"] = json.dumps(entry, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    return files
 
 
 def write_pagefind(records: Sequence[Record], output_dir: Path, output: Output) -> None:
     """Pagefind's index of ``records`` and its UI, at ``output_dir``/pagefind/."""
     with tempfile.TemporaryDirectory() as tmp:
         asyncio.run(_index(records, Path(tmp)))
-        files = sorted(p for p in Path(tmp).rglob("*") if p.is_file())
-        for path in files:
-            data = path.read_bytes()
-            if path.name == "pagefind-entry.json":
-                # its languages in a stable order (Pagefind's varies from run to run)
-                entry = json.loads(data)
-                entry["languages"] = dict(sorted(entry["languages"].items()))
-                data = json.dumps(entry, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
-            output.write(output_dir / BUNDLE / path.relative_to(tmp), data, "search")
+        files = {p.relative_to(tmp).as_posix(): p.read_bytes() for p in sorted(Path(tmp).rglob("*")) if p.is_file()}
+    files = _stable(files)
+    for path, data in sorted(files.items()):
+        output.write(output_dir / BUNDLE / path, data, "search")
     logger.info("search: %s pages, %s files", len(records), len(files))
 
 
