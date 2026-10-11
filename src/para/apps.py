@@ -167,6 +167,8 @@ def post_to_html(
         return config.part(profile, name, lang).replace("{root}", root).replace("{years}", years)
 
     profile_metadata(ast, profile.name)
+    if "lang" not in ast.metadata.content:
+        ast.metadata["lang"] = lang
     meta_append(ast.metadata, "header-includes", part("header_includes"))
     meta_append(ast.metadata, "include-before", part("include_before"))
     meta_append(ast.metadata, "include-after", part("include_after"))
