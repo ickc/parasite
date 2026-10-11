@@ -122,8 +122,6 @@ class Config(StaticConfig):
         post_to_html(
             page.ast,
             page.root,
-            page.prev,
-            page.next,
             page.lang,
             page.ext,
             inputs=[] if page.template is None else [page.template],

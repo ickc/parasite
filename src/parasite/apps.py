@@ -135,8 +135,6 @@ def read_md_to_ast_with_teaser(
 def post_to_html(
     ast: pf.elements.Doc,
     root: str,
-    prev: Optional[Tuple[Url, Optional[str]]],
-    next: Optional[Tuple[Url, Optional[str]]],
     lang: str,
     ext: str,
     /,
@@ -211,16 +209,6 @@ def post_to_html(
         ast.metadata["nav"] = pf.RawBlock(nav(lang, ext, ".html").format(root=root))
     if root:
         ast.metadata["root"] = root
-    if prev is not None:
-        ast.metadata["prev-url"] = str(root / prev[0])
-        title = prev[1]
-        if title is not None:
-            ast.metadata["prev-title"] = title
-    if next is not None:
-        ast.metadata["next-url"] = str(root / next[0])
-        title = next[1]
-        if title is not None:
-            ast.metadata["next-title"] = title
 
     extra_args = pandoc_options(ext, ".html") + [
         f"--css={c.format(root=root)}" for c in css(ext, ".html")

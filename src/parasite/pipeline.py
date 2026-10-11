@@ -128,8 +128,6 @@ class Config(LiveConfig):
 
         posts.sort()
         time_elapse.report("sorting posts.")
-        posts.get_neighbor_urls()
-        time_elapse.report("get neighbor urls.")
 
         all_pages: List[Page] = list(pages.pages) + list(posts.pages)
         set_report_urls(all_pages)
@@ -138,8 +136,6 @@ class Config(LiveConfig):
                 post_to_html,
                 page.ast,
                 page.root,
-                page.prev,
-                page.next,
                 page.lang,
                 page.ext,
                 inputs=[] if page.template is None else [page.template],
@@ -170,8 +166,6 @@ class Config(LiveConfig):
                         post_to_html,
                         index_ast,
                         "../..",
-                        None,
-                        None,
                         self.default_lang,
                         ".md",
                         inputs=[]
@@ -203,8 +197,6 @@ class Config(LiveConfig):
                 post_to_html,
                 tag_ast,
                 "..",
-                None,
-                None,
                 self.default_lang,
                 ".md",
                 inputs=inputs,
@@ -224,8 +216,6 @@ class Config(LiveConfig):
                 post_to_html,
                 archive_ast,
                 "..",
-                None,
-                None,
                 self.default_lang,
                 ".md",
                 inputs=inputs,
@@ -248,8 +238,6 @@ class Config(LiveConfig):
                 post_to_html,
                 index_ast,
                 ".",
-                None,
-                None,
                 self.default_lang,
                 ".md",
                 inputs=[] if self.index_template is None else [self.index_template],

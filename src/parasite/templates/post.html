@@ -35,12 +35,6 @@ $endif$
 $for(header-includes)$
   $header-includes$
 $endfor$
-$if(prev-url)$
-<link rel="prev" href="$prev-url$" type="text/html"$if(prev-title)$ title="$prev-title$"$endif$ />
-$endif$
-$if(next-url)$
-<link rel="next" href="$next-url$" type="text/html"$if(next-title)$ title="$next-title$"$endif$ />
-$endif$
 </head>
 <body>
 $for(include-before)$
@@ -155,14 +149,6 @@ $endfor$
                 $endfor$
               </ul>
               $endif$
-              <ul class="pager hidden-print">
-                $if(prev-url)$
-                <li class="previous"><a href="$prev-url$" rel="prev"$if(prev-title)$ title="$prev-title$"$endif$>Previous post</a></li>
-                $endif$
-                $if(next-url)$
-                <li class="next"><a href="$next-url$" rel="next"$if(next-title)$ title="$next-title$"$endif$>Next post</a></li>
-                $endif$
-              </ul>
             </nav>
           </aside>
         </article>

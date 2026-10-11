@@ -88,12 +88,6 @@ class Page:
         res["lang"] = self.lang
         for key in self.ast.metadata.content:
             res["ast." + key] = self.ast.get_metadata(key)
-        prev = self.prev
-        res["prev.url"] = None if prev is None else prev[0]
-        res["prev.title"] = None if prev is None else prev[1]
-        next = self.next
-        res["next.url"] = None if next is None else next[0]
-        res["next.title"] = None if next is None else next[1]
         return res
 
     @property
@@ -246,14 +240,6 @@ class Page:
     def is_draft(self) -> bool:
         return self.status == "draft"
 
-    @property
-    def prev(self) -> Optional[Tuple[Url, Optional[str]]]:
-        return None
-
-    @property
-    def next(self) -> Optional[Tuple[Url, Optional[str]]]:
-        return None
-
 
 @dataclass
 class Post(Page):
@@ -296,29 +282,6 @@ class Post(Page):
         time = time.replace(tzinfo=ZoneInfo(key=self.timezone))
         return time
 
-    @property
-    def prev(self) -> Optional[Tuple[Url, Optional[str]]]:
-        return getattr(self, "_prev", None)
-
-    @prev.setter
-    def prev(self, data: Tuple[Url, Optional[str]]) -> None:
-        self._prev = data
-
-    @prev.deleter
-    def prev(self) -> None:
-        del self._prev
-
-    @property
-    def next(self) -> Optional[Tuple[Url, Optional[str]]]:
-        return getattr(self, "_next", None)
-
-    @next.setter
-    def next(self, data: Tuple[Url, Optional[str]]) -> None:
-        self._next = data
-
-    @next.deleter
-    def next(self) -> None:
-        del self._next
 
 
 @dataclass
@@ -446,18 +409,3 @@ class Posts(Pages):
         for page in self.pages:
             res[page.categories].append(page)
         return res
-
-    def get_neighbor_urls(self) -> None:
-        pages = self.pages
-
-        next_page = pages[0]
-        next = (next_page.url, next_page.title)
-        for i in range(1, len(pages)):
-            page = pages[i]
-            curr = (page.url, page.title)
-
-            next_page.prev = curr
-            page.next = next
-
-            next_page = page
-            next = curr
