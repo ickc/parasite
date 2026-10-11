@@ -6,14 +6,15 @@ rendered under, and its feed fragment. A build re-reads a source only when its r
 and re-renders a page only when its render key changed, or when a file it produced is
 gone from the output. A full build is the same code with an empty store.
 
-The keys are conservative. The **site key** covers everything that is not one source:
-the code (every Python module loaded, the installed distributions, parasite's package
-data), pandoc's version, the site's config, pandoc's data directory, the site's other
-files (bibliography, templates, data files: anything that is neither a source nor in a
-copied folder) and the list of files in the copied folders. A change to any of them
-re-reads every source. A **read key** adds the source's bytes; a **render key** adds what
-a page's render takes from the rest of the site: its copyright years and its link to a
-report. Derived pages are keyed by their AST.
+The **site key** covers what every page depends on: the code (every Python module
+loaded, the installed distributions, parasite's package data), pandoc's version and data
+directory, the site's config, and the files its config names for every page (see
+:meth:`para.site.Config.site_files`). A change to any of them re-reads every source. A
+**read key** adds the source's bytes; and a record is used only while the files its read
+touched are unchanged (:mod:`para.deps`: its media, its bibliography if it cites, what
+it names). A **render key** adds what a page's render takes from the rest of the site:
+its copyright years, its link to a report, its translations. Derived pages are keyed by
+their AST.
 """
 
 from __future__ import annotations
@@ -29,6 +30,7 @@ from logging import getLogger
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from .deps import stamp
 from .record import Record
 
 if TYPE_CHECKING:
@@ -36,7 +38,7 @@ if TYPE_CHECKING:
 
 logger = getLogger(__name__)
 
-SCHEMA = 3
+SCHEMA = 4
 
 
 def hash_key(*parts: Any) -> str:
@@ -81,49 +83,13 @@ def pandoc_stamp() -> str:
     return hash_key(version, *_tree(Path(datadir) / "pandoc"))
 
 
-def _site_files() -> Optional[list[Path]]:
-    """The files git does not ignore (tracked or not), or None outside a git work tree."""
-    try:
-        res = subprocess.run(  # nosec
-            ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
-            capture_output=True,
-            check=True,
-        )
-    except (OSError, subprocess.CalledProcessError):
-        return None
-    return sorted(Path(p.decode()) for p in res.stdout.split(b"\0") if p)
-
-
-def site_key(config_repr: str, sources: Iterable[Path], skip: Iterable[Path], copied: Iterable[Path]) -> str:
-    """See the module's docstring. ``skip`` are the directories that are not inputs (the
-    output, the store), ``copied`` the copied folders. In a git work tree the site's
-    files are those git does not ignore."""
-    copied = list(copied)
-    excluded = [*sources, *skip, *copied]
-    files = _site_files()
-    if files is None:
-        other = _tree(Path("."), excluded)
-    else:
-        # paths relative to the site, as git lists them
-        out = {os.path.normpath(p) for p in excluded}
-
-        def kept(path: str) -> bool:
-            while path:
-                if path in out:
-                    return False
-                path = os.path.dirname(path)
-            return True
-
-        other = [_stat(f) for f in files if kept(os.path.normpath(f))]
-    listing = sorted(
-        os.path.join(dirpath, name) for folder in copied for dirpath, _, names in os.walk(folder) for name in names
-    )
+def site_key(config_repr: str, files: Iterable[str]) -> str:
+    """See the module's docstring. ``files`` are the site's files every page depends on."""
     parts = {
         "code": code_stamp(),
         "pandoc": pandoc_stamp(),
         "config": hash_key(config_repr),
-        "other files": hash_key(*other),
-        "copied files": hash_key(*listing),
+        "files": hash_key(*(f"{f} {stamp(Path(f))}" for f in files)),
     }
     for name, value in parts.items():
         logger.debug("site key: %s %s", name, value[:12])
@@ -166,8 +132,12 @@ class Store:
     def claims(self, source: str) -> list[str]:
         return self.pages[source]["claims"]
 
-    def put_read(self, source: str, read_key: str, record: Record, claims: list[str]) -> None:
-        self.pages[source] = {"read_key": read_key, "record": record.to_json(), "claims": claims}
+    def put_read(self, source: str, read_key: str, record: Record, claims: list[str], deps: dict[str, str]) -> None:
+        self.pages[source] = {"read_key": read_key, "record": record.to_json(), "claims": claims, "deps": deps}
+
+    def deps(self, source: str) -> dict[str, str]:
+        """The files the source's read touched, and their stamps (para.deps)."""
+        return self.pages.get(source, {}).get("deps", {})
 
     def rendered(self, source: str, profile: str, render_key: str) -> bool:
         """Whether the source's output in ``profile`` was rendered under ``render_key``."""

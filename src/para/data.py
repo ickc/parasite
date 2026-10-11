@@ -103,6 +103,8 @@ class Page:
     file_lang: str = ""
     # ``output-file``: an output's own file name, in its folder, by profile
     output_files: dict[str, str] = field(default_factory=dict, init=False, repr=False)
+    # the files its read touched, and their stamps (para.deps)
+    deps: dict[str, str] = field(default_factory=dict, init=False, repr=False)
 
     def __post_init__(self) -> None:
         self.profiles = [self.site_profiles[name] for name in self.collection.format]

@@ -20,7 +20,7 @@ def test_store_round_trip(tmp_path):
     path = tmp_path / ".para" / "store.sqlite"
     store = Store(path)
     rec = record()
-    store.put_read(rec.source, "k1", rec, ["a/b.svg"])
+    store.put_read(rec.source, "k1", rec, ["a/b.svg"], {"citation.yaml": "1 2"})
     store.put_render(rec.source, "html", "r1")
     store.put_fragment(rec.source, "<p>x</p>")
     store.renders = {"index.html": "d1"}
@@ -30,6 +30,7 @@ def test_store_round_trip(tmp_path):
     assert again.record(rec.source, "k1") == rec
     assert again.record(rec.source, "k2") is None
     assert again.claims(rec.source) == ["a/b.svg"]
+    assert again.deps(rec.source) == {"citation.yaml": "1 2"}
     assert again.rendered(rec.source, "html", "r1") and not again.rendered(rec.source, "html", "r2")
     assert not again.rendered(rec.source, "slides", "r1")
     assert again.fragment(rec.source) == "<p>x</p>"
@@ -40,7 +41,7 @@ def test_store_round_trip(tmp_path):
 def test_keep_only_forgets_deleted_sources(tmp_path):
     store = Store(tmp_path / "s.sqlite")
     rec = record()
-    store.put_read(rec.source, "k", rec, [])
+    store.put_read(rec.source, "k", rec, [], {})
     store.keep_only([])
     assert store.record(rec.source, "k") is None
 

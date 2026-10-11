@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 
 from panflute.elements import Div, Image, Link, Math, MetaBlocks, MetaList, Plain, RawBlock, Span
 
+from .deps import touch
 from .util import join_url
 
 if TYPE_CHECKING:
@@ -123,6 +124,8 @@ def lightgallery_from_dir(
 ) -> Optional[ListContainer[Block]]:
     """Create lightgallery Div from directory."""
     if isinstance(elem, Div) and attribute in elem.attributes:
+        # the page changes with the folder's photos (para.deps)
+        touch(elem.attributes[attribute])
         root = doc.get_metadata("root", "/")
         res = [
             Link(Image(url=(url := join_url(root, path.as_posix()))), url=url)

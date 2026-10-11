@@ -19,6 +19,7 @@ import panflute as pf
 from .apps import post_to_html, post_to_pdf, profile_metadata, read_md_to_ast
 from .data import Pages, Posts, format_years, front_matter, root_of
 from .helpers import report_urls, to_feed, to_sitemap
+from . import deps
 from .lang import lookup, matches
 from .lang import name as lang_name
 from .live import Config as LiveConfig
@@ -35,7 +36,7 @@ from .to_ast import (
 from .util import TimeElapse, setup_logging
 
 if TYPE_CHECKING:
-    from typing import Iterator, List, TypeVar
+    from typing import Iterable, Iterator, List, TypeVar
 
     from .config import Profile
     from .data import Page
@@ -75,6 +76,37 @@ def minify(inputs: List[str], output: str) -> None:
     )
 
 
+def cites(doc: pf.Doc) -> bool:
+    """Whether a document cites (its bibliography matters to it)."""
+    if "nocite" in doc.metadata.content:
+        return True
+    found = []
+
+    def action(elem: pf.Element, doc: pf.Doc) -> None:
+        if isinstance(elem, pf.Cite):
+            found.append(elem)
+
+    doc.walk(action)
+    return bool(found)
+
+
+# pandoc's options naming a file the read uses: those of citations, and the others
+CITATION_OPTIONS = ("--bibliography", "--csl", "--citation-abbreviations")
+FILE_OPTIONS = ("--metadata-file", "--include-in-header", "--include-before-body", "--include-after-body",
+                "--abbreviations", "--syntax-definition", "--defaults", "--lua-filter", "--filter", "--template")
+
+
+def option_files(options: Iterable[str], names: Iterable[str]) -> list[str]:
+    """The values of ``--NAME=VALUE`` options in ``names`` that are files of the site."""
+    names = tuple(names)
+    res = []
+    for option in options:
+        name, eq, value = option.partition("=")
+        if eq and name in names and Path(value).is_file():
+            res.append(value)
+    return res
+
+
 @contextmanager
 def page_options(page: Page) -> Iterator[list[str]]:
     """The page's own pandoc options: its language from its file name or conversion,
@@ -112,6 +144,28 @@ class Config(LiveConfig):
         """The config's fields that change the output, for the site key."""
         ignore = {"jobs", "prune", "full", "store_path", "check_links"}
         return repr([(f.name, getattr(self, f.name)) for f in fields(self) if f.name not in ignore and not f.name.startswith(("watch", "serve"))])
+
+    def site_files(self) -> list[str]:
+        """The site's files every page depends on: those [read]'s options name (but the
+        bibliography's, which only a page that cites depends on, see para.deps), the
+        profiles' own templates, and pandoc-crossref's configuration."""
+        read = self.settings["read"]
+        options = [*read["options"], *(o for v in read.values() if isinstance(v, dict) for o in v.get("options", []))]
+        res = option_files(options, FILE_OPTIONS)
+        # a template of the site's own (parasite's are in its package: the code)
+        res += [str(p.template) for p in self.profiles.values() if p.template is not None and not p.template.is_absolute()]
+        res.append("pandoc-crossref.yaml")
+        return sorted(set(res))
+
+    def citation_files(self, page: Page) -> list[str]:
+        """The bibliography and style of a page that cites: from [read]'s options and its
+        own metadata."""
+        res = option_files(self.pandoc_input_options(page.ext), CITATION_OPTIONS)
+        for key in ("bibliography", "csl", "citation-abbreviations"):
+            value = page.ast.get_metadata(key)
+            for item in value if isinstance(value, list) else [value] if value else []:
+                res.append(str(item))
+        return res
 
     def versions(self, records: List[Record]) -> dict[str, list[dict[str, str]]]:
         """The versions of each page that has more than one (see :mod:`para.lang`): its
@@ -230,19 +284,14 @@ class Config(LiveConfig):
 
         # the record store (para.store): what is read and rendered under the same key as
         # last time is not done again
-        sources = [page.path for page in [*pages.pages, *posts.pages]]
         if self.write_atom or self.write_rss:
             import feedgen.feed  # noqa: F401  (in the code stamp)
         if self.write_graph:
             import sitegraph.extract  # noqa: F401
         if self.write_search:
             import pagefind.index  # noqa: F401
-        key = site_key(
-            self.output_repr(),
-            sources,
-            skip=[self.output_dir, self.store_path.parent],
-            copied=[Path(in_dir) for in_dir in [*self.files_folders, *self.media_folders]],
-        )
+        deps.fresh(ignored=[self.output_dir, self.store_path.parent])
+        key = site_key(self.output_repr(), self.site_files())
         store = Store(self.store_path, load=not self.full)
         time_elapse.report("site key.")
 
@@ -268,8 +317,20 @@ class Config(LiveConfig):
                 )
 
         def read(page: Page, post: bool) -> Record:
-            """Step 2 and 3: the page's AST, then its record. A source with content per
-            profile is read as its first output sees it."""
+            """Step 2 and 3: the page's AST, then its record, and the files its read
+            touched (para.deps). A source with content per profile is read as its first
+            output sees it."""
+            with deps.recording() as touched:
+                record = read_page(page, post)
+                deps.mentioned(page.path, page.path.read_text(encoding="utf-8", errors="replace"))
+                if page.translation and not page.convert and page.primary is not None:
+                    deps.touch(page.primary)
+                if cites(page.ast):
+                    deps.touch_all(self.citation_files(page))
+            page.deps = touched
+            return record
+
+        def read_page(page: Page, post: bool) -> Record:
             claimed: list[str] = []
             select = page.profiles[0] if page.per_profile else None
             page.ast = read_ast(page, select, claimed)
@@ -292,7 +353,7 @@ class Config(LiveConfig):
             """The page's record from the store, if read under the same key and what the
             read wrote is still there."""
             record = store.record(page.key, page.read_key)
-            if record is None:
+            if record is None or not deps.unchanged(store.deps(page.key)):
                 return None
             claims = store.claims(record.source)
             if not all((self.output_dir / claim).exists() for claim in claims):
@@ -319,7 +380,7 @@ class Config(LiveConfig):
                     read_futures.append((page, pool.submit(read, page, post)))
             for page, future in read_futures:
                 page.record = future.result()
-                store.put_read(page.record.source, page.read_key, page.record, page.claims)
+                store.put_read(page.record.source, page.read_key, page.record, page.claims, page.deps)
             return len(read_futures)
 
         n_read = read_all([*((p, False) for p in pages.pages), *((p, True) for p in posts.pages)])

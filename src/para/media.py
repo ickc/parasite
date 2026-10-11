@@ -24,6 +24,8 @@ from urllib.parse import quote, unquote, urlsplit
 
 from panflute.elements import Image, Link, RawBlock, RawInline
 
+from .deps import touch
+
 if TYPE_CHECKING:
     from typing import Callable, Dict, List, Optional
 
@@ -144,6 +146,8 @@ def rebase_relative_urls(
             if is_image and not path.suffix and image_extension:
                 candidates.append(path.with_name(path.name + image_extension))
             for candidate in candidates:
+                # the read depends on it, there or not (para.deps)
+                touch(candidate)
                 if candidate.is_file():
                     return path, candidate
         return None
@@ -201,6 +205,7 @@ def media_source(dest: str, folders: Dict[str, str]) -> Optional[Path]:
         prefix = f"{out}/" if out else ""
         if dest.startswith(prefix):
             candidate = Path(src) / dest[len(prefix):]
+            touch(candidate)
             if candidate.is_file():
                 return candidate
     return None
