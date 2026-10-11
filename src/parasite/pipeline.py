@@ -310,7 +310,7 @@ class Config(LiveConfig):
 
 
 def cli(Config: type[Config] = Config) -> None:
-    config = defopt.run(Config, show_types=True, strict_kwonly=False)
+    config = defopt.run(Config, show_types=True, cli_options="has_default")
     config.exec()
 
 
