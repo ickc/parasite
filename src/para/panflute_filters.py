@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import hashlib
-import posixpath
 import re
 from functools import partial
 from itertools import chain
@@ -27,6 +26,8 @@ if TYPE_CHECKING:
     _NoneToNone = Callable[[None], None]
     _DocToDoc = Callable[[Doc], Doc]
     PanfluteFilter = TypeVar("PanfluteFilter", _DocToDoc, _NoneToNone)
+
+from .util import join_url
 
 logger = getLogger(__name__)
 LIGHTGALLERY_NAME: str = "lightgallery"
@@ -123,7 +124,7 @@ def lightgallery_from_dir(
     if isinstance(elem, Div) and attribute in elem.attributes:
         root = doc.get_metadata("root", "/")
         res = [
-            Link(Image(url=(url := posixpath.join(root, path.as_posix()))), url=url)
+            Link(Image(url=(url := join_url(root, path.as_posix()))), url=url)
             for path in sorted(
                 chain(
                     *(

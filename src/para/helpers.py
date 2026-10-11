@@ -12,6 +12,8 @@ if TYPE_CHECKING:
     from .data import Page
     from .record import Record
 
+from .util import join_url
+
 logger = getLogger(__name__)
 
 
@@ -86,7 +88,7 @@ def tipuesearch(
                 "title": page.title,
                 "text": page.text,
                 "tags": ",".join(page.tags),
-                "url": posixpath.join(root, page.url),
+                "url": join_url(root, page.url),
                 # doesn't work
                 # 'image': None if page.previewimage is None else str(root / page.previewimage),
             }

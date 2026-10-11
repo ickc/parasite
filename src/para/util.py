@@ -55,3 +55,11 @@ class TimeElapse:
         time_original = self.time
         self.update()
         self.logger.info(f"{self.time - time_original:.3f}s spent: {string}")
+
+
+def join_url(root: str, url: str) -> str:
+    """``url`` (relative to the site's root) from a page whose root is ``root`` (``..``,
+    ``../..``, or ``.`` at the top)."""
+    import posixpath
+
+    return url if root in ("", ".") else posixpath.join(root, url)

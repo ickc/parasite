@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-import posixpath
 from collections import defaultdict
 from typing import TYPE_CHECKING
 
 import panflute as pf
 
 from .translate import translate
+from .util import join_url
 
 if TYPE_CHECKING:
     from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
@@ -137,7 +137,7 @@ def posts_to_tag_ast(
                         pf.Plain(
                             pf.Link(
                                 pf.Str(f"{post.date} — {post.title}"),
-                                url=posixpath.join(root, post.url),
+                                url=join_url(root, post.url),
                             )
                         )
                     )
@@ -201,7 +201,7 @@ def posts_to_archive_ast(
                         pf.Plain(
                             pf.Link(
                                 pf.Str(f"{date} — {title_}"),
-                                url=posixpath.join(root, url),
+                                url=join_url(root, url),
                             )
                         )
                     )
