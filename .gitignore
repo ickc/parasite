@@ -78,3 +78,5 @@ docs/_build
 
 dask-worker-space/
 .dmypy.json
+.ruff_cache/
+.pixi/
