@@ -161,15 +161,15 @@ def lightgallery_from_dir_filter(doc: Doc) -> Doc:
     return doc.walk(lightgallery_from_dir, doc)
 
 
-# MathJax's fonts (3 and 4) have no bold ℓ: \mathbf{\ell} renders as a plain ℓ.
-# \boldsymbol{\ell} is bold in MathJax; LaTeX sources keep \mathbf{\ell}, which is bold
-# with unicode-math (texp writes it so).
+# MathJax has no bold upright ℓ: \mathbf{\ell} renders as a plain ℓ (MathJax 3 and 4),
+# and so does \boldsymbol{\ell} in MathJax 4. \pmb (overprinted bold) is bold in both.
+# LaTeX sources keep \mathbf{\ell}, bold with unicode-math (texp writes it so).
 _MATHJAX_BOLD_ELL = re.compile(r"\\mathbf\{(\\hat\{\\ell\}|\\ell)\}")
 
 
 def mathjax_bold_ell_action(elem: Element, doc: Doc) -> None:
     if isinstance(elem, Math) and "\\mathbf{" in elem.text:
-        elem.text = _MATHJAX_BOLD_ELL.sub(r"\\boldsymbol{\1}", elem.text)
+        elem.text = _MATHJAX_BOLD_ELL.sub(r"\\pmb{\1}", elem.text)
 
 
 def mathjax_bold_ell_filter(doc: Doc) -> Doc:

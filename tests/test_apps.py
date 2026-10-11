@@ -55,4 +55,4 @@ def test_mathjax_bold_ell():
 
     doc = pf.Doc(pf.Para(pf.Math(r"\mathbf{\ell} + \mathbf{\hat{\ell}} + \mathbf{\hat{x}}", format="InlineMath")))
     doc = mathjax_bold_ell_filter(doc)
-    assert doc.content[0].content[0].text == r"\boldsymbol{\ell} + \boldsymbol{\hat{\ell}} + \mathbf{\hat{x}}"
+    assert doc.content[0].content[0].text == r"\pmb{\ell} + \pmb{\hat{\ell}} + \mathbf{\hat{x}}"
