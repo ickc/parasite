@@ -57,30 +57,3 @@ def test_mathjax_bold_ell():
     doc = mathjax_bold_ell_filter(doc)
     assert doc.content[0].content[0].text == r"\pmb{\ell} + \pmb{\hat{\ell}} + \mathbf{\hat{x}}"
 
-
-def test_post_to_html_leaves_the_ast_alone(tmp_path):
-    """Other threads read the same AST while it renders."""
-    import panflute as pf
-
-    ast = pf.Doc(pf.Para(pf.Str("x")), metadata={"title": "T"})
-    before = ast.to_json()
-    empty = lambda *args: ""  # noqa: E731
-    apps.post_to_html(
-        ast,
-        ".",
-        "en",
-        ".md",
-        outputs=[tmp_path / "index.html"],
-        header_includes=empty,
-        include_before=empty,
-        include_after=empty,
-        script_include_after=empty,
-        pandoc_options=lambda *args: [],
-        panflute_filters=lambda *args: [],
-        js=lambda *args: [],
-        css=lambda *args: [],
-        nav=lambda *args: "<nav></nav>",
-        graph=True,
-    )
-    assert ast.to_json() == before
-    assert "<p>x</p>" in (tmp_path / "index.html").read_text()

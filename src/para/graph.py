@@ -55,26 +55,30 @@ def _links(elem: pf.Element) -> list[str]:
     return [link.url for link in _link_elements(elem)]
 
 
-def records(pages: Sequence[Page], listed: set[str], site_url: str | None):
-    """sitegraph Page records, by output path, for ``pages``; nodes are those in
-    ``listed`` (output paths)."""
-    from sitegraph.extract import Page as GraphPage
-    from sitegraph.extract import Resolver
+class Recorder:
+    """Makes sitegraph Page records, one page at a time (each in its page's task, before
+    the page is rendered); nodes are the output paths in ``listed``."""
 
-    resolve = Resolver(site_url)
-    out_paths = {page.out_path.as_posix() for page in pages}
-    by_dir: dict[str, list[str]] = {}
-    for path in sorted(out_paths):
-        by_dir.setdefault(path.rsplit("/", 1)[0] if "/" in path else "", []).append(path)
+    def __init__(self, pages: Sequence[Page], listed: set[str], site_url: str | None) -> None:
+        from sitegraph.extract import Resolver
 
-    res = {}
-    for page in pages:
+        self.resolve = Resolver(site_url)
+        self.listed = listed
+        # a page's other outputs in its directory (slides beside a page)
+        self.by_dir: dict[str, list[str]] = {}
+        for path in sorted({page.out_path.as_posix() for page in pages}):
+            self.by_dir.setdefault(path.rsplit("/", 1)[0] if "/" in path else "", []).append(path)
+
+    def __call__(self, page: Page):
+        from sitegraph.extract import Page as GraphPage
+
+        resolve = self.resolve
         path = page.out_path.as_posix()
         doc = page.ast
         entries = _bibliography(doc)
         in_bibliography = {id(link) for entry in entries for link in _link_elements(entry)}
         record = GraphPage(path=path)
-        record.has_content = path in listed
+        record.has_content = path in self.listed
         record.title = page.title or ""
         record.date = str(doc.get_metadata("date", "") or "")
         record.categories = list(page.tags)
@@ -87,11 +91,15 @@ def records(pages: Sequence[Page], listed: set[str], site_url: str | None):
             for entry in entries
         }
         record.citations = sorted(record.cited_urls)
-        # the page's other outputs in its directory (slides beside a page)
         directory = path.rsplit("/", 1)[0] if "/" in path else ""
-        record.alternates = [p for p in by_dir.get(directory, []) if p != path]
-        res[path] = record
-    return res
+        record.alternates = [p for p in self.by_dir.get(directory, []) if p != path]
+        return record
+
+
+def records(pages: Sequence[Page], listed: set[str], site_url: str | None):
+    """sitegraph Page records, by output path, for ``pages``."""
+    recorder = Recorder(pages, listed, site_url)
+    return {page.out_path.as_posix(): recorder(page) for page in pages}
 
 
 def graph_page_ast(lang: str = "en") -> pf.Doc:
@@ -113,18 +121,18 @@ def graph_page_ast(lang: str = "en") -> pf.Doc:
 
 
 def write_graph(
-    pages: Sequence[Page],
-    listed: set[str],
+    records: dict,
     output_dir: Path,
     site_url: str | None = None,
     uncoloured: Sequence[str] = (),
     colours: int = 7,
 ) -> None:
-    """Write graph.json and sitegraph's viewer into ``output_dir``."""
+    """Write graph.json from ``records`` (by output path), and sitegraph's viewer, into
+    ``output_dir``."""
     from sitegraph.extract import Config, build_graph
 
     config = Config(output_dir=output_dir, site_url=site_url, uncoloured=list(uncoloured), colours=colours)
-    graph = build_graph(config, records(pages, listed, site_url))
+    graph = build_graph(config, records)
     (output_dir / "graph.json").write_text(json.dumps(graph, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     viewer = files("sitegraph") / "viewer"
     for name in VIEWER:

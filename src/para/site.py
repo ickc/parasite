@@ -141,21 +141,10 @@ class Config(LiveConfig):
         set_report_urls(all_pages)
         years = site_years(all_pages)
         years_str = format_years(years)
-        output_futures = [
-            pool.submit(
-                post_to_html,
-                page.ast,
-                page.root,
-                page.lang,
-                page.ext,
-                inputs=[] if page.template is None else [page.template],
-                outputs=[self.output_dir / page.out_path],
-                **page.options,
-                years=format_years(page.years or years),
-            )
-            for page in all_pages
-        ]
-        time_elapse.report("staging pages/posts HTML output.")
+        # The listings are built first, from the pages' metadata. A page's own task then
+        # reads its AST for search, feeds and the graph, and renders it last: rendering
+        # changes the AST (includes, output filters), and no other task reads it.
+        output_futures = []
 
         # cat index
         options = posts.pages[0].options
@@ -292,11 +281,41 @@ class Config(LiveConfig):
                     years=years_str,
                 )
             )
+        feed = {id(post) for post in posts.pages[: self.feed_length]} if self.write_atom or self.write_rss else set()
+        recorder = None
+        if self.write_graph:
+            from .graph import Recorder
+
+            recorder = Recorder(all_pages, {post.out_path.as_posix() for post in posts.pages}, self.site_url or None)
+
+        def read_then_render(page: Page):
+            # cached properties: search and the feeds use them after the render
+            if self.write_tipuesearch_json:
+                page.text  # noqa: B018
+            if id(page) in feed:
+                page.html  # noqa: B018
+            record = None if recorder is None else recorder(page)
+            post_to_html(
+                page.ast,
+                page.root,
+                page.lang,
+                page.ext,
+                inputs=[] if page.template is None else [page.template],
+                outputs=[self.output_dir / page.out_path],
+                **page.options,
+                years=format_years(page.years or years),
+            )
+            return record
+
+        page_futures = [pool.submit(read_then_render, page) for page in all_pages]
+        time_elapse.report("staging pages/posts HTML output.")
+        records = {page.out_path.as_posix(): future.result() for page, future in zip(all_pages, page_futures)}
+        time_elapse.report("pages/posts rendered.")
+
         if self.write_tipuesearch_json:
             # search: not in the pool, as
             # it needs to be re-generated even if only one page is changed,
             # and the time taken is very small for now.
-            # as site gets bigger, may need to cache the Page.text e.g. in read_md_to_ast?
             write_tipuesearch(
                 self.output_dir / "assets/js/tipuesearch_content.js",
                 all_pages,
@@ -344,8 +363,7 @@ class Config(LiveConfig):
             from .graph import write_graph
 
             write_graph(
-                all_pages,
-                {post.out_path.as_posix() for post in posts.pages},
+                records,
                 self.output_dir,
                 site_url=self.site_url or None,
                 uncoloured=self.graph_uncoloured,
