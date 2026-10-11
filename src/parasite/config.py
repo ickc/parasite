@@ -7,7 +7,11 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, Union
 from custom_inherit import DocInheritMeta
 
 from .helpers import nav, pretty_urls_present
-from .panflute_filters import lightgallery_filter, lightgallery_from_dir_filter
+from .panflute_filters import (
+    lightgallery_filter,
+    lightgallery_from_dir_filter,
+    mathjax_bold_ell_filter,
+)
 from .templates import INDEX_TEMPLATE, POST_TEMPLATE, SLIDE_TEMPLATE
 
 if TYPE_CHECKING:
@@ -319,6 +323,7 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
         if out_ext == ".html":
             return [
                 lightgallery_filter,
+                mathjax_bold_ell_filter,
             ]
         else:
             return []
