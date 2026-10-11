@@ -1,6 +1,6 @@
 name: Documentation
 
-# built on every push and pull request; deployed to GitHub Pages from master only
+# built on every push and pull request; deployed to GitHub Pages from main only
 on: [push, pull_request]
 
 permissions:
@@ -20,12 +20,12 @@ jobs:
     - name: Build
       run: make docs
     - uses: actions/upload-pages-artifact@v3
-      if: github.ref == 'refs/heads/master'
+      if: github.ref == 'refs/heads/main'
       with:
         path: docs/output
 
   deploy:
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
     permissions:
