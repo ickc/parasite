@@ -37,7 +37,9 @@ def _language(lang: str) -> str:
 async def _index(records: Sequence[Record], out: Path) -> None:
     from pagefind.index import IndexConfig, PagefindIndex
 
-    async with PagefindIndex(IndexConfig(write_playground=False)) as index:
+    # the output path in the config too: leaving the context writes the files again,
+    # by default to ./pagefind
+    async with PagefindIndex(IndexConfig(write_playground=False, output_path=str(out))) as index:
         for record in records:
             await index.add_custom_record(
                 url="/" + record.url,
