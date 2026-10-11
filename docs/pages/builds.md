@@ -25,11 +25,19 @@ again only when its **read key** changed, and renders a page again only when its
 **render key** changed or a file it produced is gone:
 
 - the **site key**: the code (the Python modules loaded, the installed packages,
-  parasite's own files), pandoc and its data folder, the configuration, the site's other
-  files (a bibliography, templates, data files: those git does not ignore) and the list
-  of files in the copied folders. Any change here reads everything again;
-- a **read key**: the site key and the source's bytes;
-- a **render key**: the read key, the page's copyright years and its link to a report.
+  parasite's own files), pandoc and its data folder, the configuration, and the files
+  the configuration names for every page (`[read]`'s `--metadata-file` and the like,
+  the profiles' own templates, `pandoc-crossref.yaml`). Any change here reads everything
+  again;
+- a **read key**: the site key and the source's bytes. And a record is used only while
+  the files its read touched are unchanged: its links' and images' files (or that they
+  were missing), the media it references and what those reference, its bibliography and
+  style if it cites, a translation's primary, and the files and folders its text names
+  (a table's CSV, a gallery's folder). So a bibliography edit reads again the pages that
+  cite, and a new photo the page whose gallery has it. A filter that reads a file the
+  document does not name can say so with `para.deps.touch(path)`;
+- a **render key**: the read key, the page's copyright years, its link to a report and
+  its translations.
 
 A derived page is rendered again when its document changed. `parasite --full` ignores
 the store. A rebuild with nothing changed takes about a third of a second for a site of a
