@@ -156,6 +156,8 @@ class Config(LiveConfig):
             ("tags", posts.tags),
         ):
             for name, cat_posts in dict_.items():
+                # categories/a/b/index.html is 3 levels down
+                root = "/".join([".."] * (1 + len(Path(name).parts)))
                 index_ast = posts_to_index_ast(
                     cat_posts,
                     name,
@@ -168,18 +170,13 @@ class Config(LiveConfig):
                     pool.submit(
                         post_to_html,
                         index_ast,
-                        "../..",
+                        root,
                         self.default_lang,
                         ".md",
                         inputs=[]
                         if self.index_template is None
                         else [self.index_template],
-                        outputs=[
-                            self.output_dir
-                            / "categories"
-                            / (name if case == "tags" else f"cat_{name}")
-                            / "index.html"
-                        ],
+                        outputs=[self.output_dir / case / name / "index.html"],
                         **options,
                         years=years_str,
                     )
@@ -196,7 +193,8 @@ class Config(LiveConfig):
             root="..",
             lang=self.default_lang,
         )
-        output_futures.append(
+        # the same overview at /categories/ and /tags/
+        output_futures += [
             pool.submit(
                 post_to_html,
                 tag_ast,
@@ -204,11 +202,12 @@ class Config(LiveConfig):
                 self.default_lang,
                 ".md",
                 inputs=inputs,
-                outputs=[self.output_dir / "categories" / "index.html"],
+                outputs=[self.output_dir / case / "index.html"],
                 **options,
                 years=years_str,
             )
-        )
+            for case in ("categories", "tags")
+        ]
         time_elapse.report("staging tag page.")
         # archive
         archive_ast = posts_to_archive_ast(

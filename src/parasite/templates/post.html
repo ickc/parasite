@@ -126,7 +126,7 @@ $endfor$
             <ul class="list-inline">
               $for(Categories-archive)$
               <li class="list-inline-item">
-                <a class="reference badge badge-secondary" href="cat_$Categories-archive.name$/" style="font-size: $Categories-archive.font_size$% !important;">$Categories-archive.name$</a></li>
+                <a class="reference badge badge-secondary" href="$root$/categories/$Categories-archive.name$/" style="font-size: $Categories-archive.font_size$% !important;">$Categories-archive.name$</a></li>
               $endfor$
             </ul>
             $endif$
@@ -136,7 +136,7 @@ $endfor$
             <ul class="list-inline">
               $for(Tags-archive)$
               <li class="list-inline-item">
-                <a class="reference badge badge-secondary" href="$Tags-archive.name$/" style="font-size: $Tags-archive.font_size$% !important;">$Tags-archive.name$</a></li>
+                <a class="reference badge badge-secondary" href="$root$/tags/$Tags-archive.name$/" style="font-size: $Tags-archive.font_size$% !important;">$Tags-archive.name$</a></li>
               $endfor$
             </ul>
             $endif$
@@ -148,7 +148,7 @@ $endfor$
               $if(tags)$
               <ul itemprop="keywords" class="tags">
                 $for(tags)$
-                <li><a class="tag p-category" href="$root$/categories/$tags$/" rel="tag">$tags$</a></li>
+                <li><a class="tag p-category" href="$root$/tags/$tags$/" rel="tag">$tags$</a></li>
                 $endfor$
               </ul>
               $endif$

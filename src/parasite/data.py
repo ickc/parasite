@@ -87,7 +87,7 @@ class Page:
             # property
             "out_path": self.out_path,
             "url": self.url,
-            "categories": self.categories,
+
             "level": self.level,
             "root": self.root,
         }
@@ -133,8 +133,13 @@ class Page:
         )
 
     @cached_property
-    def categories(self) -> str:
-        return "|".join(self.path.relative_to(self.base_path).parent.parts)
+    def category(self) -> str:
+        """Its one category, a path: ``category`` in its metadata, else its source's
+        directory below the posts' root ("" at the root)."""
+        category = self.ast.get_metadata("category")
+        if category:
+            return str(category).strip("/")
+        return "/".join(self.path.relative_to(self.base_path).parent.parts)
 
     @cached_property
     def level(self) -> int:
@@ -422,7 +427,10 @@ class Posts(Pages):
 
     @cached_property
     def categories(self) -> Dict[str, List[Post]]:
+        """Posts by category; a category also lists its subcategories' posts."""
         res = defaultdict(list)
         for page in self.pages:
-            res[page.categories].append(page)
-        return res
+            parts = page.category.split("/") if page.category else []
+            for i in range(1, len(parts) + 1):
+                res["/".join(parts[:i])].append(page)
+        return dict(sorted(res.items()))
