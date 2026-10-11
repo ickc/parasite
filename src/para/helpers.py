@@ -6,13 +6,14 @@ from logging import getLogger
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from .util import join_url
+
 if TYPE_CHECKING:
     from typing import Dict, List, Mapping, Sequence, Tuple, Union
 
     from .data import Page
     from .record import Record
 
-from .util import join_url
 
 logger = getLogger(__name__)
 

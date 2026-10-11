@@ -10,6 +10,8 @@ from typing import TYPE_CHECKING
 
 from panflute.elements import Div, Image, Link, Math, MetaBlocks, MetaList, Plain, RawBlock
 
+from .util import join_url
+
 if TYPE_CHECKING:
     from typing import Callable, List, Optional, Sequence, TypeVar, Union
 
@@ -27,7 +29,6 @@ if TYPE_CHECKING:
     _DocToDoc = Callable[[Doc], Doc]
     PanfluteFilter = TypeVar("PanfluteFilter", _DocToDoc, _NoneToNone)
 
-from .util import join_url
 
 logger = getLogger(__name__)
 LIGHTGALLERY_NAME: str = "lightgallery"
