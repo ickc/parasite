@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
     from para.panflute_filters import PanfluteFilter
 
-example_path = Path("docs/README.md")
+example_path = Path("docs/pages/index.md")
 
 
 def panflute_filters(ext: str) -> List[PanfluteFilter]:

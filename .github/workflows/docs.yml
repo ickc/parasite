@@ -1,0 +1,39 @@
+name: Documentation
+
+# built on every push and pull request; deployed to GitHub Pages from master only
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.14"
+    - uses: pandoc/actions/setup@v1
+    - name: Install
+      run: pip install -e '.[search]'
+    - name: Build
+      run: make docs
+    - uses: actions/upload-pages-artifact@v3
+      if: github.ref == 'refs/heads/master'
+      with:
+        path: docs/output
+
+  deploy:
+    if: github.ref == 'refs/heads/master'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+    - id: deployment
+      uses: actions/deploy-pages@v4
