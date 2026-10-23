@@ -25,6 +25,7 @@ import os
 import sqlite3
 import subprocess  # nosec
 import sys
+from contextlib import closing
 from importlib.metadata import distributions
 from logging import getLogger
 from pathlib import Path
@@ -112,7 +113,8 @@ class Store:
         if path is None or not load or not path.exists():
             return
         try:
-            with sqlite3.connect(path) as db:
+            # closing: a connection's own `with` commits, but does not close
+            with closing(sqlite3.connect(path)) as db:
                 if db.execute("SELECT value FROM meta WHERE key = 'schema'").fetchone() != (str(SCHEMA),):
                     return
                 for source, row in db.execute("SELECT source, row FROM pages"):
