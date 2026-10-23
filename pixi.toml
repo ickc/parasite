@@ -28,6 +28,8 @@ lychee = "*"
 # para[search], para[opencc] (not on conda-forge)
 pagefind = { version = ">=1.5", extras = ["bin"] }
 opencc = ">=1.1"
+# the post graph (not on PyPI or conda-forge yet)
+paragraphic = { git = "https://github.com/ickc/paragraphic", tag = "v0.1.0" }
 
 [tasks]
 install = "python -m pip install --no-deps --no-build-isolation -e ."

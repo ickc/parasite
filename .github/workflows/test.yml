@@ -9,7 +9,7 @@ jobs:
       fail-fast: false
       matrix:
         # the oldest and the newest supported, Python and pandoc together: the oldest
-        # with the bare install, the newest with every optional tool (but paragraphic)
+        # with the bare install, the newest with every optional tool
         include:
           - python-version: "3.12"
             pandoc-version: "3.1.1"
@@ -29,6 +29,9 @@ jobs:
         version: ${{ matrix.pandoc-version }}
     - name: Install
       run: pip install -e '.[${{ matrix.extras }}]'
+    - name: Install paragraphic (the post graph's tests)
+      if: matrix.tools
+      run: pip install 'paragraphic @ git+https://github.com/ickc/paragraphic@v0.1.0'
     - name: Install lychee (the link check's tests)
       if: matrix.tools
       run: |

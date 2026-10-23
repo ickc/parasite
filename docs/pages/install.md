@@ -29,8 +29,10 @@ pip install para
 | `para[search]` | search, with [Pagefind](https://pagefind.app/) (its binary comes with it) |
 | `para[extras]` | coloured logs; watching sources and serving the site while you write |
 
-The post graph needs [paragraphic](https://github.com/ickc/paragraphic) installed, and the
-check of the output's links [lychee](https://lychee.cli.rs) (`pixi add lychee`; see
+The post graph needs [paragraphic](https://github.com/ickc/paragraphic) installed (`pip
+install 'paragraphic @ git+https://github.com/ickc/paragraphic@v0.1.0'`, or `pixi add
+--pypi 'paragraphic @ git+https://github.com/ickc/paragraphic@v0.1.0'`), and the check of
+the output's links [lychee](https://lychee.cli.rs) (`pixi add lychee`; see
 [builds](../builds/)).
 
 Filters a site uses (pantable, pannb, …) are installed like any package, then named in
