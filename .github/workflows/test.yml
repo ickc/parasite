@@ -8,13 +8,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # the oldest and the newest supported, Python and pandoc together
+        # the oldest and the newest supported, Python and pandoc together: the oldest
+        # with the bare install, the newest with every optional tool (but sitegraph)
         include:
           - python-version: "3.12"
             pandoc-version: "3.1.1"
+            extras: "extras,tests"
           - python-version: "3.14"
             # empty: the latest release
             pandoc-version: ""
+            extras: "extras,tests,search,opencc"
+            tools: true
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v5
@@ -24,7 +28,17 @@ jobs:
       with:
         version: ${{ matrix.pandoc-version }}
     - name: Install
-      run: pip install -e '.[extras,tests]'
+      run: pip install -e '.[${{ matrix.extras }}]'
+    - name: Install lychee (the link check's tests)
+      if: matrix.tools
+      run: |
+        mkdir -p ~/.local/bin
+        curl -sSfL https://github.com/lycheeverse/lychee/releases/download/lychee-v0.24.2/lychee-x86_64-unknown-linux-gnu.tar.gz \
+          | tar -xz --strip-components=1 -C ~/.local/bin lychee-x86_64-unknown-linux-gnu/lychee
+        echo ~/.local/bin >> "$GITHUB_PATH"
+    - name: Install typst (the PDF profiles' tests)
+      if: matrix.tools
+      uses: typst-community/setup-typst@v5
     - name: Sanity check
       run: |
         pip check

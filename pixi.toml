@@ -20,6 +20,14 @@ livereload = "*"
 pytest = "*"
 pytest-cov = "*"
 ruff = "*"
+# the optional tools, so that their tests run: PDF profiles, the link check
+typst = "*"
+lychee = "*"
+
+[pypi-dependencies]
+# para[search], para[opencc] (not on conda-forge)
+pagefind = { version = ">=1.5", extras = ["bin"] }
+opencc = ">=1.1"
 
 [tasks]
 install = "python -m pip install --no-deps --no-build-isolation -e ."
