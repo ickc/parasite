@@ -1,0 +1,50 @@
+# parasite's documentation, built with parasite: `cd docs && parasite`.
+
+[site]
+url = "https://ickc.github.io/parasite/"
+title = "parasite"
+description = "A pandoc-first static site generator"
+author = "Kolen Cheung"
+copyright = "Contents © {years} {author}"
+
+# no posts: the pages are the site, pages/index.md its front page
+[listing]
+enabled = false
+
+[feeds]
+rss = false
+atom = false
+
+[sitemap]
+enabled = false
+
+[files]
+
+[media.folders]
+
+[[sources]]
+dir = "pages"
+ext = [".md"]
+format = ["html"]
+
+[filters.lightgallery-from-dir]
+default = false
+
+[profiles.html]
+show-image = false
+nav = [
+    { text = "parasite", href = "{root}/" },
+    { text = "Install", href = "{root}/install/" },
+    { text = "Configure", menu = [
+        { text = "parasite.toml", href = "{root}/configuration/" },
+        { text = "Every key", href = "{root}/reference/" },
+        { text = "Front matter", href = "{root}/front-matter/" },
+        { text = "Output profiles", href = "{root}/profiles/" },
+        { text = "Filters", href = "{root}/filters/" },
+        { text = "Languages", href = "{root}/languages/" },
+    ] },
+    { text = "How it builds", href = "{root}/builds/" },
+    { text = "Migrating", href = "{root}/migrating/" },
+    { text = "Search", href = "{root}/search/" },
+]
+footer = 'Contents © {years} {author}'
