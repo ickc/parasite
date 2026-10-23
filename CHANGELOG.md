@@ -32,7 +32,7 @@ A rewrite around records, output profiles and incremental builds. The package is
 - **Search:** Pagefind (`para[search]`), indexing the records in the site's language,
   with tags and categories as filters, deterministic from build to build.
 - **Post graph:** `graph.json`, a local graph on each page, and `/graph/` (needs
-  sitegraph).
+  paragraphic).
 - **Listings:** `description` instead of teasers, falling back to `subtitle`. The front
   page shows the newest posts, with an archive by year. Categories form a tree, and
   feeds carry the newest posts. Copyright years come from the pages' own dates.

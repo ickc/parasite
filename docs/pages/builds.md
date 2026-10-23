@@ -84,6 +84,6 @@ URLs (a site's file is a `file://` URL); `[check] links = false` turns the check
 
 # The post graph
 
-With `[graph] enabled` and sitegraph installed, parasite writes `graph.json` from the
+With `[graph] enabled` and paragraphic installed, parasite writes `graph.json` from the
 records (links, citations, external links, a page's other outputs) and the `/graph/`
 page; every page gets a graph of its neighbours.

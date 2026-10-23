@@ -10,7 +10,7 @@ from para.record import Record
 
 from conftest import make_page
 
-pytest.importorskip("sitegraph")
+pytest.importorskip("paragraphic")
 from para.graph import records  # noqa: E402
 
 

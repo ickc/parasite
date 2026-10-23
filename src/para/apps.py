@@ -257,12 +257,12 @@ def post_to_html(
         meta_append(
             ast.metadata,
             "header-includes",
-            f'<link rel="stylesheet" href="{root}/sitegraph.css" />',
+            f'<link rel="stylesheet" href="{root}/paragraphic.css" />',
         )
         meta_append(
             ast.metadata,
             "include-after",
-            f'<script src="{root}/sitegraph-local.js" data-src="{root}/graph.json"'
+            f'<script src="{root}/paragraphic-local.js" data-src="{root}/graph.json"'
             f' data-page="{root}/graph/" data-after="article" defer="defer"></script>',
         )
     for url in profile.js:

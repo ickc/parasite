@@ -29,7 +29,7 @@ pip install para
 | `para[search]` | search, with [Pagefind](https://pagefind.app/) (its binary comes with it) |
 | `para[extras]` | coloured logs; watching sources and serving the site while you write |
 
-The post graph needs [sitegraph](https://github.com/ickc/sitegraph) installed, and the
+The post graph needs [paragraphic](https://github.com/ickc/paragraphic) installed, and the
 check of the output's links [lychee](https://lychee.cli.rs) (`pixi add lychee`; see
 [builds](../builds/)).
 

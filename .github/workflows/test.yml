@@ -9,7 +9,7 @@ jobs:
       fail-fast: false
       matrix:
         # the oldest and the newest supported, Python and pandoc together: the oldest
-        # with the bare install, the newest with every optional tool (but sitegraph)
+        # with the bare install, the newest with every optional tool (but paragraphic)
         include:
           - python-version: "3.12"
             pandoc-version: "3.1.1"

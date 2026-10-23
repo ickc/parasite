@@ -285,7 +285,7 @@ class Config(LiveConfig):
         if self.write_atom or self.write_rss:
             import feedgen.feed  # noqa: F401  (in the code stamp)
         if self.write_graph:
-            import sitegraph.extract  # noqa: F401
+            import paragraphic.extract  # noqa: F401
         if self.write_search:
             try:
                 import pagefind.index  # noqa: F401

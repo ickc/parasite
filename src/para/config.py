@@ -182,7 +182,7 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
         index_length: how many posts the front page shows; older ones are in the archive.
         feed_length: how many of the newest posts the feeds carry.
         write_listings: write the listings: the front page, categories, tags, the archive.
-        write_graph: write the post graph (graph.json and its viewer, needs sitegraph).
+        write_graph: write the post graph (graph.json and its viewer, needs paragraphic).
         graph_uncoloured: tags never coloured in the graph (they say what form a post takes).
         graph_colours: how many tags the graph colours at first.
     """
