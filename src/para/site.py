@@ -53,27 +53,20 @@ def rsync(in_dir: str, out_base_dir: Path, out_sub_dir: str) -> None:
     subprocess.run(["rsync", "-a", f"{in_dir}/", f"{out_dir}/"], check=True)  # nosec
 
 
-def minify(inputs: List[str], output: str) -> None:
-    """Bundle ``inputs`` into ``output``, minified with the Go minifier if it is on the
-    PATH (https://github.com/tdewolff/minify), else concatenated."""
-    output_path = Path(output)
-    output_path.parent.mkdir(exist_ok=True, parents=True)
+def minify(inputs: List[str], output_path: str, output: Output) -> None:
+    """Bundle ``inputs`` into ``output_path``, minified with the Go minifier if it is on the
+    PATH (https://github.com/tdewolff/minify), else concatenated; written only if changed."""
+    path = Path(output_path)
     if shutil.which("minify") is None:
-        logger.warning("minify is not on the PATH: %s is concatenated, not minified", output)
-        output_path.write_text("\n".join(Path(path).read_text(encoding="utf-8") for path in inputs), encoding="utf-8")
-        return
-    subprocess.run(  # nosec
-        [
-            "minify",
-            "--type",
-            output_path.suffix[1:],
-            "-b",
-            "-o",
-            str(output_path),
-            *inputs,
-        ],
-        check=True,
-    )
+        logger.warning("minify is not on the PATH: %s is concatenated, not minified", output_path)
+        data = "\n".join(Path(i).read_text(encoding="utf-8") for i in inputs).encode("utf-8")
+    else:
+        data = subprocess.run(  # nosec
+            ["minify", "--type", path.suffix[1:], "-b", *inputs],
+            capture_output=True,
+            check=True,
+        ).stdout
+    output.write(path, data, "minify")
 
 
 def cites(doc: pf.Doc) -> bool:
@@ -97,12 +90,16 @@ FILE_OPTIONS = ("--metadata-file", "--include-in-header", "--include-before-body
 
 
 def option_files(options: Iterable[str], names: Iterable[str]) -> list[str]:
-    """The values of ``--NAME=VALUE`` options in ``names`` that are files of the site."""
+    """The values of ``--NAME=VALUE`` (or ``--NAME VALUE``) options in ``names`` that are
+    files of the site."""
     names = tuple(names)
+    options = list(options)
     res = []
-    for option in options:
+    for i, option in enumerate(options):
         name, eq, value = option.partition("=")
-        if eq and name in names and Path(value).is_file():
+        if not eq and i + 1 < len(options):
+            value = options[i + 1]
+        if name in names and value and Path(value).is_file():
             res.append(value)
     return res
 
@@ -143,17 +140,20 @@ class Config(LiveConfig):
     def output_repr(self) -> str:
         """The config's fields that change the output, for the site key."""
         ignore = {"jobs", "prune", "full", "store_path", "check_links"}
-        return repr([(f.name, getattr(self, f.name)) for f in fields(self) if f.name not in ignore and not f.name.startswith(("watch", "serve"))])
+        own = [(f.name, getattr(self, f.name)) for f in fields(self) if f.name not in ignore and not f.name.startswith(("watch", "serve"))]
+        # and the rest of parasite.toml (its profiles, filters, read options, page parts)
+        return repr(own) + json.dumps(self.settings, sort_keys=True, default=str)
 
     def site_files(self) -> list[str]:
-        """The site's files every page depends on: those [read]'s options name (but the
-        bibliography's, which only a page that cites depends on, see para.deps), the
-        profiles' own templates, and pandoc-crossref's configuration."""
+        """The site's files every page depends on: those [read]'s and the profiles'
+        options name (but the bibliography's, which only a page that cites depends on,
+        see para.deps), the profiles' templates, and pandoc-crossref's configuration."""
         read = self.settings["read"]
         options = [*read["options"], *(o for v in read.values() if isinstance(v, dict) for o in v.get("options", []))]
+        options += [o for p in self.profiles.values() for o in p.options]
         res = option_files(options, FILE_OPTIONS)
-        # a template of the site's own (parasite's are in its package: the code)
-        res += [str(p.template) for p in self.profiles.values() if p.template is not None and not p.template.is_absolute()]
+        # parasite's own templates are in the code stamp too: counted twice is harmless
+        res += [str(p.template) for p in self.profiles.values() if p.template is not None]
         res.append("pandoc-crossref.yaml")
         return sorted(set(res))
 
@@ -263,14 +263,12 @@ class Config(LiveConfig):
         time_elapse = TimeElapse(logger)
         output = Output(self.output_dir)
 
-        for out_path in list(self.compress_js) + list(self.compress_css):
-            output.claim(Path(out_path), "minify")
         for in_dir, out_sub_dir in self.files_folders.items():
             output.claim_tree(Path(in_dir), self.output_dir / out_sub_dir, f"files_folders {in_dir}")
         if self.compress_js:
-            minifies_js = [pool.submit(minify, paths, out_path) for out_path, paths in self.compress_js.items()]
+            minifies_js = [pool.submit(minify, paths, out_path, output) for out_path, paths in self.compress_js.items()]
         if self.compress_css:
-            minifies = [pool.submit(minify, paths, out_path) for out_path, paths in self.compress_css.items()]
+            minifies = [pool.submit(minify, paths, out_path, output) for out_path, paths in self.compress_css.items()]
         if self.files_folders:
             rsyncs = [
                 pool.submit(rsync, in_dir, self.output_dir, out_sub_dir)
@@ -289,7 +287,12 @@ class Config(LiveConfig):
         if self.write_graph:
             import sitegraph.extract  # noqa: F401
         if self.write_search:
-            import pagefind.index  # noqa: F401
+            try:
+                import pagefind.index  # noqa: F401
+            except ImportError:
+                # like minify and lychee: an optional tool, a warning without it
+                logger.warning("pagefind is not installed (para[search]): no search")
+                self.write_search = False
         deps.fresh(ignored=[self.output_dir, self.store_path.parent])
         key = site_key(self.output_repr(), self.site_files())
         store = Store(self.store_path, load=not self.full)

@@ -62,7 +62,8 @@ length = 10
 [sitemap]
 enabled = true
 
-# search (Pagefind, needs pagefind[bin]): an index of the pages, and a search page
+# search (Pagefind, needs pagefind[bin]; without it, a warning): an index of the pages, and a
+# search page
 [search]
 enabled = true
 # the search page, a folder ("search/") or a file ("search.html")

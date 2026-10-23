@@ -52,7 +52,8 @@ def load(path: Path = Path(FILE)) -> type[Config]:
     site, listing = s["site"], s["listing"]
     font_min, font_max = listing["tag-cloud"]
     values = {
-        "site_url": site["url"],
+        # with its trailing slash: page URLs are appended to it
+        "site_url": site["url"] and site["url"].rstrip("/") + "/",
         "blog_email": site["email"],
         "n_jumbotron": listing["jumbotron"],
         "n_grid": listing["grid"],

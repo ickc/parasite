@@ -4,7 +4,7 @@ sitegraph (an optional dependency) reads a rendered site's HTML, so that it work
 generator. parasite has the pages' records already (see :mod:`para.record`), made from
 the documents as read, so it gives sitegraph its page records directly: links,
 citations and external links, the nodes from what is listed (posts that are not
-drafts), and a page's other outputs (its slides) as alternates that stand for it.
+drafts), and a page's other outputs (its slides, its PDF) as alternates that stand for it.
 Nothing is read back.
 """
 
@@ -60,7 +60,9 @@ class Recorder:
         }
         record.citations = sorted(record.cited_urls)
         directory = path.rsplit("/", 1)[0] if "/" in path else ""
-        record.alternates = [p for p in self.by_dir.get(directory, []) if p != path]
+        # and its own other outputs (a source in several profiles)
+        others = {*self.by_dir.get(directory, []), *page.outputs.values()}
+        record.alternates = sorted(p for p in others if p != path)
         return record
 
 
