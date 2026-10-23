@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING, List, Optional
 
 import panflute as pf
 
-from .apps import post_to_html, read_md_to_ast
+from .apps import post_to_html, post_to_pdf, read_md_to_ast
 from .data import format_years, root_of
 from .config import Config as StaticConfig
 from .util import TimeElapse
@@ -116,16 +116,21 @@ class Config(StaticConfig):
 
     def make_page(self, page: Page) -> None:
         """Read ``page`` and render its outputs (a live rebuild: its own years only)."""
+        from .site import page_options
+
         time_elapse = TimeElapse(logger)
 
         def read(select: Profile | None) -> pf.Doc:
-            return read_md_to_ast(
-                self.pandoc_input_options,
-                self.filters,
-                inputs=[page.path],
-                **self.media_options(page),
-                select=select,
-            )
+            with page_options(page) as extra:
+                return read_md_to_ast(
+                    self.pandoc_input_options,
+                    self.filters,
+                    inputs=[page.path],
+                    **self.media_options(page),
+                    select=select,
+                    extra_options=extra,
+                    conversion=page.convert,
+                )
 
         page.ast = read(page.profiles[0] if page.per_profile else None)
         page.set_profiles()
@@ -137,6 +142,10 @@ class Config(StaticConfig):
                 ast = page.ast if i == len(outputs) - 1 else pf.load(io.StringIO(json.dumps(page.ast.to_json())))
             if out_path.name != "index.html" and (self.output_dir / out_path.parent / "index.html").exists():
                 ast.metadata["report-url"] = "index.html"
+            if profile.to == "pdf":
+                updated = page.record.updated if page.record is not None else None
+                post_to_pdf(ast, profile, self.output_dir / out_path, self, epoch=0 if updated is None else int(updated.timestamp()))
+                continue
             post_to_html(
                 ast,
                 root_of(out_path),
