@@ -4,20 +4,15 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
-from panflute.tools import convert_text
 
-from parasite import apps
+from para import apps
+
+from para.filters import Filter
 
 if TYPE_CHECKING:
     from typing import List
 
-    from parasite.panflute_filters import PanfluteFilter
-
-example_path = Path("docs/README.md")
-
-
-def panflute_filters(ext: str) -> List[PanfluteFilter]:
-    return [lambda x: x]
+example_path = Path("docs/pages/index.md")
 
 
 def pandoc_options(ext: str) -> List[str]:
@@ -25,58 +20,84 @@ def pandoc_options(ext: str) -> List[str]:
 
 
 @pytest.mark.parametrize(
-    "panflute_filters",
+    "filters",
     [
-        panflute_filters,
-        lambda x: [],
+        {"x": Filter("x", python="para.panflute_filters:mathjax_bold_ell_filter", default=True)},
+        {},
     ],
 )
-def test_read_md_to_ast(panflute_filters):
+def test_read_md_to_ast(filters):
     """Test app.read_md_to_ast
 
     We only test it runs ok.
     """
-    apps.read_md_to_ast(
-        pandoc_options=pandoc_options,
-        panflute_filters=panflute_filters,
-        inputs=[example_path],
+    apps.read_md_to_ast(pandoc_options, filters, inputs=[example_path])
+
+
+
+def test_xml_safe():
+    assert apps.xml_safe("a\x1b[0;31mred\x1b[0m\x08b\tc\n") == "aredb\tc\n"
+    assert apps.xml_safe("<style scoped>x</style>") == "<style>x</style>"
+
+
+def test_mathjax_bold_ell():
+    import panflute as pf
+
+    from para.panflute_filters import mathjax_bold_ell_filter
+
+    doc = pf.Doc(pf.Para(pf.Math(r"\mathbf{\ell} + \mathbf{\hat{\ell}} + \mathbf{\hat{x}}", format="InlineMath")))
+    doc = mathjax_bold_ell_filter(doc)
+    assert doc.content[0].content[0].text == r"\pmb{\ell} + \pmb{\hat{\ell}} + \mathbf{\hat{x}}"
+
+
+
+def test_profile_metadata():
+    import panflute as pf
+
+    doc = pf.convert_text(
+        "---\nauthor: A\nformat:\n  html: default\n  slides:\n    metadata:\n      author: A B\n---\nx\n",
+        standalone=True,
     )
+    apps.profile_metadata(doc, "html")
+    assert doc.get_metadata("author") == "A"
+    apps.profile_metadata(doc, "slides")
+    assert doc.get_metadata("author") == "A B"
 
 
-teaser = """Some post
-
--   with some contents
-
-<!-- more -->
-
--   with more contents"""
-
-teaser_only = """Some post
-
--   with some contents"""
-
-no_teaser = """Some post
-
--   with some contents
-
--   with more contents"""
+def test_split_filter_options():
+    reader, filters = apps.split_filter_options(
+        ["--from=ipynb", "--filter=pandoc-crossref", "--citeproc", "--bibliography", "c.yaml", "-M", "a=b", "--strip-comments"]
+    )
+    assert reader == ["--from=ipynb", "--strip-comments"]
+    assert filters == ["--filter=pandoc-crossref", "--citeproc", "--bibliography", "c.yaml", "-M", "a=b"]
 
 
-@pytest.mark.parametrize(
-    "input,output",
-    [
-        [
-            teaser,
-            teaser_only,
-        ],
-        [
-            no_teaser,
-            no_teaser,
-        ],
-    ],
-)
-def test_get_teaser(input: str, output: str):
-    doc = convert_text(input, standalone=False)
-    content = apps.get_teaser(doc)
-    converted = convert_text(content, input_format="panflute", output_format="markdown")
-    assert converted == output
+def test_select_content():
+    import panflute as pf
+
+    from para.config import Config
+    from para.panflute_filters import select_content
+
+    text = (
+        "a\n\n::: {.content-visible when-format=\"html\"}\npage\n:::\n\n"
+        "::: {.content-visible when-format=\"slides\"}\nslides\n:::\n\n"
+        "::: {.content-hidden unless-format=\"slidy\"}\nonly slidy\n:::\n"
+    )
+    profiles = Config().profiles
+    html = pf.stringify(select_content(pf.convert_text(text, standalone=True), profiles["html"]))
+    slides = pf.stringify(select_content(pf.convert_text(text, standalone=True), profiles["slides"]))
+    assert html.split() == ["a", "page"]
+    assert slides.split() == ["a", "slides", "only", "slidy"]
+
+
+def test_select_text():
+    from para.config import Config
+    from para.panflute_filters import select_text
+
+    text = (
+        "# A\n\n::: {.content-visible when-format=\"html\"}\n# B\n\n::: {.columns}\nx\n:::\n:::\n\n"
+        "::: {.content-visible when-format=\"slides\"}\n# B\n\n```\n:::\n```\n:::\n\n# C\n"
+    )
+    profiles = Config().profiles
+    assert select_text(text, profiles["html"]) == "# A\n\n# B\n\n::: {.columns}\nx\n:::\n\n\n# C\n"
+    assert select_text(text, profiles["slides"]) == "# A\n\n\n# B\n\n```\n:::\n```\n\n# C\n"
