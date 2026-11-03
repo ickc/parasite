@@ -291,7 +291,7 @@ class Config(LiveConfig):
                 import pagefind.index  # noqa: F401
             except ImportError:
                 # like minify and lychee: an optional tool, a warning without it
-                logger.warning("pagefind is not installed (para[search]): no search")
+                logger.warning("pagefind is not installed (python-para[search]): no search")
                 self.write_search = False
         deps.fresh(ignored=[self.output_dir, self.store_path.parent])
         key = site_key(self.output_repr(), self.site_files())

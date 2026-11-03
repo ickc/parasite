@@ -25,7 +25,7 @@ typst = "*"
 lychee = "*"
 
 [pypi-dependencies]
-# para[search], para[opencc] (not on conda-forge)
+# python-para[search], python-para[opencc] (not on conda-forge)
 pagefind = { version = ">=1.5", extras = ["bin"] }
 opencc = ">=1.1"
 # the post graph (not on PyPI or conda-forge yet)

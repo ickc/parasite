@@ -3,7 +3,8 @@ title: Install
 ---
 
 ::: note
-Not released yet: until `para` is on PyPI, install it [from the source](#from-the-source).
+On PyPI the distribution is `python-para` for now (the name `para` is requested); it
+installs the package `para` and the command `parasite`.
 :::
 
 para.site needs Python ≥ 3.12 and pandoc ≥ 3.1. pandoc is not on PyPI: install it from
@@ -13,21 +14,21 @@ para.site needs Python ≥ 3.12 and pandoc ≥ 3.1. pandoc is not on PyPI: insta
 
 ```sh
 pixi add pandoc
-pixi add --pypi para
+pixi add --pypi python-para
 ```
 
 # With pip
 
 ```sh
-pip install para
+pip install python-para
 ```
 
 # Optional parts
 
 | extra | for |
 |---|---|
-| `para[search]` | search, with [Pagefind](https://pagefind.app/) (its binary comes with it) |
-| `para[extras]` | coloured logs; watching sources and serving the site while you write |
+| `python-para[search]` | search, with [Pagefind](https://pagefind.app/) (its binary comes with it) |
+| `python-para[extras]` | coloured logs; watching sources and serving the site while you write |
 
 The post graph needs [paragraphic](https://github.com/ickc/paragraphic) installed (`pip
 install 'paragraphic @ git+https://github.com/ickc/paragraphic@v0.1.0'`, or `pixi add

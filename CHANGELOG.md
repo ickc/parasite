@@ -3,7 +3,7 @@
 ## v0.2.0
 
 A rewrite around records, output profiles and incremental builds. The package is
-`para`, the site generator `para.site` (`from para.site import Config, cli`); the command
+`para` (on PyPI as `python-para`), the site generator `para.site` (`from para.site import Config, cli`); the command
 is `parasite`.
 
 - **Configuration:** a site is configured by `parasite.toml`, merged over
@@ -24,13 +24,13 @@ is `parasite`.
 - **PDF output:** a `pdf` profile, Typst by default, dated by the page, so a PDF is the
   same from build to build.
 - **Languages:** BCP 47 tags, with lookups from the most specific to the least.
-  Translations: `x.LANG.md` beside `x.md`, or made by OpenCC (`para[opencc]`), linked
+  Translations: `x.LANG.md` beside `x.md`, or made by OpenCC (`python-para[opencc]`), linked
   with `hreflang`.
 - **Filters by name:** Python (`module:function`) or installed Lua filters, chosen per
   document with `filters: [name, -name]`.
 - **Media:** copied by reference (`[media.folders]`): only what pages use. After the
   build, lychee checks every link offline, and the build fails on broken ones.
-- **Search:** Pagefind (`para[search]`), indexing the records in the site's language,
+- **Search:** Pagefind (`python-para[search]`), indexing the records in the site's language,
   with tags and categories as filters, deterministic from build to build.
 - **Post graph:** `graph.json`, a local graph on each page, and `/graph/` (needs
   paragraphic).

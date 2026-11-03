@@ -3,7 +3,8 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "para"
+# the import package is para; on PyPI as python-para until the name para is free
+name = "python-para"
 version = "0.2.0"
 description = "para.site: a pandoc-first static site generator"
 readme = "README.md"
@@ -56,6 +57,18 @@ Repository = "https://github.com/ickc/parasite"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/para"]
+
+[tool.hatch.build.targets.sdist]
+# the source, its tests and the docs' sources (not their builds)
+include = [
+    "src/para",
+    "tests",
+    "docs/pages",
+    "docs/parasite.toml",
+    "docs/makefile",
+    "CHANGELOG.md",
+    "AUTHORS.rst",
+]
 
 [tool.ruff]
 line-length = 88

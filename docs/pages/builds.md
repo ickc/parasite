@@ -63,7 +63,7 @@ image becomes SVG, which a browser can show.
 
 # Search
 
-With `[search] enabled` and `para[search]` installed, para.site indexes the records with
+With `[search] enabled` and `python-para[search]` installed, para.site indexes the records with
 [Pagefind](https://pagefind.app/) and makes the search page (`[search] page`). The index
 is sharded: one more page changes a few of its files. The search box in the navigation
 sends `?q=` to it. Every page is indexed in the site's language (Pagefind searches the
