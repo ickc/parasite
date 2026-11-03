@@ -5,8 +5,8 @@ listings, categories and tags, feeds, a sitemap, search, a graph of how the page
 and builds that redo only what changed. A site is configured by one file,
 `parasite.toml`.
 
-The Python package is `para` (on PyPI as `python-para` for now: `pip install
-python-para`), the site generator its module `para.site`, and the command `parasite`:
+The Python package is `para` (on PyPI as `pandoc-para` for now: `pip install
+pandoc-para`), the site generator its module `para.site`, and the command `parasite`:
 
 ```python
 from para import site

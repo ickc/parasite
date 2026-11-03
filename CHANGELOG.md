@@ -3,7 +3,7 @@
 ## v0.2.0
 
 A rewrite around records, output profiles and incremental builds. The package is
-`para` (on PyPI as `python-para`), the site generator `para.site` (`from para.site
+`para` (on PyPI as `pandoc-para`), the site generator `para.site` (`from para.site
 import Config, cli`); the command is `parasite`.
 
 - **Configuration:** a site is configured by `parasite.toml`, merged over
@@ -25,15 +25,15 @@ import Config, cli`); the command is `parasite`.
   same from build to build.
 - **Languages:** BCP 47 tags, with lookups from the most specific to the least.
   Translations: `x.LANG.md` beside `x.md`, or made by OpenCC
-  (`python-para[opencc]`), linked with `hreflang`.
+  (`pandoc-para[opencc]`), linked with `hreflang`.
 - **Filters by name:** Python (`module:function`) or installed Lua filters, chosen per
   document with `filters: [name, -name]`.
 - **Media:** copied by reference (`[media.folders]`): only what pages use. After the
   build, lychee checks every link offline, and the build fails on broken ones.
-- **Search:** Pagefind (`python-para[search]`), indexing the records in the site's
+- **Search:** Pagefind (`pandoc-para[search]`), indexing the records in the site's
   language, with tags and categories as filters, deterministic from build to build.
 - **Post graph:** `graph.json`, a local graph on each page, and `/graph/` (needs
-  `python-para[graph]`, paragraphic ≥ 0.2).
+  `pandoc-para[graph]`, paragraphic ≥ 0.2).
 - **Listings:** `description` instead of teasers, falling back to `subtitle`. The front
   page shows the newest posts, with an archive by year. Categories form a tree, and
   feeds carry the newest posts. Copyright years come from the pages' own dates.

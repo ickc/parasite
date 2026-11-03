@@ -25,7 +25,7 @@ typst = "*"
 lychee = "*"
 
 [pypi-dependencies]
-# python-para[search], [opencc] and [graph] (not on conda-forge)
+# pandoc-para[search], [opencc] and [graph] (not on conda-forge)
 pagefind = { version = ">=1.5", extras = ["bin"] }
 opencc = ">=1.1"
 paragraphic = ">=0.2,<0.3"

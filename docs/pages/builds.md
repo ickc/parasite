@@ -63,7 +63,7 @@ image becomes SVG, which a browser can show.
 
 # Search
 
-With `[search] enabled` and `python-para[search]` installed, para.site indexes the
+With `[search] enabled` and `pandoc-para[search]` installed, para.site indexes the
 records with [Pagefind](https://pagefind.app/) and makes the search page (`[search]
 page`). The index is sharded: one more page changes a few of its files. The search box
 in the navigation sends `?q=` to it. Every page is indexed in the site's language
@@ -84,6 +84,6 @@ URLs (a site's file is a `file://` URL); `[check] links = false` turns the check
 
 # The post graph
 
-With `[graph] enabled` and `python-para[graph]` installed, para.site writes `graph.json`
+With `[graph] enabled` and `pandoc-para[graph]` installed, para.site writes `graph.json`
 from the records (links, citations, external links, a page's other outputs) and the
 `/graph/` page; every page gets a graph of its neighbours.

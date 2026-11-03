@@ -87,7 +87,7 @@ def _opencc(conversion: str) -> Any:
     try:
         import opencc
     except ImportError:
-        raise RuntimeError(f"[translations] convert = {conversion!r} needs OpenCC: install python-para[opencc]") from None
+        raise RuntimeError(f"[translations] convert = {conversion!r} needs OpenCC: install pandoc-para[opencc]") from None
     return opencc.OpenCC(conversion if conversion.endswith(".json") else f"{conversion}.json")
 
 
