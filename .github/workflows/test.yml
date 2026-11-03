@@ -17,7 +17,7 @@ jobs:
           - python-version: "3.14"
             # empty: the latest release
             pandoc-version: ""
-            extras: "extras,tests,search,opencc"
+            extras: "extras,tests,search,opencc,graph"
             tools: true
     steps:
     - uses: actions/checkout@v4
@@ -29,9 +29,6 @@ jobs:
         version: ${{ matrix.pandoc-version }}
     - name: Install
       run: pip install -e '.[${{ matrix.extras }}]'
-    - name: Install paragraphic (the post graph's tests)
-      if: matrix.tools
-      run: pip install 'paragraphic @ git+https://github.com/ickc/paragraphic@v0.1.0'
     - name: Install lychee (the link check's tests)
       if: matrix.tools
       run: |

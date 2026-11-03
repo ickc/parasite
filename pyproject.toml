@@ -42,6 +42,8 @@ extras = [
 search = ["pagefind[bin]>=1.5"]
 # translations made by conversion (Traditional and Simplified Chinese)
 opencc = ["opencc>=1.1"]
+# the post graph
+graph = ["paragraphic>=0.2,<0.3"]
 tests = [
     "coverage",
     "pytest",
