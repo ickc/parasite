@@ -48,7 +48,7 @@ Read filters run after pandoc's own (the `--filter` and `--citeproc` of
 the call that writes the output, after the Python ones, so that `FORMAT` is the
 output's.
 
-parasite's own: `lightgallery-from-dir` (read: a gallery from a folder of photos),
+para.site's own: `lightgallery-from-dir` (read: a gallery from a folder of photos),
 `lightgallery` and `mathjax-bold-ell` (render: MathJax has no bold ℓ, so
 `\mathbf{\ell}` is written `\pmb{\ell}` in HTML).
 
@@ -57,7 +57,7 @@ pandoc's JSON filters (pandoc-crossref) and citeproc are pandoc options: put the
 
 # From other tools
 
-Each has its own key for a document's filters; parasite reads none of them yet:
+Each has its own key for a document's filters; para.site reads none of them yet:
 
 | tool | key |
 |---|---|

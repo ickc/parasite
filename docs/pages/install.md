@@ -6,7 +6,7 @@ title: Install
 Not released yet: until `para` is on PyPI, install it [from the source](#from-the-source).
 :::
 
-parasite needs Python ≥ 3.12 and pandoc ≥ 3.1. pandoc is not on PyPI: install it from
+para.site needs Python ≥ 3.12 and pandoc ≥ 3.1. pandoc is not on PyPI: install it from
 [pandoc.org](https://pandoc.org/installing.html) or conda-forge.
 
 # With pixi or conda

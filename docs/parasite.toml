@@ -1,8 +1,8 @@
-# parasite's documentation, built with parasite: `cd docs && parasite`.
+# para.site's documentation, built with para.site: `cd docs && parasite`.
 
 [site]
 url = "https://ickc.github.io/parasite/"
-title = "parasite"
+title = "para.site"
 description = "A pandoc-first static site generator"
 author = "Kolen Cheung"
 copyright = "Contents © {years} {author}"
@@ -33,7 +33,7 @@ default = false
 [profiles.html]
 show-image = false
 nav = [
-    { text = "parasite", href = "{root}/" },
+    { text = "para.site", href = "{root}/" },
     { text = "Install", href = "{root}/install/" },
     { text = "Configure", menu = [
         { text = "parasite.toml", href = "{root}/configuration/" },

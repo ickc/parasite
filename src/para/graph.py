@@ -1,7 +1,7 @@
 """The post graph, from the documents rather than the rendered HTML.
 
 paragraphic (an optional dependency) reads a rendered site's HTML, so that it works for
-any generator. parasite has the pages' records already (see :mod:`para.record`), made from
+any generator. para.site has the pages' records already (see :mod:`para.record`), made from
 the documents as read, so it gives paragraphic its page records directly: links,
 citations and external links, the nodes from what is listed (posts that are not
 drafts), and a page's other outputs (its slides, its PDF) as alternates that stand for it.

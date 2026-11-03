@@ -152,7 +152,7 @@ class Config(LiveConfig):
         options = [*read["options"], *(o for v in read.values() if isinstance(v, dict) for o in v.get("options", []))]
         options += [o for p in self.profiles.values() for o in p.options]
         res = option_files(options, FILE_OPTIONS)
-        # parasite's own templates are in the code stamp too: counted twice is harmless
+        # para.site's own templates are in the code stamp too: counted twice is harmless
         res += [str(p.template) for p in self.profiles.values() if p.template is not None]
         res.append("pandoc-crossref.yaml")
         return sorted(set(res))
@@ -255,7 +255,7 @@ class Config(LiveConfig):
             ast.metadata["output-links"] = pf.MetaList(*items)
 
     def exec(self) -> None:
-        """Parasite static site generator."""
+        """Build the site."""
         with ThreadPoolExecutor(max_workers=self.jobs or os.cpu_count()) as pool:
             self._exec(pool)
 

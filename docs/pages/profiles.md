@@ -6,7 +6,7 @@ description: One source, several outputs.
 An output profile is how a source becomes one output: a pandoc writer, a template, a URL
 rule, pandoc's options, the filters that run for that output only, and the page's parts
 (style sheets, scripts, includes, navigation, footer). A site declares its profiles in
-`[profiles.NAME]`; parasite's defaults have `html` (a page) and `slides` (slidy):
+`[profiles.NAME]`; para.site's defaults have `html` (a page) and `slides` (slidy):
 
 ```toml
 [profiles.slides]
@@ -70,7 +70,7 @@ format:
 
 # PDF
 
-parasite's defaults have a `pdf` profile: Typst, through pandoc. One engine per profile
+para.site's defaults have a `pdf` profile: Typst, through pandoc. One engine per profile
 (`engine`: `typst`, or a LaTeX engine such as `xelatex`): a document is not expected
 in both. Its template is pandoc's for that engine, unless `template` names a file.
 

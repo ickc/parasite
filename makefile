@@ -9,7 +9,7 @@ test:
 lint:
 	ruff check src tests
 
-# the documentation, built with parasite (docs/makefile)
+# the documentation, built with para.site (docs/makefile)
 docs:
 	$(MAKE) -C docs docs
 

@@ -2,7 +2,7 @@
 
 :class:`Config`'s fields are the settings a command line may override; everything else
 (collections, output profiles, filters, the page's parts) is read from
-:attr:`Config.settings`, the site's parasite.toml merged over parasite's defaults.
+:attr:`Config.settings`, the site's parasite.toml merged over para.site's defaults.
 """
 
 from __future__ import annotations
@@ -39,7 +39,7 @@ class SettingsError(ValueError):
 
 
 def defaults() -> dict[str, Any]:
-    """parasite's defaults (defaults.toml)."""
+    """para.site's defaults (defaults.toml)."""
     return tomllib.loads(resources.files(__package__).joinpath("defaults.toml").read_text(encoding="utf-8"))
 
 

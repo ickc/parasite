@@ -1,6 +1,6 @@
 ---
 title: Every key
-description: parasite's defaults.toml, which a site's parasite.toml is merged over.
+description: para.site's defaults.toml, which a site's parasite.toml is merged over.
 ---
 
 <!-- written by docs/makefile from src/para/defaults.toml: do not edit -->
@@ -8,7 +8,7 @@ description: parasite's defaults.toml, which a site's parasite.toml is merged ov
 A site's `parasite.toml` is merged over this file (see [parasite.toml](../configuration/)).
 
 ```toml
-# parasite's defaults. A site's parasite.toml is merged over this: tables key by key,
+# para.site's defaults. A site's parasite.toml is merged over this: tables key by key,
 # everything else (strings, numbers, lists) replaced whole, and so are [files] and
 # [minify.*], which list the site's own entries. In strings, {root} becomes
 # the relative path from the page to the site's root, and {years} the copyright years.
