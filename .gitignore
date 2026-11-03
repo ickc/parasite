@@ -1,82 +1,33 @@
-runinfo
-docs/api/
-setup.py
-
+# Python
 *.py[cod]
-__pycache__
+__pycache__/
+*.egg-info/
+build/
+dist/
 
-# C extensions
-*.so
-
-# Packages
-*.egg
-*.egg-info
-dist
-build
-eggs
-.eggs
-parts
-bin
-var
-sdist
-wheelhouse
-develop-eggs
-.installed.cfg
-lib
-lib64
+# environments
+.pixi/
+.venv/
 venv*/
-pyvenv*/
-pip-wheel-metadata/
+.env
 
-# Installer logs
-pip-log.txt
-
-# Unit test / coverage reports
+# tools' caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.dmypy.json
 .coverage
 .coverage.*
-.pytest_cache/
-nosetests.xml
 coverage.xml
-htmlcov
+htmlcov/
+.benchmarks/
 
-# Translations
-*.mo
-
-# Buildout
-.mr.developer.cfg
-
-# IDE project files
-.project
-.pydevproject
-.idea
-.vscode
-*.iml
-*.komodoproject
-
-# Complexity
-output/*.html
-output/*/index.html
-
-# Sphinx
-docs/_build
-
+# editors and OS
+.idea/
+.vscode/
 .DS_Store
 *~
 .*.sw[po]
-.build
-.ve
-.env
-.cache
-.pytest
-.benchmarks
-.bootstrap
-.appveyor.token
 *.bak
 
-# Mypy Cache
-.mypy_cache/
-
-dask-worker-space/
-.dmypy.json
-.ruff_cache/
-.pixi/
+# the docs' build (docs/output/, docs/.para/) is ignored by docs/.gitignore
