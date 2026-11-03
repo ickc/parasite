@@ -8,7 +8,7 @@ directory from it.
 
 # Merged over the defaults
 
-parasite has a `defaults.toml`, which documents every key: see [every key](../reference/).
+para.site has a `defaults.toml`, which documents every key: see [every key](../reference/).
 A site's `parasite.toml` is merged over it:
 
 - tables, key by key: a site writes only what differs;

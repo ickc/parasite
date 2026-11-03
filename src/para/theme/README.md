@@ -1,4 +1,4 @@
-# parasite's default theme
+# para.site's default theme
 
 The style sheets the default `[minify.css]` bundles, used when a site has no copy of its
 own under `_css/`. They come from Nikola's bootblog4 theme, as parasite's sites have

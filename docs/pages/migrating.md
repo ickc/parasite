@@ -3,7 +3,7 @@ title: Migrating
 description: From parasite ≤ 0.1, and its run.py.
 ---
 
-parasite ≤ 0.1 was configured by a site's `run.py`, a subclass of its `Config`. Every
+parasite ≤ 0.1 (the package `parasite`, now `para`) was configured by a site's `run.py`, a subclass of its `Config`. Every
 part of it has a place in `parasite.toml`:
 
 | run.py | parasite.toml |
@@ -13,7 +13,7 @@ part of it has a place in `parasite.toml`:
 | `copyright` | `[site] copyright`, with `{years}` and `{author}` |
 | `n_jumbotron`, `n_grid`, `index_include_jumbotron` | `[listing]` `jumbotron`, `grid`, `include-jumbotron` |
 | `write_rss`, `write_atom`, `write_sitemap`, `write_graph` | `[feeds]`, `[sitemap]`, `[graph]` |
-| `write_tipuesearch_json` | `[search]` (Pagefind; parasite makes the search page) |
+| `write_tipuesearch_json` | `[search]` (Pagefind; para.site makes the search page) |
 | `mathjax_config` | `[mathjax]`, as a table |
 | `files_folders` | `[files]` (copied whole) and `[media.folders]` (copied by reference) |
 | `posts`, `pages` | `[[sources]]`, with `listed = true` for posts |
@@ -39,4 +39,4 @@ metadata:`.
 
 # Search
 
-The search page (`pages/search.md`, and tipuesearch's scripts) goes: parasite makes it.
+The search page (`pages/search.md`, and tipuesearch's scripts) goes: para.site makes it.

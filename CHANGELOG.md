@@ -1,9 +1,10 @@
-# Revision history for `para` (parasite)
+# Revision history for `para`
 
 ## v0.2.0
 
 A rewrite around records, output profiles and incremental builds. The package is
-`para` (`from para.site import Config, cli`); the command is `parasite`.
+`para`, the site generator `para.site` (`from para.site import Config, cli`); the command
+is `parasite`.
 
 - **Configuration:** a site is configured by `parasite.toml`, merged over
   `para/defaults.toml`, which documents every key. A site's `run.py` is no longer
@@ -38,7 +39,7 @@ A rewrite around records, output profiles and incremental builds. The package is
   feeds carry the newest posts. Copyright years come from the pages' own dates.
 - **Removed:** parsl (now a thread pool, `--jobs`), urlpath, tipuesearch,
   previous/next links, and the retired front-matter keys (`status`, `previewimage`,
-  `slug`, …; parasite warns).
+  `slug`, …; para.site warns).
 - **Output:** well-formed XHTML; pandoc ≥ 3.11's `--math-method`.
 - **Requirements:** Python ≥ 3.12 and pandoc ≥ 3.1.
 

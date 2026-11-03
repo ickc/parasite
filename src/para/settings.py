@@ -1,6 +1,6 @@
 """parasite.toml: a site's configuration, as data.
 
-The site's file is merged over parasite's defaults (``defaults.toml``, which documents
+The site's file is merged over para.site's defaults (``defaults.toml``, which documents
 every key). :func:`load` returns the site's :class:`para.site.Config`: its fields'
 defaults come from the file, so a command line can still override them, and the rest
 is read from its ``settings``. Code runs only from what is installed: filters are named

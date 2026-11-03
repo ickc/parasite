@@ -25,7 +25,7 @@ again only when its **read key** changed, and renders a page again only when its
 **render key** changed or a file it produced is gone:
 
 - the **site key**: the code (the Python modules loaded, the installed packages,
-  parasite's own files), pandoc and its data folder, the configuration, and the files
+  para's own files), pandoc and its data folder, the configuration, and the files
   the configuration names for every page (`[read]`'s `--metadata-file` and the like,
   the profiles' own templates, `pandoc-crossref.yaml`). Any change here reads everything
   again;
@@ -63,7 +63,7 @@ image becomes SVG, which a browser can show.
 
 # Search
 
-With `[search] enabled` and `para[search]` installed, parasite indexes the records with
+With `[search] enabled` and `para[search]` installed, para.site indexes the records with
 [Pagefind](https://pagefind.app/) and makes the search page (`[search] page`). The index
 is sharded: one more page changes a few of its files. The search box in the navigation
 sends `?q=` to it. Every page is indexed in the site's language (Pagefind searches the
@@ -72,11 +72,11 @@ page's tags are searched as its words.
 
 # Links
 
-With [lychee](https://lychee.cli.rs) installed, parasite checks the output's links when
+With [lychee](https://lychee.cli.rs) installed, para.site checks the output's links when
 the build is done, offline: every link and media reference from the site's files to its
 files must resolve, or the build fails (the output is written either way; a build that
 serves or watches only logs them). This guards the media copied by reference: a
-reference parasite did not see would be a broken link here. lychee reads the HTML, raw
+reference para.site did not see would be a broken link here. lychee reads the HTML, raw
 HTML and `<style>` elements included, but not `style` attributes or CSS files.
 
 Links known to be broken are excluded by `[check] exclude`, regular expressions of
@@ -84,6 +84,6 @@ URLs (a site's file is a `file://` URL); `[check] links = false` turns the check
 
 # The post graph
 
-With `[graph] enabled` and paragraphic installed, parasite writes `graph.json` from the
+With `[graph] enabled` and paragraphic installed, para.site writes `graph.json` from the
 records (links, citations, external links, a page's other outputs) and the `/graph/`
 page; every page gets a graph of its neighbours.

@@ -1,15 +1,16 @@
 ---
-title: parasite
+title: para.site
 subtitle: A pandoc-first static site generator
 ---
 
-parasite builds websites from documents pandoc can read: Markdown, Jupyter notebooks,
+para.site builds websites from documents pandoc can read: Markdown, Jupyter notebooks,
 and anything else pandoc has a reader for. Its documents, metadata and templates are
 pandoc's own. It adds what a site needs around them: listings, categories and tags, an
 archive, feeds, a sitemap, search, a graph of how the pages link, and builds that redo
 only what changed.
 
-The Python package is `para`, and the command is `parasite`:
+The Python package is `para`, the site generator is its module `para.site`, and the
+command is `parasite`:
 
 ```python
 from para import site
@@ -59,4 +60,4 @@ parasite
 writes the site to `output/`. `parasite --help` lists what the command line can
 override.
 
-These pages are themselves built with parasite: see `docs/` in its repository.
+These pages are themselves built with para.site: see `docs/` in its repository.

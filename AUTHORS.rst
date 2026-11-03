@@ -2,4 +2,4 @@
 Authors
 =======
 
-* Kolen Cheung - https://python-parasite.readthedocs.io/
+* Kolen Cheung - https://github.com/ickc

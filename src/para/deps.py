@@ -5,7 +5,7 @@ modification time, a folder's listing, or that it is missing. The store keeps th
 the record, and a later build reads the source again only when one of them changed
 (:func:`unchanged`). They are:
 
-- what parasite resolves for it: the files its links and images name (or would, when
+- what para.site resolves for it: the files its links and images name (or would, when
   missing), the media files it references and those they reference, its translation's
   primary, and its bibliography and style when it cites;
 - the files and folders named in its text, as a path from its folder or the site's root:

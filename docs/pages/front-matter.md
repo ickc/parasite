@@ -1,11 +1,11 @@
 ---
 title: Front matter
-description: The keys parasite reads from a document's metadata.
+description: The keys para.site reads from a document's metadata.
 ---
 
 A document's metadata is pandoc's: YAML front matter in Markdown, the first raw cell of a
 notebook. pandoc's own keys keep pandoc's meaning; where Quarto has the same idea,
-parasite uses Quarto's name.
+para.site uses Quarto's name.
 
 | key | meaning |
 |---|---|
@@ -24,7 +24,7 @@ parasite uses Quarto's name.
 
 # Keys from parasite ≤ 0.1
 
-parasite warns about these and otherwise ignores them:
+para.site warns about these and otherwise ignores them:
 
 | key | instead |
 |---|---|

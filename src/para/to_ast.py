@@ -174,7 +174,7 @@ def posts_to_archive_ast(
     lang: str = "en",
     title: Optional[str] = None,
 ) -> pf.elements.Doc:
-    """The archive of ``posts`` (one year's, in parasite), by month."""
+    """The archive of ``posts`` (one year's, in para.site), by month."""
     meta = {
         "title": title or translate("Archive", lang),
         "lang": lang,

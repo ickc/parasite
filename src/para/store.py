@@ -7,7 +7,7 @@ and re-renders a page only when its render key changed, or when a file it produc
 gone from the output. A full build is the same code with an empty store.
 
 The **site key** covers what every page depends on: the code (every Python module
-loaded, the installed distributions, parasite's package data), pandoc's version and data
+loaded, the installed distributions, para's package data), pandoc's version and data
 directory, the site's config, and the files its config names for every page (see
 :meth:`para.site.Config.site_files`). A change to any of them re-reads every source. A
 **read key** adds the source's bytes; and a record is used only while the files its read
@@ -70,7 +70,7 @@ def _tree(root: Path, skip: Iterable[Path] = ()) -> list[str]:
 
 
 def code_stamp() -> str:
-    """The code a build runs: the files of the loaded modules, parasite's package data
+    """The code a build runs: the files of the loaded modules, para's package data
     and the installed distributions."""
     files = sorted({f for m in list(sys.modules.values()) if (f := getattr(m, "__file__", None))})
     package = Path(__file__).parent

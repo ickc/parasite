@@ -30,7 +30,7 @@ if TYPE_CHECKING:
 logger = getLogger(__name__)
 
 
-# front-matter keys of parasite ≤ 0.1 (and Nikola before it), and what replaces each
+# front-matter keys of parasite ≤ 0.1 (the package before para; and Nikola before it), and what replaces each
 RETIRED_KEYS = {
     "status": "draft: true for a draft, nothing otherwise",
     "previewimage": "image",
