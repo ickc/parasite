@@ -1,10 +1,11 @@
 name: Documentation
 
-# built on every push and pull request; deployed to GitHub Pages from main only
+# built on every push and pull request; published to GitHub Pages (the gh-pages branch)
+# from main only
 on: [push, pull_request]
 
 permissions:
-  contents: read
+  contents: write  # to push gh-pages; nothing else writes
 
 jobs:
   build:
@@ -25,21 +26,9 @@ jobs:
         echo ~/.local/bin >> "$GITHUB_PATH"
     - name: Build
       run: make docs
-    - uses: actions/upload-pages-artifact@v3
-      if: github.ref == 'refs/heads/main'
+    # the site's Pages serves the gh-pages branch: push the build there, from main only
+    - uses: peaceiris/actions-gh-pages@v4
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       with:
-        path: docs/output
-
-  deploy:
-    if: github.ref == 'refs/heads/main'
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-    - id: deployment
-      uses: actions/deploy-pages@v4
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: docs/output
