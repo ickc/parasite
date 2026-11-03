@@ -3,8 +3,8 @@ title: Migrating
 description: From parasite ≤ 0.1, and its run.py.
 ---
 
-parasite ≤ 0.1 (the package `parasite`, now `para`) was configured by a site's `run.py`, a subclass of its `Config`. Every
-part of it has a place in `parasite.toml`:
+parasite ≤ 0.1 (the package `parasite`, now `para`) was configured by a site's
+`run.py`, a subclass of its `Config`. Every part of it has a place in `parasite.toml`:
 
 | run.py | parasite.toml |
 |---|---|

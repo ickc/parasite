@@ -9,8 +9,8 @@ pandoc's own. It adds what a site needs around them: listings, categories and ta
 archive, feeds, a sitemap, search, a graph of how the pages link, and builds that redo
 only what changed.
 
-The Python package is `para`, the site generator is its module `para.site`, and the
-command is `parasite`:
+The Python package is `para` (on PyPI as `pandoc-para` for now), the site generator is
+its module `para.site`, and the command is `parasite`:
 
 ```python
 from para import site

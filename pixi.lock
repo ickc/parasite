@@ -86,7 +86,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/typing_extensions-4.16.0-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/typing_inspect-0.9.0-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2026c-h151e31d_0.conda
-      - pypi: git+https://github.com/ickc/paragraphic?tag=v0.1.0#028b0f98e44f12662e81f99523ca334b6cda1085
+      - pypi: https://files.pythonhosted.org/packages/01/2f/ed0eaefd2558d0511027a47dc423ee71cb4d1b45243a3ba65fe957a4d493/paragraphic-0.2.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/07/66/473f7ca0be0b06e38ee8c85ee2db184e3981bd769fac2e7c19c8a8865211/soupsieve-3.0.4-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/0a/a7/414e1df2749f647784e32da78ce3081a9fedf1ae8d5b3bb8d4c5643f06cd/pagefind-1.5.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/40/cf/2a7608bd67242c3b7a2d3fc0ff238d9183287a63b1e6838ff26b351b4d2a/pagefind_bin-1.5.2-py3-none-manylinux_2_12_x86_64.manylinux2010_x86_64.musllinux_1_1_x86_64.whl
@@ -155,7 +155,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/watchdog-6.0.0-py315hcf0777b_4.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/yaml-0.2.5-h74c22ad_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/zstd-1.5.7-hf451053_7.conda
-      - pypi: git+https://github.com/ickc/paragraphic?tag=v0.1.0#028b0f98e44f12662e81f99523ca334b6cda1085
+      - pypi: https://files.pythonhosted.org/packages/01/2f/ed0eaefd2558d0511027a47dc423ee71cb4d1b45243a3ba65fe957a4d493/paragraphic-0.2.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/07/66/473f7ca0be0b06e38ee8c85ee2db184e3981bd769fac2e7c19c8a8865211/soupsieve-3.0.4-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/0a/a7/414e1df2749f647784e32da78ce3081a9fedf1ae8d5b3bb8d4c5643f06cd/pagefind-1.5.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/88/c6/92fcd42f1ba33e1184263f25bfabf3d27c383410470f169e4b8163bf9c17/beautifulsoup4-4.15.0-py3-none-any.whl
@@ -1497,9 +1497,10 @@ packages:
     - zstd >=1.5.7,<1.6.0a0
   size: 433687
   timestamp: 1786599629846
-- pypi: git+https://github.com/ickc/paragraphic?tag=v0.1.0#028b0f98e44f12662e81f99523ca334b6cda1085
+- pypi: https://files.pythonhosted.org/packages/01/2f/ed0eaefd2558d0511027a47dc423ee71cb4d1b45243a3ba65fe957a4d493/paragraphic-0.2.0-py3-none-any.whl
   name: paragraphic
-  version: 0.1.0
+  version: 0.2.0
+  sha256: d22c82e5dde3107ee2e8c0f6d97488709a1af18d743b8583641a4547ce2623e1
   requires_dist:
   - beautifulsoup4
   - pyyaml ; extra == 'quarto'

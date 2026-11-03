@@ -3,7 +3,8 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "para"
+# the import package is para; on PyPI as pandoc-para until the name para is free
+name = "pandoc-para"
 version = "0.2.0"
 description = "para.site: a pandoc-first static site generator"
 readme = "README.md"
@@ -41,6 +42,8 @@ extras = [
 search = ["pagefind[bin]>=1.5"]
 # translations made by conversion (Traditional and Simplified Chinese)
 opencc = ["opencc>=1.1"]
+# the post graph
+graph = ["paragraphic>=0.2,<0.3"]
 tests = [
     "coverage",
     "pytest",
@@ -56,6 +59,18 @@ Repository = "https://github.com/ickc/parasite"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/para"]
+
+[tool.hatch.build.targets.sdist]
+# the source, its tests and the docs' sources (not their builds)
+include = [
+    "src/para",
+    "tests",
+    "docs/pages",
+    "docs/parasite.toml",
+    "docs/makefile",
+    "CHANGELOG.md",
+    "AUTHORS.rst",
+]
 
 [tool.ruff]
 line-length = 88

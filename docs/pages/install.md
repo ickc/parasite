@@ -3,7 +3,8 @@ title: Install
 ---
 
 ::: note
-Not released yet: until `para` is on PyPI, install it [from the source](#from-the-source).
+On PyPI the distribution is `pandoc-para` for now (the name `para` is requested); it
+installs the package `para` and the command `parasite`.
 :::
 
 para.site needs Python ≥ 3.12 and pandoc ≥ 3.1. pandoc is not on PyPI: install it from
@@ -13,27 +14,25 @@ para.site needs Python ≥ 3.12 and pandoc ≥ 3.1. pandoc is not on PyPI: insta
 
 ```sh
 pixi add pandoc
-pixi add --pypi para
+pixi add --pypi pandoc-para
 ```
 
 # With pip
 
 ```sh
-pip install para
+pip install pandoc-para
 ```
 
 # Optional parts
 
 | extra | for |
 |---|---|
-| `para[search]` | search, with [Pagefind](https://pagefind.app/) (its binary comes with it) |
-| `para[extras]` | coloured logs; watching sources and serving the site while you write |
+| `pandoc-para[search]` | search, with [Pagefind](https://pagefind.app/) (its binary comes with it) |
+| `pandoc-para[extras]` | coloured logs; watching sources and serving the site while you write |
+| `pandoc-para[graph]` | the post graph, with [paragraphic](https://github.com/ickc/paragraphic) |
 
-The post graph needs [paragraphic](https://github.com/ickc/paragraphic) installed (`pip
-install 'paragraphic @ git+https://github.com/ickc/paragraphic@v0.1.0'`, or `pixi add
---pypi 'paragraphic @ git+https://github.com/ickc/paragraphic@v0.1.0'`), and the check of
-the output's links [lychee](https://lychee.cli.rs) (`pixi add lychee`; see
-[builds](../builds/)).
+The check of the output's links needs [lychee](https://lychee.cli.rs) (`pixi add
+lychee`; see [builds](../builds/)).
 
 Filters a site uses (pantable, pannb, …) are installed like any package, then named in
 its `parasite.toml` (see [filters](../filters/)).

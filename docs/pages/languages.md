@@ -39,7 +39,7 @@ own. `x.en.md` without an `x.md` is a page in English, at `x/`.
 **Made by conversion.** With `convert`, an [OpenCC](https://github.com/BYVoid/OpenCC)
 conversion (`hk2s`, `t2s`, `tw2s`, `s2t`, `s2hk`, `s2tw`, …), each page in the site's
 language (or `from`) that has no written translation gets one: its text and metadata
-converted, its code, URLs and raw HTML left as they are. It needs `para[opencc]`. A
+converted, its code, URLs and raw HTML left as they are. It needs `pandoc-para[opencc]`. A
 value by language the site does not give for that language (its title, the `nav`) is
 the source language's, converted.
 
