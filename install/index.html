@@ -152,14 +152,14 @@
             
             
             <div class="note">
-            <p>Not released yet: until <code>para</code> is on PyPI, install it <a href="#from-the-source">from the source</a>.</p>
+            <p>On PyPI the distribution is <code>pandoc-para</code> for now (the name <code>para</code> is requested); it installs the package <code>para</code> and the command <code>parasite</code>.</p>
             </div>
             <p>para.site needs Python ≥ 3.12 and pandoc ≥ 3.1. pandoc is not on PyPI: install it from <a href="https://pandoc.org/installing.html">pandoc.org</a> or conda-forge.</p>
             <h1 id="with-pixi-or-conda">With pixi or conda</h1>
             <div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pixi</span> add pandoc</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">pixi</span> add <span class="at">--pypi</span> para</span></code></pre></div>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">pixi</span> add <span class="at">--pypi</span> pandoc-para</span></code></pre></div>
             <h1 id="with-pip">With pip</h1>
-            <div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install para</span></code></pre></div>
+            <div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install pandoc-para</span></code></pre></div>
             <h1 id="optional-parts">Optional parts</h1>
             <table>
             <colgroup>
@@ -174,16 +174,20 @@
             </thead>
             <tbody>
             <tr>
-            <td><code>para[search]</code></td>
+            <td><code>pandoc-para[search]</code></td>
             <td>search, with <a href="https://pagefind.app/">Pagefind</a> (its binary comes with it)</td>
             </tr>
             <tr>
-            <td><code>para[extras]</code></td>
+            <td><code>pandoc-para[extras]</code></td>
             <td>coloured logs; watching sources and serving the site while you write</td>
+            </tr>
+            <tr>
+            <td><code>pandoc-para[graph]</code></td>
+            <td>the post graph, with <a href="https://github.com/ickc/paragraphic">paragraphic</a></td>
             </tr>
             </tbody>
             </table>
-            <p>The post graph needs <a href="https://github.com/ickc/paragraphic">paragraphic</a> installed (<code>pip install 'paragraphic @ git+https://github.com/ickc/paragraphic@v0.1.0'</code>, or <code>pixi add --pypi 'paragraphic @ git+https://github.com/ickc/paragraphic@v0.1.0'</code>), and the check of the output’s links <a href="https://lychee.cli.rs">lychee</a> (<code>pixi add lychee</code>; see <a href="../builds/">builds</a>).</p>
+            <p>The check of the output’s links needs <a href="https://lychee.cli.rs">lychee</a> (<code>pixi add lychee</code>; see <a href="../builds/">builds</a>).</p>
             <p>Filters a site uses (pantable, pannb, …) are installed like any package, then named in its <code>parasite.toml</code> (see <a href="../filters/">filters</a>).</p>
             <h1 id="from-the-source">From the source</h1>
             <div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/ickc/parasite</span>
