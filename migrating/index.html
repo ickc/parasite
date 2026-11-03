@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="description" content="From parasite ≤ 0.1, and its run.py." />
+  <title>Migrating | para.site</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <link rel="stylesheet" href="../assets/css/all-nocdn.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Playfair+Display:700,900" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  
+</head>
+<body>
+
+<a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
+<!-- Header and menu bar -->
+<div class="container">
+  <header class="blog-header py-3">
+    <div class="row nbb-header align-items-center">
+      <div class="col-md-3 col-xs-2 col-sm-2" style="width: auto;">
+        <button class="navbar-toggler navbar-light bg-light nbb-navbar-toggler" type="button" data-toggle="collapse" data-target=".bs-nav-collapsible" aria-controls="bs-navbar" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse bs-nav-collapsible bootblog4-search-form-holder">
+                    <form class="navbar-form navbar-left" action="../search/" role="search">
+                        <div class="form-group">
+                            <input type="text" class="form-control" name="q" placeholder="Search" autocomplete="off" />
+                        </div>
+                    </form>
+                  </div>
+      </div>
+            <div class="col-md-6 col-xs-10 col-sm-10 bootblog4-brand" style="width: auto;">
+        <a class="navbar-brand blog-header-logo text-dark" href="../">
+                    <span id="blog-title">para.site</span>
+                  </a>
+      </div>
+            <div class="col-md-3 justify-content-end align-items-center bs-nav-collapsible collapse flex-collapse bootblog4-right-nav">
+        <nav class="navbar navbar-light bg-white">
+          <ul class="navbar-nav bootblog4-right-nav"></ul>
+        </nav>
+      </div>
+    </div>
+  </header>
+    <nav class="navbar navbar-expand-md navbar-light bg-white static-top">
+    <div class="collapse navbar-collapse bs-nav-collapsible" id="bs-navbar">
+      <ul class="navbar-nav nav-fill d-flex w-100"><li class="nav-item"><a href="../" class="nav-link">para.site</a></li><li class="nav-item"><a href="../install/" class="nav-link">Install</a></li><li class="nav-item dropdown"><a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Configure</a><ul class="dropdown-menu"><li class="dropdown-item"><a href="../configuration/" class="dropdown-item">parasite.toml</a></li><li class="dropdown-item"><a href="../reference/" class="dropdown-item">Every key</a></li><li class="dropdown-item"><a href="../front-matter/" class="dropdown-item">Front matter</a></li><li class="dropdown-item"><a href="../profiles/" class="dropdown-item">Output profiles</a></li><li class="dropdown-item"><a href="../filters/" class="dropdown-item">Filters</a></li><li class="dropdown-item"><a href="../languages/" class="dropdown-item">Languages</a></li></ul></li><li class="nav-item"><a href="../builds/" class="nav-link">How it builds</a></li><li class="nav-item"><a href="../migrating/" class="nav-link">Migrating</a></li><li class="nav-item"><a href="../search/" class="nav-link">Search</a></li></ul>
+    </div>
+  </nav>
+  </div>
+
+<div class="container" id="content" role="main">
+  <div class="body-content">
+    <div class="row">
+      <div class="col-md-8 blog-main"><!--Body content-->
+        <article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article">
+          <header>
+                        <h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">Migrating</a></h1>
+                                                <p class="description p-summary">From parasite ≤ 0.1, and its run.py.</p>
+                        <div class="metadata">
+                                        </div>
+          </header>
+          <div class="e-content entry-content" itemprop="articleBody text">
+                        
+            
+            
+            <p>parasite ≤ 0.1 (the package <code>parasite</code>, now <code>para</code>) was configured by a site’s <code>run.py</code>, a subclass of its <code>Config</code>. Every part of it has a place in <code>parasite.toml</code>:</p>
+            <table>
+            <colgroup>
+            <col style="width: 50%" />
+            <col style="width: 50%" />
+            </colgroup>
+            <thead>
+            <tr>
+            <th>run.py</th>
+            <th>parasite.toml</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+            <td><code>site_url</code>, <code>blog_email</code>, <code>logo_url</code>, <code>default_lang</code>, <code>timezone</code></td>
+            <td><code>[site]</code> <code>url</code>, <code>email</code>, <code>logo</code>, <code>lang</code>, <code>timezone</code></td>
+            </tr>
+            <tr>
+            <td><code>blog_title</code>, <code>blog_author</code>, <code>blog_description</code></td>
+            <td><code>[site]</code> <code>title</code>, <code>author</code>, <code>description</code> (a string, or a table by language)</td>
+            </tr>
+            <tr>
+            <td><code>copyright</code></td>
+            <td><code>[site] copyright</code>, with <code>{years}</code> and <code>{author}</code></td>
+            </tr>
+            <tr>
+            <td><code>n_jumbotron</code>, <code>n_grid</code>, <code>index_include_jumbotron</code></td>
+            <td><code>[listing]</code> <code>jumbotron</code>, <code>grid</code>, <code>include-jumbotron</code></td>
+            </tr>
+            <tr>
+            <td><code>write_rss</code>, <code>write_atom</code>, <code>write_sitemap</code>, <code>write_graph</code></td>
+            <td><code>[feeds]</code>, <code>[sitemap]</code>, <code>[graph]</code></td>
+            </tr>
+            <tr>
+            <td><code>write_tipuesearch_json</code></td>
+            <td><code>[search]</code> (Pagefind; para.site makes the search page)</td>
+            </tr>
+            <tr>
+            <td><code>mathjax_config</code></td>
+            <td><code>[mathjax]</code>, as a table</td>
+            </tr>
+            <tr>
+            <td><code>files_folders</code></td>
+            <td><code>[files]</code> (copied whole) and <code>[media.folders]</code> (copied by reference)</td>
+            </tr>
+            <tr>
+            <td><code>posts</code>, <code>pages</code></td>
+            <td><code>[[sources]]</code>, with <code>listed = true</code> for posts</td>
+            </tr>
+            <tr>
+            <td><code>pretty_urls</code></td>
+            <td>a profile’s <code>url</code></td>
+            </tr>
+            <tr>
+            <td><code>pandoc_input_options(ext)</code></td>
+            <td><code>[read] options</code>, <code>[read.EXT] options</code></td>
+            </tr>
+            <tr>
+            <td><code>panflute_input_filters(ext)</code></td>
+            <td><code>[filters.NAME]</code>, with <code>inputs</code></td>
+            </tr>
+            <tr>
+            <td><code>pandoc_output_options</code>, <code>panflute_output_filters</code>, <code>css</code>, <code>js</code>, <code>header_includes</code>, <code>include_before</code>, <code>include_after</code>, <code>script_include_after</code>, <code>nav_includes</code>, <code>content_footer</code>, <code>search_form</code> (by extension)</td>
+            <td>a profile’s <code>options</code>, <code>filters</code>, <code>css</code>, <code>js</code>, <code>header-includes</code>, <code>include-before</code>, <code>include-after</code>, <code>script-include-after</code>, <code>nav</code>, <code>footer</code>, <code>search-form</code></td>
+            </tr>
+            </tbody>
+            </table>
+            <p>The makefile then runs <code>parasite</code> instead of <code>./run.py</code>.</p>
+            <h1 id="front-matter">Front matter</h1>
+            <p>See <a href="../front-matter/">front matter</a> for the keys parasite ≤ 0.1 used and what replaces them. A teaser (<code>&lt;!-- more --&gt;</code>) becomes the <code>description</code>; tabs after a key’s colon, which pandoc accepts and PyYAML does not, become spaces.</p>
+            <h1 id="a-page-and-its-slides">A page and its slides</h1>
+            <p>A talk kept as <code>X.md</code> (the page) and <code>X.markdown</code> (the slides) becomes one source with <code>format: [html, slides]</code>, what only one of them had in <code>.content-visible</code> divs (see <a href="../profiles/">output profiles</a>), and the slides’ own metadata under <code>format: slides: metadata:</code>.</p>
+            <h1 id="search">Search</h1>
+            <p>The search page (<code>pages/search.md</code>, and tipuesearch’s scripts) goes: para.site makes it.</p>
+          </div>
+          <aside class="postpromonav">
+            <nav>
+                          </nav>
+          </aside>
+        </article>
+      <!--End of body content--></div>
+      <aside class="col-md-4 blog-sidebar">
+        <div class="js-toc is-position-fixed"></div>
+      </aside>
+    </div>
+        <footer id="footer">
+      Contents ©  Kolen Cheung
+    </footer>
+      </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lightgallery@2/lightgallery.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lightgallery@2/plugins/thumbnail/lg-thumbnail.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3/dist/js/jquery.justifiedGallery.min.js"></script>
+<script>
+    tocbot.init({
+      tocSelector: '.js-toc',
+      contentSelector: '.entry-content',
+      headingSelector: 'h1, h2, h3, h4, h5, h6',
+      collapseDepth: 1,
+    });
+  </script>
+
+</body>
+</html>

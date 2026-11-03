@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="description" content="The code a site runs, named in its parasite.toml." />
+  <title>Filters | para.site</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="../assets/css/all-nocdn.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Playfair+Display:700,900" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  
+</head>
+<body>
+
+<a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
+<!-- Header and menu bar -->
+<div class="container">
+  <header class="blog-header py-3">
+    <div class="row nbb-header align-items-center">
+      <div class="col-md-3 col-xs-2 col-sm-2" style="width: auto;">
+        <button class="navbar-toggler navbar-light bg-light nbb-navbar-toggler" type="button" data-toggle="collapse" data-target=".bs-nav-collapsible" aria-controls="bs-navbar" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse bs-nav-collapsible bootblog4-search-form-holder">
+                    <form class="navbar-form navbar-left" action="../search/" role="search">
+                        <div class="form-group">
+                            <input type="text" class="form-control" name="q" placeholder="Search" autocomplete="off" />
+                        </div>
+                    </form>
+                  </div>
+      </div>
+            <div class="col-md-6 col-xs-10 col-sm-10 bootblog4-brand" style="width: auto;">
+        <a class="navbar-brand blog-header-logo text-dark" href="../">
+                    <span id="blog-title">para.site</span>
+                  </a>
+      </div>
+            <div class="col-md-3 justify-content-end align-items-center bs-nav-collapsible collapse flex-collapse bootblog4-right-nav">
+        <nav class="navbar navbar-light bg-white">
+          <ul class="navbar-nav bootblog4-right-nav"></ul>
+        </nav>
+      </div>
+    </div>
+  </header>
+    <nav class="navbar navbar-expand-md navbar-light bg-white static-top">
+    <div class="collapse navbar-collapse bs-nav-collapsible" id="bs-navbar">
+      <ul class="navbar-nav nav-fill d-flex w-100"><li class="nav-item"><a href="../" class="nav-link">para.site</a></li><li class="nav-item"><a href="../install/" class="nav-link">Install</a></li><li class="nav-item dropdown"><a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Configure</a><ul class="dropdown-menu"><li class="dropdown-item"><a href="../configuration/" class="dropdown-item">parasite.toml</a></li><li class="dropdown-item"><a href="../reference/" class="dropdown-item">Every key</a></li><li class="dropdown-item"><a href="../front-matter/" class="dropdown-item">Front matter</a></li><li class="dropdown-item"><a href="../profiles/" class="dropdown-item">Output profiles</a></li><li class="dropdown-item"><a href="../filters/" class="dropdown-item">Filters</a></li><li class="dropdown-item"><a href="../languages/" class="dropdown-item">Languages</a></li></ul></li><li class="nav-item"><a href="../builds/" class="nav-link">How it builds</a></li><li class="nav-item"><a href="../migrating/" class="nav-link">Migrating</a></li><li class="nav-item"><a href="../search/" class="nav-link">Search</a></li></ul>
+    </div>
+  </nav>
+  </div>
+
+<div class="container" id="content" role="main">
+  <div class="body-content">
+    <div class="row">
+      <div class="col-md-8 blog-main"><!--Body content-->
+        <article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article">
+          <header>
+                        <h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">Filters</a></h1>
+                                                <p class="description p-summary">The code a site runs, named in its parasite.toml.</p>
+                        <div class="metadata">
+                                        </div>
+          </header>
+          <div class="e-content entry-content" itemprop="articleBody text">
+                        
+            
+            
+            <p>A site lists the filters it may use in <code>[filters.NAME]</code>, in the order they run. A filter is code from something you installed, never a path in the site: Python, a function taking and returning a panflute document named as an importable <code>module:function</code>; or Lua, by name, found where packages install Lua filters (the environment’s <code>share/pandoc/filters/</code>, as pandoc-forge’s packages do) or in pandoc’s user data directory.</p>
+            <div class="sourceCode" id="cb1"><pre class="sourceCode toml"><code class="sourceCode toml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[filters.amsthm]</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">lua</span> <span class="op">=</span> <span class="st">&quot;amsthm&quot;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="dt">default</span> <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="kw">[filters.pannb]</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="dt">python</span> <span class="op">=</span> <span class="st">&quot;pannb:main&quot;</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="dt">inputs</span> <span class="op">=</span> <span class="op">[</span><span class="st">&quot;ipynb&quot;</span><span class="op">]</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="dt">default</span> <span class="op">=</span> <span class="cn">true</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="kw">[filters.texp]</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="dt">python</span> <span class="op">=</span> <span class="st">&quot;texp.panflute_filter:main&quot;</span></span></code></pre></div>
+            <table>
+            <colgroup>
+            <col style="width: 50%" />
+            <col style="width: 50%" />
+            </colgroup>
+            <thead>
+            <tr>
+            <th>key</th>
+            <th>meaning</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+            <td><code>python</code></td>
+            <td>the function, <code>module:function</code></td>
+            </tr>
+            <tr>
+            <td><code>lua</code></td>
+            <td>the Lua filter’s name (<code>amsthm</code> is <code>amsthm.lua</code>)</td>
+            </tr>
+            <tr>
+            <td><code>at</code></td>
+            <td><code>"read"</code> (the default): after reading, for every output; <code>"render"</code>: for an output whose profile names it in its <code>filters</code>, or of a document that names it</td>
+            </tr>
+            <tr>
+            <td><code>inputs</code></td>
+            <td>a read filter for these input formats only (extensions without the dot)</td>
+            </tr>
+            <tr>
+            <td><code>default</code></td>
+            <td>a read filter runs on every document</td>
+            </tr>
+            </tbody>
+            </table>
+            <p>A document chooses among them with Quarto’s key, by name:</p>
+            <div class="sourceCode" id="cb2"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">filters</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">texp</span><span class="kw">,</span><span class="at"> -pantable</span><span class="kw">]</span></span></code></pre></div>
+            <p>turns <code>texp</code> on and <code>pantable</code> (a default) off. A name the site does not list fails that page, with a message saying where to add it; a path is refused. The filters run in the site’s order, not the document’s, so two documents with the same filters run them the same way.</p>
+            <p>Read filters run after pandoc’s own (the <code>--filter</code> and <code>--citeproc</code> of <code>[read] options</code>), Lua ones in a pandoc call of their own. A Lua render filter runs in the call that writes the output, after the Python ones, so that <code>FORMAT</code> is the output’s.</p>
+            <p>para.site’s own: <code>lightgallery-from-dir</code> (read: a gallery from a folder of photos), <code>lightgallery</code> and <code>mathjax-bold-ell</code> (render: MathJax has no bold ℓ, so <code>\mathbf{\ell}</code> is written <code>\pmb{\ell}</code> in HTML).</p>
+            <p>pandoc’s JSON filters (pandoc-crossref) and citeproc are pandoc options: put them in <code>[read] options</code>. WebAssembly filters are planned.</p>
+            <h1 id="from-other-tools">From other tools</h1>
+            <p>Each has its own key for a document’s filters; para.site reads none of them yet:</p>
+            <table>
+            <thead>
+            <tr>
+            <th>tool</th>
+            <th>key</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+            <td>Quarto</td>
+            <td><code>filters:</code>, names or paths, with <code>at:</code> for the stage</td>
+            </tr>
+            <tr>
+            <td>panflute</td>
+            <td><code>panflute-filters:</code>, with <code>panflute-path:</code></td>
+            </tr>
+            <tr>
+            <td>panzer</td>
+            <td><code>style:</code>, naming a set of filters defined elsewhere</td>
+            </tr>
+            <tr>
+            <td>pandocomatic</td>
+            <td><code>pandocomatic_:</code></td>
+            </tr>
+            </tbody>
+            </table>
+          </div>
+          <aside class="postpromonav">
+            <nav>
+                          </nav>
+          </aside>
+        </article>
+      <!--End of body content--></div>
+      <aside class="col-md-4 blog-sidebar">
+        <div class="js-toc is-position-fixed"></div>
+      </aside>
+    </div>
+        <footer id="footer">
+      Contents ©  Kolen Cheung
+    </footer>
+      </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lightgallery@2/lightgallery.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lightgallery@2/plugins/thumbnail/lg-thumbnail.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3/dist/js/jquery.justifiedGallery.min.js"></script>
+<script>
+    tocbot.init({
+      tocSelector: '.js-toc',
+      contentSelector: '.entry-content',
+      headingSelector: 'h1, h2, h3, h4, h5, h6',
+      collapseDepth: 1,
+    });
+  </script>
+
+</body>
+</html>

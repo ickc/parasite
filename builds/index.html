@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="description" content="Read, record, derive, render, write; and only what changed." />
+  <title>How it builds | para.site</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <link rel="stylesheet" href="../assets/css/all-nocdn.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Playfair+Display:700,900" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  
+</head>
+<body>
+
+<a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
+<!-- Header and menu bar -->
+<div class="container">
+  <header class="blog-header py-3">
+    <div class="row nbb-header align-items-center">
+      <div class="col-md-3 col-xs-2 col-sm-2" style="width: auto;">
+        <button class="navbar-toggler navbar-light bg-light nbb-navbar-toggler" type="button" data-toggle="collapse" data-target=".bs-nav-collapsible" aria-controls="bs-navbar" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse bs-nav-collapsible bootblog4-search-form-holder">
+                    <form class="navbar-form navbar-left" action="../search/" role="search">
+                        <div class="form-group">
+                            <input type="text" class="form-control" name="q" placeholder="Search" autocomplete="off" />
+                        </div>
+                    </form>
+                  </div>
+      </div>
+            <div class="col-md-6 col-xs-10 col-sm-10 bootblog4-brand" style="width: auto;">
+        <a class="navbar-brand blog-header-logo text-dark" href="../">
+                    <span id="blog-title">para.site</span>
+                  </a>
+      </div>
+            <div class="col-md-3 justify-content-end align-items-center bs-nav-collapsible collapse flex-collapse bootblog4-right-nav">
+        <nav class="navbar navbar-light bg-white">
+          <ul class="navbar-nav bootblog4-right-nav"></ul>
+        </nav>
+      </div>
+    </div>
+  </header>
+    <nav class="navbar navbar-expand-md navbar-light bg-white static-top">
+    <div class="collapse navbar-collapse bs-nav-collapsible" id="bs-navbar">
+      <ul class="navbar-nav nav-fill d-flex w-100"><li class="nav-item"><a href="../" class="nav-link">para.site</a></li><li class="nav-item"><a href="../install/" class="nav-link">Install</a></li><li class="nav-item dropdown"><a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Configure</a><ul class="dropdown-menu"><li class="dropdown-item"><a href="../configuration/" class="dropdown-item">parasite.toml</a></li><li class="dropdown-item"><a href="../reference/" class="dropdown-item">Every key</a></li><li class="dropdown-item"><a href="../front-matter/" class="dropdown-item">Front matter</a></li><li class="dropdown-item"><a href="../profiles/" class="dropdown-item">Output profiles</a></li><li class="dropdown-item"><a href="../filters/" class="dropdown-item">Filters</a></li><li class="dropdown-item"><a href="../languages/" class="dropdown-item">Languages</a></li></ul></li><li class="nav-item"><a href="../builds/" class="nav-link">How it builds</a></li><li class="nav-item"><a href="../migrating/" class="nav-link">Migrating</a></li><li class="nav-item"><a href="../search/" class="nav-link">Search</a></li></ul>
+    </div>
+  </nav>
+  </div>
+
+<div class="container" id="content" role="main">
+  <div class="body-content">
+    <div class="row">
+      <div class="col-md-8 blog-main"><!--Body content-->
+        <article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article">
+          <header>
+                        <h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">How it builds</a></h1>
+                                                <p class="description p-summary">Read, record, derive, render, write; and only what changed.</p>
+                        <div class="metadata">
+                                        </div>
+          </header>
+          <div class="e-content entry-content" itemprop="articleBody text">
+                        
+            
+            
+            <h1 id="the-steps">The steps</h1>
+            <ol type="1">
+            <li><strong>Discover</strong> the sources of each collection.</li>
+            <li><strong>Read</strong> each into a pandoc document, with the read filters.</li>
+            <li><strong>Record</strong> it: a small summary of the page (URL, title, dates, category, tags, description, search text, links, citations, its outputs, the media it uses).</li>
+            <li><strong>Derive</strong> what crosses pages from the records alone: listings, categories, tags, the archive, feeds, the sitemap, search, the graph, the site’s copyright years.</li>
+            <li><strong>Render</strong> each page in each of its profiles, and the derived pages. A page’s document is dropped once rendered.</li>
+            <li><strong>Write</strong>: every file through one output tree.</li>
+            </ol>
+            <p>Pages are read and rendered in a thread pool: most of the work is pandoc, in its own processes.</p>
+            <h1 id="only-what-changed">Only what changed</h1>
+            <p>The records are kept in <code>.para/store.sqlite</code> (ignore it in git). A build reads a source again only when its <strong>read key</strong> changed, and renders a page again only when its <strong>render key</strong> changed or a file it produced is gone:</p>
+            <ul>
+            <li>the <strong>site key</strong>: the code (the Python modules loaded, the installed packages, para’s own files), pandoc and its data folder, the configuration, and the files the configuration names for every page (<code>[read]</code>‘s <code>--metadata-file</code> and the like, the profiles’ own templates, <code>pandoc-crossref.yaml</code>). Any change here reads everything again;</li>
+            <li>a <strong>read key</strong>: the site key and the source’s bytes. And a record is used only while the files its read touched are unchanged: its links’ and images’ files (or that they were missing), the media it references and what those reference, its bibliography and style if it cites, a translation’s primary, and the files and folders its text names (a table’s CSV, a gallery’s folder). So a bibliography edit reads again the pages that cite, and a new photo the page whose gallery has it. A filter that reads a file the document does not name can say so with <code>para.deps.touch(path)</code>;</li>
+            <li>a <strong>render key</strong>: the read key, the page’s copyright years, its link to a report and its translations.</li>
+            </ul>
+            <p>A derived page is rendered again when its document changed. <code>parasite --full</code> ignores the store. A rebuild with nothing changed takes about a third of a second for a site of a hundred pages.</p>
+            <h1 id="the-output-tree">The output tree</h1>
+            <p>Every file has one producer: a page, a derived page, a copied folder, a minified bundle, a medium, a site-wide file. Two producers of one path is an error. A file is written only when its bytes change, so an unchanged page keeps its modification time. Files in the output folder that no step produced (a deleted page’s) are reported, and removed with <code>parasite --prune</code>.</p>
+            <h1 id="media">Media</h1>
+            <p><code>[media.folders]</code> are copied <strong>by reference</strong>: only the files the pages use, from their images and links, raw HTML (<code>src</code>, <code>href</code>, <code>data</code>, <code>poster</code>, <code>url(…)</code>), their <code>image</code>, and what those files use in turn (an HTML plot’s scripts, an SVG’s images, a style sheet’s). <code>[files]</code> are copied whole.</p>
+            <p>Media in a source itself (a notebook’s outputs) are written next to the page; a PDF image becomes SVG, which a browser can show.</p>
+            <h1 id="search">Search</h1>
+            <p>With <code>[search] enabled</code> and <code>para[search]</code> installed, para.site indexes the records with <a href="https://pagefind.app/">Pagefind</a> and makes the search page (<code>[search] page</code>). The index is sharded: one more page changes a few of its files. The search box in the navigation sends <code>?q=</code> to it. Every page is indexed in the site’s language (Pagefind searches the index of the search page’s language only). Tags and categories are its filters, and a page’s tags are searched as its words.</p>
+            <h1 id="links">Links</h1>
+            <p>With <a href="https://lychee.cli.rs">lychee</a> installed, para.site checks the output’s links when the build is done, offline: every link and media reference from the site’s files to its files must resolve, or the build fails (the output is written either way; a build that serves or watches only logs them). This guards the media copied by reference: a reference para.site did not see would be a broken link here. lychee reads the HTML, raw HTML and <code>&lt;style&gt;</code> elements included, but not <code>style</code> attributes or CSS files.</p>
+            <p>Links known to be broken are excluded by <code>[check] exclude</code>, regular expressions of URLs (a site’s file is a <code>file://</code> URL); <code>[check] links = false</code> turns the check off.</p>
+            <h1 id="the-post-graph">The post graph</h1>
+            <p>With <code>[graph] enabled</code> and paragraphic installed, para.site writes <code>graph.json</code> from the records (links, citations, external links, a page’s other outputs) and the <code>/graph/</code> page; every page gets a graph of its neighbours.</p>
+          </div>
+          <aside class="postpromonav">
+            <nav>
+                          </nav>
+          </aside>
+        </article>
+      <!--End of body content--></div>
+      <aside class="col-md-4 blog-sidebar">
+        <div class="js-toc is-position-fixed"></div>
+      </aside>
+    </div>
+        <footer id="footer">
+      Contents ©  Kolen Cheung
+    </footer>
+      </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lightgallery@2/lightgallery.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lightgallery@2/plugins/thumbnail/lg-thumbnail.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3/dist/js/jquery.justifiedGallery.min.js"></script>
+<script>
+    tocbot.init({
+      tocSelector: '.js-toc',
+      contentSelector: '.entry-content',
+      headingSelector: 'h1, h2, h3, h4, h5, h6',
+      collapseDepth: 1,
+    });
+  </script>
+
+</body>
+</html>

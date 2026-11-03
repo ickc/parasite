@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="description" content="The keys para.site reads from a document’s metadata." />
+  <title>Front matter | para.site</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <link rel="stylesheet" href="../assets/css/all-nocdn.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Playfair+Display:700,900" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  
+</head>
+<body>
+
+<a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
+<!-- Header and menu bar -->
+<div class="container">
+  <header class="blog-header py-3">
+    <div class="row nbb-header align-items-center">
+      <div class="col-md-3 col-xs-2 col-sm-2" style="width: auto;">
+        <button class="navbar-toggler navbar-light bg-light nbb-navbar-toggler" type="button" data-toggle="collapse" data-target=".bs-nav-collapsible" aria-controls="bs-navbar" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse bs-nav-collapsible bootblog4-search-form-holder">
+                    <form class="navbar-form navbar-left" action="../search/" role="search">
+                        <div class="form-group">
+                            <input type="text" class="form-control" name="q" placeholder="Search" autocomplete="off" />
+                        </div>
+                    </form>
+                  </div>
+      </div>
+            <div class="col-md-6 col-xs-10 col-sm-10 bootblog4-brand" style="width: auto;">
+        <a class="navbar-brand blog-header-logo text-dark" href="../">
+                    <span id="blog-title">para.site</span>
+                  </a>
+      </div>
+            <div class="col-md-3 justify-content-end align-items-center bs-nav-collapsible collapse flex-collapse bootblog4-right-nav">
+        <nav class="navbar navbar-light bg-white">
+          <ul class="navbar-nav bootblog4-right-nav"></ul>
+        </nav>
+      </div>
+    </div>
+  </header>
+    <nav class="navbar navbar-expand-md navbar-light bg-white static-top">
+    <div class="collapse navbar-collapse bs-nav-collapsible" id="bs-navbar">
+      <ul class="navbar-nav nav-fill d-flex w-100"><li class="nav-item"><a href="../" class="nav-link">para.site</a></li><li class="nav-item"><a href="../install/" class="nav-link">Install</a></li><li class="nav-item dropdown"><a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Configure</a><ul class="dropdown-menu"><li class="dropdown-item"><a href="../configuration/" class="dropdown-item">parasite.toml</a></li><li class="dropdown-item"><a href="../reference/" class="dropdown-item">Every key</a></li><li class="dropdown-item"><a href="../front-matter/" class="dropdown-item">Front matter</a></li><li class="dropdown-item"><a href="../profiles/" class="dropdown-item">Output profiles</a></li><li class="dropdown-item"><a href="../filters/" class="dropdown-item">Filters</a></li><li class="dropdown-item"><a href="../languages/" class="dropdown-item">Languages</a></li></ul></li><li class="nav-item"><a href="../builds/" class="nav-link">How it builds</a></li><li class="nav-item"><a href="../migrating/" class="nav-link">Migrating</a></li><li class="nav-item"><a href="../search/" class="nav-link">Search</a></li></ul>
+    </div>
+  </nav>
+  </div>
+
+<div class="container" id="content" role="main">
+  <div class="body-content">
+    <div class="row">
+      <div class="col-md-8 blog-main"><!--Body content-->
+        <article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article">
+          <header>
+                        <h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">Front matter</a></h1>
+                                                <p class="description p-summary">The keys para.site reads from a document’s metadata.</p>
+                        <div class="metadata">
+                                        </div>
+          </header>
+          <div class="e-content entry-content" itemprop="articleBody text">
+                        
+            
+            
+            <p>A document’s metadata is pandoc’s: YAML front matter in Markdown, the first raw cell of a notebook. pandoc’s own keys keep pandoc’s meaning; where Quarto has the same idea, para.site uses Quarto’s name.</p>
+            <table>
+            <colgroup>
+            <col style="width: 50%" />
+            <col style="width: 50%" />
+            </colgroup>
+            <thead>
+            <tr>
+            <th>key</th>
+            <th>meaning</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+            <td><code>title</code>, <code>subtitle</code>, <code>author</code>, <code>abstract</code></td>
+            <td>pandoc’s</td>
+            </tr>
+            <tr>
+            <td><code>lang</code></td>
+            <td>the page’s language, a BCP 47 tag (see <a href="../languages/">languages</a>); a translation’s comes from its file name</td>
+            </tr>
+            <tr>
+            <td><code>date</code></td>
+            <td>when it was first published; a post needs one. An ISO 8601 date or date-time, in the site’s time zone unless it says otherwise</td>
+            </tr>
+            <tr>
+            <td><code>date-modified</code></td>
+            <td>when its content last changed, by hand. A post’s copyright runs from <code>date</code> to <code>date-modified</code></td>
+            </tr>
+            <tr>
+            <td><code>description</code></td>
+            <td>one or two plain sentences, for listings, <code>&lt;meta name="description"&gt;</code> and search; shown under the title. Without one, the <code>subtitle</code> is used</td>
+            </tr>
+            <tr>
+            <td><code>category</code></td>
+            <td>one per post, a path (<code>so-uk/meetings</code>). It defaults to the source’s folder, so it is rarely written; a category lists its subcategories’ posts too</td>
+            </tr>
+            <tr>
+            <td><code>tags</code></td>
+            <td>a list; each tag has a page</td>
+            </tr>
+            <tr>
+            <td><code>draft: true</code></td>
+            <td>built only with <code>--include-draft</code>, and never listed</td>
+            </tr>
+            <tr>
+            <td><code>image</code>, <code>image-alt</code></td>
+            <td>its thumbnail in listings, from the site’s root, and the thumbnail’s text (else the title)</td>
+            </tr>
+            <tr>
+            <td><code>format</code></td>
+            <td>its output profiles (see <a href="../profiles/">output profiles</a>)</td>
+            </tr>
+            <tr>
+            <td><code>format-links</code></td>
+            <td>which of its other outputs an output links to, by each profile’s <code>label</code>: <code>true</code> all, <code>false</code> none, or a list of profile names. Without it, slides link to the page beside them (Report)</td>
+            </tr>
+            <tr>
+            <td><code>output-file</code></td>
+            <td>an output’s file name, in its folder, as an exception to the URL rules: at the top level the first output’s, under <code>format: NAME:</code> that output’s</td>
+            </tr>
+            </tbody>
+            </table>
+            <h1 id="keys-from-parasite-0.1">Keys from parasite ≤ 0.1</h1>
+            <p>para.site warns about these and otherwise ignores them:</p>
+            <table>
+            <thead>
+            <tr>
+            <th>key</th>
+            <th>instead</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+            <td><code>&lt;!-- more --&gt;</code> (a teaser)</td>
+            <td><code>description</code></td>
+            </tr>
+            <tr>
+            <td><code>status: draft</code></td>
+            <td><code>draft: true</code></td>
+            </tr>
+            <tr>
+            <td><code>status: featured</code></td>
+            <td>nothing: the front page shows the newest posts</td>
+            </tr>
+            <tr>
+            <td><code>previewimage</code></td>
+            <td><code>image</code></td>
+            </tr>
+            <tr>
+            <td><code>slug</code>, <code>pretty_url</code>, <code>url_type</code></td>
+            <td>the source’s path</td>
+            </tr>
+            <tr>
+            <td><code>type</code></td>
+            <td>nothing</td>
+            </tr>
+            <tr>
+            <td><code>sidebar_toc</code></td>
+            <td><code>toc</code></td>
+            </tr>
+            <tr>
+            <td><code>temp</code></td>
+            <td>nothing</td>
+            </tr>
+            </tbody>
+            </table>
+          </div>
+          <aside class="postpromonav">
+            <nav>
+                          </nav>
+          </aside>
+        </article>
+      <!--End of body content--></div>
+      <aside class="col-md-4 blog-sidebar">
+        <div class="js-toc is-position-fixed"></div>
+      </aside>
+    </div>
+        <footer id="footer">
+      Contents ©  Kolen Cheung
+    </footer>
+      </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tocbot@4/dist/tocbot.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lightgallery@2/lightgallery.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lightgallery@2/plugins/thumbnail/lg-thumbnail.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3/dist/js/jquery.justifiedGallery.min.js"></script>
+<script>
+    tocbot.init({
+      tocSelector: '.js-toc',
+      contentSelector: '.entry-content',
+      headingSelector: 'h1, h2, h3, h4, h5, h6',
+      collapseDepth: 1,
+    });
+  </script>
+
+</body>
+</html>

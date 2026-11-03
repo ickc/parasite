@@ -1,7 +1,0 @@
-parasite.data module
-====================
-
-.. automodule:: parasite.data
-   :members:
-   :undoc-members:
-   :show-inheritance:

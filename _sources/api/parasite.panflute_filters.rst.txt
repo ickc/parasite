@@ -1,7 +1,0 @@
-parasite.panflute\_filters module
-=================================
-
-.. automodule:: parasite.panflute_filters
-   :members:
-   :undoc-members:
-   :show-inheritance:

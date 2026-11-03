@@ -1,7 +1,0 @@
-parasite
-========
-
-.. toctree::
-   :maxdepth: 4
-
-   parasite

@@ -1,7 +1,0 @@
-parasite.config module
-======================
-
-.. automodule:: parasite.config
-   :members:
-   :undoc-members:
-   :show-inheritance:
