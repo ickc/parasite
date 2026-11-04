@@ -1,5 +1,11 @@
 # Revision history for `para`
 
+## Unreleased
+
+- **No minifier:** `[minify.css]` and `[minify.js]` are now `[bundle.css]` and
+  `[bundle.js]`, and are concatenated only; tdewolff's `minify` is no longer used.
+  The unused `minify_html` helper and HTML-filter hook are gone.
+
 ## v0.2.3
 
 - **Deterministic on any filesystem:** sources are read in path order, not the

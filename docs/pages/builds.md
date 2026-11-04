@@ -45,7 +45,7 @@ hundred pages.
 
 # The output tree
 
-Every file has one producer: a page, a derived page, a copied folder, a minified bundle,
+Every file has one producer: a page, a derived page, a copied folder, a bundle,
 a medium, a site-wide file. Two producers of one path is an error. A file is written
 only when its bytes change, so an unchanged page keeps its modification time. Files in
 the output folder that no step produced (a deleted page's) are reported, and removed

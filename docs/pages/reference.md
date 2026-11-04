@@ -10,7 +10,7 @@ A site's `parasite.toml` is merged over this file (see [parasite.toml](../config
 ```toml
 # para.site's defaults. A site's parasite.toml is merged over this: tables key by key,
 # everything else (strings, numbers, lists) replaced whole, and so are [files] and
-# [minify.*], which list the site's own entries. In strings, {root} becomes
+# [bundle.*], which list the site's own entries. In strings, {root} becomes
 # the relative path from the page to the site's root, and {years} the copyright years.
 
 [site]
@@ -97,8 +97,8 @@ media = "media"
 [files]
 files = ""
 
-# minified into the output: output path = [source files]
-[minify.css]
+# concatenated into the output: output path = [source files]
+[bundle.css]
 "assets/css/all-nocdn.css" = [
     "_css/bootstrap.css",
     "_css/rst_base.css",
@@ -109,7 +109,7 @@ files = ""
     "_css/custom.css",
 ]
 
-[minify.js]
+[bundle.js]
 
 # window.MathJax, as a table; `macros-file` (a JSON file) is merged into tex.macros
 [mathjax]

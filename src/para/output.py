@@ -1,7 +1,7 @@
 """The output tree: step 6 of the pipeline.
 
 Every file a build produces is claimed, by the one step that produces it: a page (its
-source path), a derived page, a copied folder, a minified asset, a site-wide file. Two
+source path), a derived page, a copied folder, a bundled asset, a site-wide file. Two
 owners for one path is an error, not a race to the last write. Files are rewritten only
 when their bytes change, so an unchanged page keeps its modification time. What is in
 the output directory but no step claimed is reported (and removed with ``prune``): a

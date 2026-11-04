@@ -309,8 +309,6 @@ def post_to_html(
         extra_args=extra_args,
     )
     html = xml_safe(html)
-    for html_filter in config.html_filters:
-        html = html_filter(html)
     if output is None:
         with open(out_path, "w") as f:
             f.write(html)
