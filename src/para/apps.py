@@ -19,6 +19,7 @@ from .media import (
     extract_media_options,
     localize_extracted_media,
     rebase_relative_urls,
+    relative_root_urls,
 )
 from .filters import chosen, run
 from .lang import convert
@@ -139,6 +140,8 @@ def read_md_to_ast(
         )
 
     doc = run(chosen(filters, "read", doc.get_metadata("filters"), str(path), ext=ext), doc)
+    if out_dir is not None:
+        doc = relative_root_urls(doc, out_dir, output_dir)
     if conversion:
         doc = convert(doc, conversion)
     return doc

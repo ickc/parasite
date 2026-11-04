@@ -125,7 +125,8 @@ def rebase_relative_urls(
       relative to ``out_dir``;
     - elsewhere, for an image: the file is copied next to the page (see :func:`copy_media`).
 
-    Anything else, e.g. links to other pages written as output URLs, is left untouched.
+    Anything else, e.g. links to other pages written as output URLs, is left untouched
+    (a URL from the site's root: :func:`relative_root_urls`).
 
     Args:
         source: path of the source file, relative to the site root (the working directory).
@@ -180,6 +181,27 @@ def rebase_relative_urls(
             if new is not None:
                 logger.debug("Rebased %s to %s in %s", elem.url, new, source)
                 elem.url = new
+
+    return doc.walk(action)
+
+
+def relative_root_urls(doc: Doc, out_dir: Path, output_dir: Path) -> Doc:
+    """Rewrite URLs from the site's root (``/about/``) relative to the page in
+    ``out_dir``, so that the site works under any path (a GitHub project site, a path on
+    a shared server), not only at a host's root. Run after the read filters, which may
+    make such URLs too."""
+
+    def from_root(url_path: str) -> str:
+        new = Path(os.path.relpath(output_dir / url_path.lstrip("/"), out_dir)).as_posix()
+        if url_path.endswith("/") and not new.endswith("/"):
+            new = "./" if new == "." else new + "/"
+        return new
+
+    def action(elem: Element, doc: Doc) -> None:
+        if isinstance(elem, (Image, Link)):
+            parts = urlsplit(elem.url)
+            if not parts.scheme and not parts.netloc and parts.path.startswith("/"):
+                elem.url = parts._replace(path=from_root(parts.path)).geturl()
 
     return doc.walk(action)
 
