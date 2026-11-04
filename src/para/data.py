@@ -410,7 +410,9 @@ class Pages:
             if collection.listed is not listed:
                 continue
             for ext in collection.ext:
-                for path in collection.dir.glob(f"**/*{ext}"):
+                # sorted: the filesystem's order would leak into the output (posts of
+                # one date keep this order in listings, and the search index lists pages)
+                for path in sorted(collection.dir.glob(f"**/*{ext}")):
                     if any(path.match(exclude) for exclude in collection.exclude):
                         continue
                     page = cls.page_class(
