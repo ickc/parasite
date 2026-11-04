@@ -16,7 +16,6 @@ from importlib import resources
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar
 
-from custom_inherit import DocInheritMeta
 
 from .filters import Filter, FilterError
 from .helpers import nav as nav_html
@@ -154,7 +153,7 @@ class Profile:
 
 
 @dataclass
-class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: ignore[misc] # mypy limitation
+class Config:
     """Configure static site.
 
     Args:
@@ -255,24 +254,20 @@ class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: igno
         return dict(self.settings["media"].get("folders", {}))
 
     @property
-    def compress_css(self) -> Dict[str, List[str]]:  # output file, input files
+    def bundle_css(self) -> Dict[str, List[str]]:  # output file, input files
         """Style sheets to bundle: a site's own file, else the default theme's."""
         return {
             f"{self.output_dir}/{k}": [path if Path(path).exists() else str(THEME / path) for path in v]
-            for k, v in self.settings["minify"].get("css", {}).items()
+            for k, v in self.settings["bundle"].get("css", {}).items()
         }
 
     @property
-    def compress_js(self) -> Dict[str, List[str]]:  # output file, input files
-        return {f"{self.output_dir}/{k}": v for k, v in self.settings["minify"].get("js", {}).items()}
+    def bundle_js(self) -> Dict[str, List[str]]:  # output file, input files
+        return {f"{self.output_dir}/{k}": v for k, v in self.settings["bundle"].get("js", {}).items()}
 
     @property
     def index_template(self) -> Optional[Path]:
         return INDEX_TEMPLATE
-
-    @property
-    def html_filters(self) -> List[Any]:
-        return []
 
     # sources and profiles ####################################################
 

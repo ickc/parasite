@@ -3,8 +3,6 @@ from __future__ import annotations
 import io
 import json
 import os
-import shutil
-import subprocess  # nosec
 import tempfile
 from contextlib import contextmanager
 from concurrent.futures import ThreadPoolExecutor
@@ -33,7 +31,7 @@ from .to_ast import (
     posts_to_index_ast,
     posts_to_tag_ast,
 )
-from .util import TimeElapse, setup_logging
+from .util import TimeElapse, inherit_args, setup_logging
 
 if TYPE_CHECKING:
     from typing import Iterable, Iterator, List, TypeVar
@@ -47,26 +45,10 @@ setup_logging()
 logger = getLogger(__name__)
 
 
-def rsync(in_dir: str, out_base_dir: Path, out_sub_dir: str) -> None:
-    out_dir = Path(out_base_dir) / out_sub_dir
-    out_dir.mkdir(exist_ok=True, parents=True)
-    subprocess.run(["rsync", "-a", f"{in_dir}/", f"{out_dir}/"], check=True)  # nosec
-
-
-def minify(inputs: List[str], output_path: str, output: Output) -> None:
-    """Bundle ``inputs`` into ``output_path``, minified with the Go minifier if it is on the
-    PATH (https://github.com/tdewolff/minify), else concatenated; written only if changed."""
-    path = Path(output_path)
-    if shutil.which("minify") is None:
-        logger.warning("minify is not on the PATH: %s is concatenated, not minified", output_path)
-        data = "\n".join(Path(i).read_text(encoding="utf-8") for i in inputs).encode("utf-8")
-    else:
-        data = subprocess.run(  # nosec
-            ["minify", "--type", path.suffix[1:], "-b", *inputs],
-            capture_output=True,
-            check=True,
-        ).stdout
-    output.write(path, data, "minify")
+def bundle(inputs: List[str], output_path: str, output: Output) -> None:
+    """Concatenate ``inputs`` into ``output_path``; written only if changed."""
+    data = "\n".join(Path(i).read_text(encoding="utf-8") for i in inputs).encode("utf-8")
+    output.write(Path(output_path), data, "bundle")
 
 
 def cites(doc: pf.Doc) -> bool:
@@ -121,6 +103,7 @@ def page_options(page: Page) -> Iterator[list[str]]:
         yield [*options, f"--metadata-file={path}"]
 
 
+@inherit_args
 @dataclass
 class Config(LiveConfig):
     """Configure static site.
@@ -263,18 +246,18 @@ class Config(LiveConfig):
         time_elapse = TimeElapse(logger)
         output = Output(self.output_dir)
 
-        for in_dir, out_sub_dir in self.files_folders.items():
-            output.claim_tree(Path(in_dir), self.output_dir / out_sub_dir, f"files_folders {in_dir}")
-        if self.compress_js:
-            minifies_js = [pool.submit(minify, paths, out_path, output) for out_path, paths in self.compress_js.items()]
-        if self.compress_css:
-            minifies = [pool.submit(minify, paths, out_path, output) for out_path, paths in self.compress_css.items()]
-        if self.files_folders:
-            rsyncs = [
-                pool.submit(rsync, in_dir, self.output_dir, out_sub_dir)
-                for in_dir, out_sub_dir in self.files_folders.items()
-            ]
-        time_elapse.report("staging for minifies and rsync.")
+        # claimed now, so that a page writing one of these paths is the clash
+        files = [
+            (src, dest, f"files_folders {in_dir}")
+            for in_dir, out_sub_dir in self.files_folders.items()
+            for src, dest in output.claim_tree(Path(in_dir), self.output_dir / out_sub_dir, f"files_folders {in_dir}")
+        ]
+        bundles = [
+            pool.submit(bundle, paths, out_path, output)
+            for out_path, paths in {**self.bundle_css, **self.bundle_js}.items()
+        ]
+        file_copies = [pool.submit(output.copy, src, dest, owner) for src, dest, owner in files]
+        time_elapse.report("staging for bundles and files.")
 
         pages = Pages.from_config(self)
         posts = Posts.from_config(self)
@@ -290,7 +273,7 @@ class Config(LiveConfig):
             try:
                 import pagefind.index  # noqa: F401
             except ImportError:
-                # like minify and lychee: an optional tool, a warning without it
+                # like lychee: an optional tool, a warning without it
                 logger.warning("pagefind is not installed (pandoc-para[search]): no search")
                 self.write_search = False
         deps.fresh(ignored=[self.output_dir, self.store_path.parent])
@@ -657,15 +640,10 @@ class Config(LiveConfig):
 
         for future in output_futures:
             future.result()
-        if self.files_folders:
-            for future in rsyncs:
-                future.result()
-        if self.compress_css:
-            for future in minifies:
-                future.result()
-        if self.compress_js:
-            for future in minifies_js:
-                future.result()
+        for future in file_copies:
+            future.result()
+        for future in bundles:
+            future.result()
         copied = sum(future.result() for future in media_copies)
         logger.info("media: %s files used, %s copied (the rest unchanged)", len(media_copies), copied)
         logger.info("rendered %s of %s derived pages (the rest unchanged)", len(output_futures), len(renders))

@@ -79,29 +79,6 @@ def report_urls(pages: Sequence[Record]) -> set[str]:
     }
 
 
-def minify_html(html: str) -> str:
-    import subprocess  # nosec
-
-    res = subprocess.run(  # nosec
-        [
-            "minify",
-            "--type=html",
-            "--html-keep-conditional-comments",
-            "--html-keep-default-attrvals",
-            "--html-keep-document-tags",
-            "--html-keep-end-tags",
-            "--html-keep-quotes",
-            "--html-keep-whitespace",
-        ],
-        input=html,
-        text=True,
-        capture_output=True,
-    )
-    if res.returncode != 0:
-        raise RuntimeError(res)
-    return res.stdout
-
-
 def to_feed(
     posts: Sequence[Record],
     fragments: Mapping[str, str],

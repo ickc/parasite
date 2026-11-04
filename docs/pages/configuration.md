@@ -13,7 +13,7 @@ A site's `parasite.toml` is merged over it:
 
 - tables, key by key: a site writes only what differs;
 - anything else (strings, numbers, lists) replaced whole;
-- `[files]`, `[media.folders]`, `[minify.css]` and `[minify.js]` replaced whole too, as
+- `[files]`, `[media.folders]`, `[bundle.css]` and `[bundle.js]` replaced whole too, as
   they list a site's own entries;
 - `[filters]` in the site's order: its filters first, then the defaults it does not
   mention.
@@ -31,7 +31,7 @@ A site's `parasite.toml` is merged over it:
 | `[profiles.NAME]` | output profiles: writer, template, URL rule, options, filters, the page's parts (see [output profiles](../profiles/)) |
 | `[files]` | folders of site files, copied whole |
 | `[media.folders]` | folders of media, copied by reference: only what pages use |
-| `[minify.css]`, `[minify.js]` | style sheets and scripts bundled and minified |
+| `[bundle.css]`, `[bundle.js]` | style sheets and scripts concatenated into one file each |
 | `[mathjax]` | MathJax's configuration, as a table |
 
 # In strings

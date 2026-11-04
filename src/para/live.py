@@ -6,13 +6,14 @@ from __future__ import annotations
 import io
 import json
 import logging
+import os
 import time
 from dataclasses import dataclass, field
 from functools import cached_property, partial
 from importlib import import_module, reload
 from itertools import chain
 from pathlib import Path
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, ClassVar, List, Optional
 
 
 import panflute as pf
@@ -20,7 +21,7 @@ import panflute as pf
 from .apps import post_to_html, post_to_pdf, read_md_to_ast
 from .data import format_years, root_of
 from .config import Config as StaticConfig
-from .util import TimeElapse
+from .util import TimeElapse, inherit_args
 
 if TYPE_CHECKING:
     from http.server import ThreadingHTTPServer
@@ -47,10 +48,53 @@ def code(path: Path) -> None:
     )
 
 
+RELOAD_URL = "/__para_reload"
+# polls the rebuild counter, reloading the page when it changes
+RELOAD_SCRIPT = (
+    "<script>(() => { let seen; setInterval(async () => { try {"
+    f" const now = await (await fetch('{RELOAD_URL}')).text();"
+    " if (seen !== undefined && now !== seen) location.reload(); seen = now;"
+    " } catch (e) {} }, 1000); })();</script>"
+).encode()
+
+
+def reloading_handler(config: Optional[Config]) -> type:
+    """A static file handler; with ``config`` (watching), HTML pages are served with
+    :data:`RELOAD_SCRIPT` and :data:`RELOAD_URL` answers the rebuild counter."""
+    from http.server import SimpleHTTPRequestHandler
+
+    class Handler(SimpleHTTPRequestHandler):
+        def do_GET(self) -> None:
+            if config is None:
+                return super().do_GET()
+            if self.path == RELOAD_URL:
+                return self._send(str(config._generation).encode(), "text/plain")
+            path = Path(self.translate_path(self.path))
+            if self.path.split("?")[0].endswith("/"):
+                path = path / "index.html"
+            if path.suffix != ".html" or not path.is_file():
+                return super().do_GET()
+            html = path.read_bytes()
+            end = html.rfind(b"</body>")
+            html = html + RELOAD_SCRIPT if end < 0 else html[:end] + RELOAD_SCRIPT + html[end:]
+            self._send(html, "text/html; charset=utf-8")
+
+        def _send(self, body: bytes, content_type: str) -> None:
+            self.send_response(200)
+            self.send_header("Content-Type", content_type)
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            self.wfile.write(body)
+
+    return Handler
+
+
 def path_to_page(pages: list[Page]) -> dict[str, Page]:
     return {str(page.path.absolute()): page for page in pages}
 
 
+@inherit_args
 @dataclass
 class Config(StaticConfig):
     """Configure live serving parameters.
@@ -60,8 +104,7 @@ class Config(StaticConfig):
         watch_open: if specified, open all pages that are currently watching.
         watch_code: if specified, open all sources that are currently watching in VSCode.
         watch_module: if specified, watch & reload this module.
-        serve: if specified, open a server and serve indefinitely.
-        watch_with: valid choices are livereload, watchdog. If not specified, default to livereload if serve, else watchdog.
+        serve: if specified, open a server and serve indefinitely; pages served while watching reload when rebuilt.
         serve_host: the host to serve.
         serve_port: the port to serve.
         serve_open: if specified, open this relative url.
@@ -72,15 +115,12 @@ class Config(StaticConfig):
     watch_code: bool = False
     watch_module: list[str] = field(default_factory=list)
     serve: bool = False
-    watch_with: str = ""
     serve_host: str = "localhost"
     serve_port: int = 5500
     serve_open: Optional[str] = None
 
-    def __post_init__(self) -> None:
-        if not self.watch_with:
-            self.watch_with = "livereload" if self.serve else "watchdog"
-            logger.info("Defaulting watch_with as %s", self.watch_with)
+    # bumped after each rebuild while watching: served pages poll it and reload
+    _generation: ClassVar[int] = 0
 
     @cached_property
     def modules_to_be_watched(self) -> dict[str, ModuleType]:
@@ -95,11 +135,11 @@ class Config(StaticConfig):
         port = self.serve_port
         directory = self.output_dir
 
-        from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+        from http.server import ThreadingHTTPServer
 
         httpd = ThreadingHTTPServer(
             (host, port),
-            partial(SimpleHTTPRequestHandler, directory=directory),
+            partial(reloading_handler(self if self.watch else None), directory=directory),
         )
         logger.info("Serving simple server at port %s.", port)
         return httpd
@@ -200,14 +240,8 @@ class Config(StaticConfig):
         self,
         pages: List[Page],
     ) -> None:
-        """Watch using watchdog which is observer based.
-
-        Currently this is almost feature parity with :py:func:`observe_pages_with_livereload`.
-
-        livereload is polling-based (except on Linux with a special call method not implemented here.)
-        Here, the way we reload the page is by calling `open_browser` on the modified page.
-        This has the side-effect of the browser windows popping up from backgrounds.
-        """
+        """Watch ``pages`` (and the modules to reload) with watchdog, rebuilding a page when
+        its source changes; served pages reload themselves (see :func:`reloading_handler`)."""
         from watchdog.events import FileSystemEventHandler
         from watchdog.observers import Observer
 
@@ -225,17 +259,22 @@ class Config(StaticConfig):
                 self.pages = pages
                 self.modules = modules
 
-            def on_modified(self, event: FileSystemEvent) -> None:
+            def on_any_event(self, event: FileSystemEvent) -> None:
+                if event.is_directory or event.event_type not in ("modified", "created", "moved"):
+                    return
+                # an editor may save by writing another file and renaming it over the source
+                raw = event.dest_path if event.event_type == "moved" else event.src_path
+                path = str(Path(os.fsdecode(raw)).absolute())
                 config = self.config
                 pages = self.pages
                 modules = self.modules
-                path = event.src_path
+                if path not in pages and path not in modules:
+                    return
                 logger.info("%s %s. Updating...", path, event.event_type)
                 if path in pages:
                     page = pages[path]
                     config.make_page(page)
-                    if config.serve and config.watch_open:
-                        config.open_browser(page.url)
+                    type(config)._generation += 1
                 elif path in modules:
                     module = modules[path]
                     logger.info("Reloading module %s", module)
@@ -247,20 +286,19 @@ class Config(StaticConfig):
                             module,
                             e,
                         )
-                else:
-                    logger.warning("Don't know how to update %s", path)
 
         event_handler = PageEventHandler(
             self, path_to_page(pages), self.modules_to_be_watched
         )
         observer = Observer()
+        # their folders, not the files: a file replaced by a rename is still seen
         for page in pages:
-            path = page.path
-            observer.schedule(event_handler, path, recursive=True)
-            logger.info("Watching page %s", path)
+            logger.info("Watching page %s", page.path)
         for module_path in self.modules_to_be_watched:
-            observer.schedule(event_handler, module_path, recursive=True)
             logger.info("Watching module %s", module_path)
+        folders = {Path(p).absolute().parent for p in chain(path_to_page(pages), self.modules_to_be_watched)}
+        for folder in sorted(folders):
+            observer.schedule(event_handler, str(folder), recursive=False)
 
         logger.info("Observing using watchdog...")
         observer.start()
@@ -292,30 +330,6 @@ class Config(StaticConfig):
                 observer.join()
                 logger.info("Joint observer")
 
-    def observe_pages_with_livereload(
-        self,
-        pages: List[Page],
-    ) -> None:
-        """Watch using livereload which is polling based."""
-        from livereload import Server
-
-        if not self.serve:
-            logger.warning("livereload must serve.")
-            self.serve = True
-
-        server = Server()
-        for page in pages:
-            path = page.path
-            server.watch(str(path), partial(self.make_page, page))
-            logger.info("Watching page %s", path)
-        for module_path, module in self.modules_to_be_watched.items():
-            server.watch(module_path, partial(reload, module))
-            logger.info("Watching module %s", module_path)
-
-        logger.info("Observing using livereload...")
-        self.live_routine(pages)
-        server.serve(root=str(self.output_dir), port=self.serve_port)
-
     def live(
         self,
         all_pages: Sequence[Page],
@@ -324,12 +338,7 @@ class Config(StaticConfig):
         # let watch_pages handle serve cases
         if self.watch:
             pages = self.pages_to_be_watched(all_pages)
-            if (watch_with := self.watch_with) == "livereload":
-                self.observe_pages_with_livereload(pages)
-            elif watch_with == "watchdog":
-                self.observe_pages_with_watchdog(pages)
-            else:
-                raise ValueError(watch_with)
+            self.observe_pages_with_watchdog(pages)
         # only serve ourselves if not watching
         elif self.serve:
             httpd = self.serving
