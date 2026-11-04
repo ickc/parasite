@@ -34,7 +34,6 @@ dependencies = [
 [project.optional-dependencies]
 extras = [
     "watchdog>=2",
-    "livereload>=2",
 ]
 # search: Pagefind, with its binary
 search = ["pagefind[bin]>=1.5"]

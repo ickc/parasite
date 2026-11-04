@@ -28,7 +28,7 @@ pip install pandoc-para
 | extra | for |
 |---|---|
 | `pandoc-para[search]` | search, with [Pagefind](https://pagefind.app/) (its binary comes with it) |
-| `pandoc-para[extras]` | coloured logs; watching sources and serving the site while you write |
+| `pandoc-para[extras]` | watching sources and serving the site while you write, reloading pages as they are rebuilt |
 | `pandoc-para[graph]` | the post graph, with [paragraphic](https://github.com/ickc/paragraphic) |
 
 The check of the output's links needs [lychee](https://lychee.cli.rs) (`pixi add
