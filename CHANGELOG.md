@@ -5,6 +5,17 @@
 - **No minifier:** `[minify.css]` and `[minify.js]` are now `[bundle.css]` and
   `[bundle.js]`, and are concatenated only; tdewolff's `minify` is no longer used.
   The unused `minify_html` helper and HTML-filter hook are gone.
+- **Copied files share their source's blocks:** `[files]` and media are a reflink
+  (XFS, Btrfs) or a hard link on the sources' filesystem, a copy on another; nothing is
+  duplicated on disk. `[files]` no longer need rsync. Output files are replaced, never
+  written in place.
+- **Serving while watching reloads pages** without livereload: `--serve --watch` uses
+  the standard library's server and a small reload script. `--watch-with` is gone.
+  Watching now rebuilds a page whose source changes (it never did: a path mismatch),
+  also when an editor saves by renaming.
+- **Fewer dependencies:** custom-inherit, coloredlogs and livereload are dropped;
+  `pandoc-para[extras]` is watchdog only. Level names are coloured on a terminal only,
+  and not with `NO_COLOR`.
 
 ## v0.2.3
 
