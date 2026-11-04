@@ -1,5 +1,12 @@
 # Revision history for `para`
 
+## v0.2.2
+
+- **Links:** a link or image URL from the site's root (`/about/`) is written relative
+  to the page (`../../about/`), after the read filters, so a site works under any path
+  (a GitHub project site, a path on a shared server). The lightgallery filters' photo
+  links are relative too.
+
 ## v0.2.1
 
 - **Post graph:** paragraphic 0.3 (`pandoc-para[graph]`). Its viewer pairs the

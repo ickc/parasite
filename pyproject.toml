@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 # the import package is para; on PyPI as pandoc-para until the name para is free
 name = "pandoc-para"
-version = "0.2.1"
+version = "0.2.2"
 description = "para.site: a pandoc-first static site generator"
 readme = "README.md"
 license = "BSD-3-Clause"
