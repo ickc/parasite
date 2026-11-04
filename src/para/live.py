@@ -6,6 +6,7 @@ from __future__ import annotations
 import io
 import json
 import logging
+import os
 import time
 from dataclasses import dataclass, field
 from functools import cached_property, partial
@@ -258,11 +259,17 @@ class Config(StaticConfig):
                 self.pages = pages
                 self.modules = modules
 
-            def on_modified(self, event: FileSystemEvent) -> None:
+            def on_any_event(self, event: FileSystemEvent) -> None:
+                if event.is_directory or event.event_type not in ("modified", "created", "moved"):
+                    return
+                # an editor may save by writing another file and renaming it over the source
+                raw = event.dest_path if event.event_type == "moved" else event.src_path
+                path = str(Path(os.fsdecode(raw)).absolute())
                 config = self.config
                 pages = self.pages
                 modules = self.modules
-                path = event.src_path
+                if path not in pages and path not in modules:
+                    return
                 logger.info("%s %s. Updating...", path, event.event_type)
                 if path in pages:
                     page = pages[path]
@@ -279,20 +286,19 @@ class Config(StaticConfig):
                             module,
                             e,
                         )
-                else:
-                    logger.warning("Don't know how to update %s", path)
 
         event_handler = PageEventHandler(
             self, path_to_page(pages), self.modules_to_be_watched
         )
         observer = Observer()
+        # their folders, not the files: a file replaced by a rename is still seen
         for page in pages:
-            path = page.path
-            observer.schedule(event_handler, path, recursive=True)
-            logger.info("Watching page %s", path)
+            logger.info("Watching page %s", page.path)
         for module_path in self.modules_to_be_watched:
-            observer.schedule(event_handler, module_path, recursive=True)
             logger.info("Watching module %s", module_path)
+        folders = {Path(p).absolute().parent for p in chain(path_to_page(pages), self.modules_to_be_watched)}
+        for folder in sorted(folders):
+            observer.schedule(event_handler, str(folder), recursive=False)
 
         logger.info("Observing using watchdog...")
         observer.start()
