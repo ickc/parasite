@@ -1,5 +1,11 @@
 # Revision history for `para`
 
+## v0.2.3
+
+- **Deterministic on any filesystem:** sources are read in path order, not the
+  filesystem's, so posts of the same date are listed in path order, and the search
+  index is the same, wherever the site is built.
+
 ## v0.2.2
 
 - **Links:** a link or image URL from the site's root (`/about/`) is written relative

@@ -412,7 +412,7 @@ class Config(LiveConfig):
             posts = Posts([page for page in posts.pages if not page.record.draft])
             time_elapse.report("filter out drafts.")
 
-        # newest first; sorted() is stable, so posts of the same date keep their order
+        # newest first; sorted() is stable, so posts of the same date stay in path order
         posts.pages = sorted(posts.pages, key=lambda page: page.record.time, reverse=True)
         time_elapse.report("sorting posts.")
 
