@@ -4,12 +4,12 @@ from pathlib import Path
 
 import panflute as pf
 
-from para.media import rebase_relative_urls
+from para.media import relative_root_urls
 
 
 def urls(markdown: str, out_dir: str) -> list[str]:
     doc = pf.convert_text(markdown, standalone=True)
-    doc = rebase_relative_urls(doc, Path("posts/x.md"), Path("output") / out_dir, Path("output"), {})
+    doc = relative_root_urls(doc, Path("output") / out_dir, Path("output"))
     found = []
     doc.walk(lambda e, d: found.append(e.url) if isinstance(e, (pf.Link, pf.Image)) else None)
     return found
