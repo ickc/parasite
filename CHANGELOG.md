@@ -1,6 +1,8 @@
 # Revision history for `para`
 
-## Unreleased
+## v0.3.0
+
+Breaking: `[minify.*]` is now `[bundle.*]`, and `--watch-with` is gone.
 
 - **No minifier:** `[minify.css]` and `[minify.js]` are now `[bundle.css]` and
   `[bundle.js]`, and are concatenated only; tdewolff's `minify` is no longer used.
