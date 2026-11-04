@@ -25,6 +25,7 @@ from urllib.parse import quote, unquote, urlsplit
 from panflute.elements import Image, Link, RawBlock, RawInline
 
 from .deps import touch
+from .output import place
 
 if TYPE_CHECKING:
     from typing import Callable, Dict, List, Optional
@@ -97,7 +98,7 @@ def copy_media(
         claim(dest)
     if not dest.exists():
         out_dir.mkdir(parents=True, exist_ok=True)
-        dest.write_bytes(data)
+        place(path, dest)
     if convert_pdf and dest.suffix == ".pdf":
         dest = pdf_to_svg(dest)
         if claim is not None:

@@ -3,7 +3,6 @@ from __future__ import annotations
 import io
 import json
 import os
-import subprocess  # nosec
 import tempfile
 from contextlib import contextmanager
 from concurrent.futures import ThreadPoolExecutor
@@ -44,12 +43,6 @@ if TYPE_CHECKING:
 
 setup_logging()
 logger = getLogger(__name__)
-
-
-def rsync(in_dir: str, out_base_dir: Path, out_sub_dir: str) -> None:
-    out_dir = Path(out_base_dir) / out_sub_dir
-    out_dir.mkdir(exist_ok=True, parents=True)
-    subprocess.run(["rsync", "-a", f"{in_dir}/", f"{out_dir}/"], check=True)  # nosec
 
 
 def bundle(inputs: List[str], output_path: str, output: Output) -> None:
@@ -253,18 +246,18 @@ class Config(LiveConfig):
         time_elapse = TimeElapse(logger)
         output = Output(self.output_dir)
 
-        for in_dir, out_sub_dir in self.files_folders.items():
-            output.claim_tree(Path(in_dir), self.output_dir / out_sub_dir, f"files_folders {in_dir}")
+        # claimed now, so that a page writing one of these paths is the clash
+        files = [
+            (src, dest, f"files_folders {in_dir}")
+            for in_dir, out_sub_dir in self.files_folders.items()
+            for src, dest in output.claim_tree(Path(in_dir), self.output_dir / out_sub_dir, f"files_folders {in_dir}")
+        ]
         bundles = [
             pool.submit(bundle, paths, out_path, output)
             for out_path, paths in {**self.bundle_css, **self.bundle_js}.items()
         ]
-        if self.files_folders:
-            rsyncs = [
-                pool.submit(rsync, in_dir, self.output_dir, out_sub_dir)
-                for in_dir, out_sub_dir in self.files_folders.items()
-            ]
-        time_elapse.report("staging for bundles and rsync.")
+        file_copies = [pool.submit(output.copy, src, dest, owner) for src, dest, owner in files]
+        time_elapse.report("staging for bundles and files.")
 
         pages = Pages.from_config(self)
         posts = Posts.from_config(self)
@@ -647,9 +640,8 @@ class Config(LiveConfig):
 
         for future in output_futures:
             future.result()
-        if self.files_folders:
-            for future in rsyncs:
-                future.result()
+        for future in file_copies:
+            future.result()
         for future in bundles:
             future.result()
         copied = sum(future.result() for future in media_copies)

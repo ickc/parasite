@@ -51,6 +51,14 @@ only when its bytes change, so an unchanged page keeps its modification time. Fi
 the output folder that no step produced (a deleted page's) are reported, and removed
 with `parasite --prune`.
 
+Copied files (`[files]` and media) take no extra space when the output is on the same
+filesystem as the sources: each shares its source's blocks, as a reflink (copy-on-write,
+on XFS or Btrfs) or else a hard link. On another filesystem it is a copy. A file is
+unchanged when it is that same file, or has the same size and modification time, and is
+then left alone. para.site writes a file by renaming a new one over it, never in place,
+so it never writes through a hard link into a source; other tools should not edit
+the output in place either.
+
 # Media
 
 `[media.folders]` are copied **by reference**: only the files the pages use, from their
