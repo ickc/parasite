@@ -33,7 +33,6 @@ dependencies = [
 
 [project.optional-dependencies]
 extras = [
-    "coloredlogs>=14",
     "watchdog>=2",
     "livereload>=2",
 ]

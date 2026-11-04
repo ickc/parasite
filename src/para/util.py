@@ -5,10 +5,20 @@ import logging
 import os
 from timeit import default_timer as timer
 
-try:
-    from coloredlogs import ColoredFormatter as Formatter
-except ImportError:
-    from logging import Formatter
+
+class Formatter(logging.Formatter):
+    """Level names in colour on a terminal (not with NO_COLOR set)."""
+
+    COLOURS = {"DEBUG": "36", "INFO": "32", "WARNING": "33", "ERROR": "31", "CRITICAL": "1;31"}
+
+    def __init__(self, fmt: str, colour: bool = False) -> None:
+        super().__init__(fmt)
+        self.colour = colour
+
+    def formatMessage(self, record: logging.LogRecord) -> str:
+        if self.colour and (code := self.COLOURS.get(record.levelname)):
+            record = logging.makeLogRecord({**record.__dict__, "levelname": f"\033[{code}m{record.levelname}\033[0m"})
+        return super().formatMessage(record)
 
 
 def _args(doc: str) -> tuple[list[str], list[str], list[str]]:
@@ -39,16 +49,14 @@ def setup_logging(
     level: str = "INFO",
     env_var: str = "PARASITELOGLEVEL",
     fmt: str = "%(name)s %(levelname)s %(message)s",
-    Handler: type[logging.StreamHandler] = logging.StreamHandler,  # type: ignore[type-arg]
-    Formatter: type[Formatter] = Formatter,
 ) -> logging.Logger:
     """Setup logging.
 
     :param env_var: if not empty, set log level from this environment variable.
     """
     logger = logging.getLogger(name)
-    handler = Handler()
-    handler.setFormatter(Formatter(fmt))
+    handler = logging.StreamHandler()
+    handler.setFormatter(Formatter(fmt, colour=not os.environ.get("NO_COLOR") and handler.stream.isatty()))
     logger.addHandler(handler)
     if env_var:
         try:
