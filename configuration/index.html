@@ -159,7 +159,7 @@
             <ul>
             <li>tables, key by key: a site writes only what differs;</li>
             <li>anything else (strings, numbers, lists) replaced whole;</li>
-            <li><code>[files]</code>, <code>[media.folders]</code>, <code>[minify.css]</code> and <code>[minify.js]</code> replaced whole too, as they list a site’s own entries;</li>
+            <li><code>[files]</code>, <code>[media.folders]</code>, <code>[bundle.css]</code> and <code>[bundle.js]</code> replaced whole too, as they list a site’s own entries;</li>
             <li><code>[filters]</code> in the site’s order: its filters first, then the defaults it does not mention.</li>
             </ul>
             <h1 id="the-parts">The parts</h1>
@@ -212,8 +212,8 @@
             <td>folders of media, copied by reference: only what pages use</td>
             </tr>
             <tr>
-            <td><code>[minify.css]</code>, <code>[minify.js]</code></td>
-            <td>style sheets and scripts bundled and minified</td>
+            <td><code>[bundle.css]</code>, <code>[bundle.js]</code></td>
+            <td>style sheets and scripts concatenated into one file each</td>
             </tr>
             <tr>
             <td><code>[mathjax]</code></td>
