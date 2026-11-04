@@ -28,7 +28,7 @@ lychee = "*"
 # pandoc-para[search], [opencc] and [graph] (not on conda-forge)
 pagefind = { version = ">=1.5", extras = ["bin"] }
 opencc = ">=1.1"
-paragraphic = ">=0.2,<0.3"
+paragraphic = ">=0.3,<0.4"
 
 [tasks]
 install = "python -m pip install --no-deps --no-build-isolation -e ."

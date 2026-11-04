@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 # the import package is para; on PyPI as pandoc-para until the name para is free
 name = "pandoc-para"
-version = "0.2.0"
+version = "0.2.1"
 description = "para.site: a pandoc-first static site generator"
 readme = "README.md"
 license = "BSD-3-Clause"
@@ -43,7 +43,7 @@ search = ["pagefind[bin]>=1.5"]
 # translations made by conversion (Traditional and Simplified Chinese)
 opencc = ["opencc>=1.1"]
 # the post graph
-graph = ["paragraphic>=0.2,<0.3"]
+graph = ["paragraphic>=0.3,<0.4"]
 tests = [
     "coverage",
     "pytest",
