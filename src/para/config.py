@@ -16,7 +16,6 @@ from importlib import resources
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar
 
-from custom_inherit import DocInheritMeta
 
 from .filters import Filter, FilterError
 from .helpers import nav as nav_html
@@ -154,7 +153,7 @@ class Profile:
 
 
 @dataclass
-class Config(metaclass=DocInheritMeta(style="google_with_merge")):  # type: ignore[misc] # mypy limitation
+class Config:
     """Configure static site.
 
     Args:

@@ -54,7 +54,6 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/click-8.5.0-pyh5ded981_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/colorama-0.4.6-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/coloredlogs-15.0.1-pyhd8ed1ab_4.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/custom-inherit-2.4.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/defopt-7.0.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/docutils-0.23-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/editables-0.6-pyhcf101f3_0.conda
@@ -97,7 +96,6 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/click-8.5.0-pyh5ded981_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/colorama-0.4.6-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/coloredlogs-15.0.1-pyhd8ed1ab_4.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/custom-inherit-2.4.1-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/defopt-7.0.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/docutils-0.23-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/editables-0.6-pyhcf101f3_0.conda
@@ -685,18 +683,6 @@ packages:
   run_exports: {}
   size: 43758
   timestamp: 1733928076798
-- conda: https://conda.anaconda.org/conda-forge/noarch/custom-inherit-2.4.1-pyhd8ed1ab_0.conda
-  sha256: 4e070524963c65c8fa6af87d59477fa075c25aca806e1beae3cdc0f494fabe5c
-  md5: 1e9f7e51db5af1117d6eed6679335d3c
-  depends:
-  - python >=3.6
-  license: MIT
-  license_family: MIT
-  purls:
-  - pkg:pypi/custom-inherit?source=hash-mapping
-  run_exports: {}
-  size: 17271
-  timestamp: 1676766083833
 - conda: https://conda.anaconda.org/conda-forge/noarch/defopt-7.0.0-pyhd8ed1ab_0.conda
   sha256: 1455ff5562db3379d0793f039ff216dac243425319649c9fb6ed9d8d3720f069
   md5: 30e9cee7ab7b48441d033be727ac2ced

@@ -32,7 +32,7 @@ from .to_ast import (
     posts_to_index_ast,
     posts_to_tag_ast,
 )
-from .util import TimeElapse, setup_logging
+from .util import TimeElapse, inherit_args, setup_logging
 
 if TYPE_CHECKING:
     from typing import Iterable, Iterator, List, TypeVar
@@ -110,6 +110,7 @@ def page_options(page: Page) -> Iterator[list[str]]:
         yield [*options, f"--metadata-file={path}"]
 
 
+@inherit_args
 @dataclass
 class Config(LiveConfig):
     """Configure static site.

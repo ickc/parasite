@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 import logging
 import os
 from timeit import default_timer as timer
@@ -8,6 +9,29 @@ try:
     from coloredlogs import ColoredFormatter as Formatter
 except ImportError:
     from logging import Formatter
+
+
+def _args(doc: str) -> tuple[list[str], list[str], list[str]]:
+    """A Google-style docstring as (before its Args, the Args' lines, after them)."""
+    lines = inspect.cleandoc(doc).splitlines()
+    if "Args:" not in lines:
+        return lines, [], []
+    start = lines.index("Args:") + 1
+    end = start
+    while end < len(lines) and (not lines[end] or lines[end].startswith(" ")):
+        end += 1
+    while end > start and not lines[end - 1]:
+        end -= 1
+    return lines[: start - 1], lines[start:end], lines[end:]
+
+
+def inherit_args(cls: type) -> type:
+    """Prepend the Args of the base class's docstring to ``cls``'s, so that the command
+    line's help (defopt) describes every field of a subclassed config."""
+    _, inherited, _ = _args(cls.__bases__[0].__doc__ or "")
+    before, own, after = _args(cls.__doc__ or "")
+    cls.__doc__ = "\n".join([*before, "Args:", *inherited, *own, *after])
+    return cls
 
 
 def setup_logging(

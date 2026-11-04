@@ -20,7 +20,7 @@ import panflute as pf
 from .apps import post_to_html, post_to_pdf, read_md_to_ast
 from .data import format_years, root_of
 from .config import Config as StaticConfig
-from .util import TimeElapse
+from .util import TimeElapse, inherit_args
 
 if TYPE_CHECKING:
     from http.server import ThreadingHTTPServer
@@ -51,6 +51,7 @@ def path_to_page(pages: list[Page]) -> dict[str, Page]:
     return {str(page.path.absolute()): page for page in pages}
 
 
+@inherit_args
 @dataclass
 class Config(StaticConfig):
     """Configure live serving parameters.

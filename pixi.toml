@@ -10,7 +10,6 @@ pandoc = ">=3.1"
 pip = "*"
 hatchling = "*"
 # the dependencies in pyproject.toml, from conda-forge
-custom-inherit = ">=2.4"
 panflute = ">=2.3.1,<2.4"
 defopt = ">=7"
 feedgen = ">=1"
