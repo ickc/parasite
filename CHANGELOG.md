@@ -1,5 +1,11 @@
 # Revision history for `para`
 
+## v0.2.1
+
+- **Post graph:** paragraphic 0.3 (`pandoc-para[graph]`). Its viewer pairs the
+  posts that share a source through an index from each source to its posts, so a
+  large site's graph opens faster; the graph itself is unchanged.
+
 ## v0.2.0
 
 A rewrite around records, output profiles and incremental builds. The package is
